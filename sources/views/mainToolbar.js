@@ -11,7 +11,7 @@ export default class MainToolbar extends JetView {
 		const langs = app.getService("locale");
 		const themes = app.getService("theme");
 		const usu = usuarioService.getUsuarioCookie();
-		const translate = this.app.getService("locale")._;
+		const translate = this.app.getService("locale");
 		var mainToolBar = {
 			view: "toolbar",
 			height: 60,

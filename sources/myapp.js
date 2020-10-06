@@ -8,7 +8,7 @@ export default class MyApp extends JetApp{
 			version : VERSION,
 			router 	: BUILD_AS_MODULE ? EmptyRouter : HashRouter,
 			debug 	: !PRODUCTION,
-			start 	: "/top/start"
+			start 	: "/login"
 		};
 
 		super({ ...defaults, ...config });
@@ -16,5 +16,11 @@ export default class MyApp extends JetApp{
 }
 
 if (!BUILD_AS_MODULE){
-	webix.ready(() => new MyApp().render() );
+	webix.ready(() => {
+		var app = new MyApp();
+		//app.use(plugins.Locale);
+		//app.use(plugins.Theme);
+		webix.i18n.setLocale("es-ES");
+		app.render();
+	});
 }

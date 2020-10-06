@@ -1,7 +1,5 @@
 import { JetView } from "webix-jet";
 import { usuarioService } from "../services/usuario_service";
-import { clientesService } from "../services/clientes_service";
-import { agentesService } from "../services/agentes_service";
 import { messageApi } from "../utilities/messages";
 import { devConfig } from "../config/config"
 
@@ -110,11 +108,10 @@ export default class Login extends JetView {
         let usuario;
         var data = $$("frmLogin").getValues();
         var acceso = {};
-        clientesService.getClientesActivosLogin(data.login, data.password)
+        usuarioService.getLogin(data.login, data.password)
             .then(result => {
                 if(result) {
                     usuario = result;
-                    usuario.esCliente = true;
                     usuarioService.setUsuarioCookie(usuario);
                     if(data.recordar)  {
                         acceso = {
@@ -126,44 +123,10 @@ export default class Login extends JetView {
                         usuarioService.deleteAccesoCookie();
                     }
                     this.$scope.show('top/inicio');
-                } else {
-                    agentesService.getAgentesActivosLogin(data.login, data.password)
-                    .then(result => {
-                        if(result) {
-                            usuario = result;
-                            usuario.esCliente = false;
-                            usuarioService.setUsuarioCookie(usuario);
-                            if(data.recordar)  {
-                                acceso = {
-                                    login: data.login,
-                                    password: data.password
-                                }
-                                usuarioService.setAccesoCookie(acceso)
-                            } else {
-                                usuarioService.deleteAccesoCookie();
-                            }
-                            this.$scope.show('top/inicio');
-                        } 
-                    })
-                    .catch(err => {
-                        var error = err.response;
-                                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                    if(index != -1) {
-                                        messageApi.errorRestriccion()
-                                    } else {
-                                        messageApi.errorMessageAjax(err);
-                                    }
-                    });
-                }
+                } 
             })
             .catch(err => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
+                messageApi.errorMessageAjax(err.response);
             });
     }
 }

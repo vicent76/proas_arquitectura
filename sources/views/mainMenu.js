@@ -13,14 +13,14 @@ export default class MainMenu extends JetView {
                 {
                     id: "inicio", icon: "mdi mdi-home", value: "Inicio"
                 },
-                {
+                /* {
                     id: "Reparaciones", icon: "mdi mdi-book",  value: translate("Reparaciones"), open: true,
                     data: [
                         {id: "facturas", icon: "mdi mdi-currency-eur", value: translate("Facturas")},
                         {id: "servicios", icon: "mdi mdi-transcribe", value: translate("Servicios")},
                         {id: "tarifas", icon: "mdi mdi-format-list-numbers", value: translate("Tarifas")}
                     ]
-                }
+                } */
             ]
         };
         return mainMenu;
