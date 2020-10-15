@@ -12,6 +12,8 @@ export default {
     "IMPRESIÓN DE FACTURAS": "IMPRESIÓN DE FACTURAS",
     "Servicios": "Servicios",
     "Reparaciones": "Reparaciones",
-    "Tarifas": "Tarifas"
+    "Tarifas": "Tarifas",
+    "Gestión": "Gestión",
+    "Ofertas": "Ofertas"
 
 }
