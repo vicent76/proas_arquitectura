@@ -80,11 +80,11 @@ export default class Ofertas extends JetView {
                  adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
                 },
                 { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "data" },             
-                { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
-                { id: "mantenedor", header: ["Mantenedor", { content: "textFilter" }], sort: "string",adjust: "data" },     
+                { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
+                { id: "mantenedor", header: ["Mantenedor", { content: "textFilter" }], sort: "string",adjust: "all" },     
                 { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
                 { id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
-                { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", fillspace: true },
+                { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all" },
                 { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: editButton , css: { "text-align": "center" }, adjust: "header"  }
             ],
             rightSplit: 1,
@@ -137,85 +137,69 @@ export default class Ofertas extends JetView {
         return _view;
     }
     init(view, url) {
-        //this.imprimirWindow = this.ui(OfertasEpisReport);
+        //this.imprimirWindow = this.ui(FacturasEpisReport);
          $$('ofertasGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
-            var curRow = this.data.pull[id.row];
-            var usu = usuarioService.getUsuarioCookie();
-                    ofertasService.getOfertas(usu)
+                    /* ofertasService.getOferta(curRow.ofertaId)
                     .then((data)=> {
                         if(!data.infFacCliRep) { 
-                            messageApi.errorMessage('Esta empresa no tiene plantilla de oferta asociada');
+                            messageApi.errorMessage('Esta empresa no tiene plantilla de factura asociada');
                             return
                         } else {
                             var rep = data.infFacCliRep;
                             var file = "/stireport/reports/"+ rep +".mrt";
-                            this.$scope.imprimirWindow.showWindow(curRow.ofertaId, file);
+                            this.$scope.imprimirWindow.showWindow(curRow.facturaId, file);
                             
                         }
                     })
                     .catch((err) => {
-                        var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-                    })
-                       
+                        messageApi.errorMessage(err.message);
+                    }) */
+            this.$scope.edit(curRow.ofertaId);
         });
     }
     urlChange(view, url) {
         var usu = usuarioService.checkLoggedUser();
-        var esCliente = false;
-        var id = usu.comercialId;
-        if(usu.esCliente) {
-            esCliente = true;
-            id = usu.clienteId;
-        }
+        var id = usu.usuarioId;
         languageService.setLanguage(this.app, 'es');
-        this.load(esCliente, id);
+        this.load(id);
     }
     
-    load(esCliente, id) {
-        ofertasService.getOfertas(usu)
-                    .then((data)=> {
-                        if(!data) {
-                            data = []
-                        }
-                    
-                            //acortamos el nombre de la empresa a 3 digitos y formateamos la fecha
-                            data = this.formateaCampos(data);
-                        
-                            $$("ofertasGrid").clearAll();
-                            $$("ofertasGrid").parse(generalApi.prepareDataForDataTable("ofertaId", data));
-                            
-                            var numReg = $$("ofertasGrid").count();
-                            $$("ofertasNReg").config.label = "NREG: " + numReg;
-                            $$("ofertasNReg").refresh();
-                            var stateDt = webix.storage.local.get("stateGridOfertas");
-                            if(stateDt) this.$$('ofertasGrid').setState(stateDt);
-                    })
-                    .catch((err) => {
-                   
-                        var error = err.response;
-                                var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                if(index != -1) {
-                                    messageApi.errorRestriccion()
-                                } else {
-                                    messageApi.errorMessageAjax(err);
-                                }
-                    })
-                    .catch((err) => {
+    load(id) {
+        ofertasService.getOfertas(id)
+        .then((data)=> {
+            if(!data) {
+                data = []
+            }
+        
+            //acortamos el nombre de la empresa a 3 digitos y formateamos la fecha
+            data = this.formateaCampos(data);
+            
+            $$("ofertasGrid").clearAll();
+            $$("ofertasGrid").parse(generalApi.prepareDataForDataTable("ofertaId", data));
+            
+            var numReg = $$("ofertasGrid").count();
+            $$("ofertasNReg").config.label = "NREG: " + numReg;
+            $$("ofertasNReg").refresh();
+            var stateDt = webix.storage.local.get("stateGridOfertas");
+            if(stateDt) this.$$('ofertasGrid').setState(stateDt);
+        })
+        .catch((err) => {
        
-                
+            var error = err.response;
+                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                    if(index != -1) {
+                        messageApi.errorRestriccion()
+                    } else {
+                        messageApi.errorMessageAjax(err);
+                    }
+        });
     }
 
     formateaCampos(data) {
         data.forEach(e => {
-            e.emisorNombre = e.emisorNombre.substr(0,3);
-            e.fecha = new Date(e.fecha);
+            e.empresa = e.empresa.substr(0,3);
+            e.fechaOferta = new Date(e.fechaOferta);
         });
         return data;
     }
@@ -233,9 +217,8 @@ export default class Ofertas extends JetView {
        this.load();
     }
 
-    print() {
-       
+    edit(ofertaId) {
+        this.show('/top/ofertaForm?ofertaId=' + ofertaId);
     }
-    
 }
 

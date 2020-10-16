@@ -4,7 +4,7 @@ export const ofertasService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertass/usuario/logado/departamento/"+ usuarioId + "/" + 8;
+                    var url = conf.urlApi + "/api/ofertas/usuario/logado/departamento/"+ usuarioId + "/" + 5;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -20,11 +20,11 @@ export const ofertasService = {
                 });
         });
     },
-    getEmpresa: (empresaId) => {
+    getOferta: (ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/empresas/" + empresaId;
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
