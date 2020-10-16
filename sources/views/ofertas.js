@@ -218,7 +218,7 @@ export default class Ofertas extends JetView {
     }
 
     edit(ofertaId) {
-        this.show('/top/ofertaForm?ofertaId=' + ofertaId);
+        this.show('/top/ofertasForm?ofertaId=' + ofertaId);
     }
 }
 
