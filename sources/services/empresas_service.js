@@ -1,10 +1,10 @@
 import { devConfig } from "../config/config";
-export const ofertasService = {
-    getOfertas: (usuarioId) => {
+export const empresasService = {
+    getEmpresas: () => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/usuario/logado/departamento/"+ usuarioId + "/" + 5;
+                    var url = conf.urlApi + "/api/empresas";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -20,11 +20,11 @@ export const ofertasService = {
                 });
         });
     },
-    getOferta: (ofertaId) => {
+    getEmpresa: (empresaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    var url = conf.urlApi + "/api/empresas/" + empresaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -41,38 +41,17 @@ export const ofertasService = {
         })
 
     },
-    getSiguienteReferencia: (abrev) => {
+    postEmpresa: (empresa) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/siguiente_referencia/" + abrev;
+                    var url = conf.urlApi + "/api/empresas";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
-                        .get(url);
-                })
-                .then(function (result) {
-                    success(result.json());
-                })
-                .catch(function (inXhr) {
-                    fail(inXhr);
-                });
-        })
-
-    },
-    postOferta: (oferta) => {
-        return new webix.promise((success, fail) => {
-            devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/";
-                    return webix.ajax()
-                        .timeout(10000)
-                        .headers({
-                            "Content-Type": "application/json"
-                        })
-                        .post(url, {oferta: oferta});
+                        .post(url, {empresa: empresa});
                 })
                 .then(function (result) {
                     success(result.json());
@@ -83,17 +62,17 @@ export const ofertasService = {
 
         });
     },
-    putOferta: (oferta, ofertaId) => {
+    putEmpresa: (empresa) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    var url = conf.urlApi + "/api/empresas";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
-                        .put(url, {oferta: oferta});
+                        .put(url, {empresa: empresa});
                 })
                 .then(function (result) {
                     success(result.json());

@@ -24,6 +24,13 @@ export default class Ofertas extends JetView {
         var pagerOfertas = {
             cols: [
                 {
+                    view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
+                    tooltip: translate("Nuevo registro en formulario (Ctrl+A)"),
+                    click: () => {
+                        this.show('/top/ofertasForm?ofertaId=0');
+                    }
+                },
+                {
                     view: "button", type: "icon", icon: "mdi mdi-refresh", width: 37, align: "left", hotkey: "Ctrl+R",
                     tooltip: translate("Refrescar la lista (Ctrl+R)"),
                     click: ()=>{
