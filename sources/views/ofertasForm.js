@@ -11,6 +11,7 @@ import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
+import { basesOferta } from "../subviews/basesOfertaGrid";
 
 
 var ofertaId = 0;
@@ -25,7 +26,9 @@ var importeCobro = 0;
 export default class OfertasForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
-        const _lineasOferta = lineasOferta.getGrid(app);
+        const _lineasOferta = lineasOferta.getGrid(this.app);
+        const _basesOferta = basesOferta.getGrid(this.app);
+              
         const _view = {
             view: "tabview",
             cells: [
@@ -48,6 +51,8 @@ export default class OfertasForm extends JetView {
                                 scroll:"y",
                                 id: "frmOfertas",
                                 maxWidth: 1500,
+                                //minHeight: 500,
+                                autoheight:true,
                                 elements: [
                                     {
                                         cols: [
@@ -85,13 +90,7 @@ export default class OfertasForm extends JetView {
                                                 }        
                                             },
                                             {
-                                                view: "combo", id: "cmbMantenedores", name: "mantenedorId",
-                                                label: "Mantenedor (empezar busquedas con @)", labelPosition: "top",
-                                                suggest:{
-                                                    view:"mentionsuggest",
-                                                    id: "mantenedoresList",
-                                                    data: [] 
-                                                }        
+                                                minWidth:200
                                             },
                                             {
                                                 view: "combo", id: "cmbAgentes", name: "agenteId", required: true,
@@ -116,10 +115,6 @@ export default class OfertasForm extends JetView {
                                                 label: "Importem cliente", labelPosition: "top", value: 0 ,format: "1,00"
                                                  
                                             },
-                                            {
-                                                view: "text", id: 'importeMan', name: 'importeMantenedor', disabled: true, width:180,
-                                                label: "Importe mantenedor", labelPosition: "top", value: 0 ,format: "1,00"
-                                            },
                                             
                                         ]
                                     },
@@ -140,18 +135,17 @@ export default class OfertasForm extends JetView {
                                                         ]
                                                     }
                                                 ]
-                                            }
+                                            },
                                         ]
                                     },
-                                   
-                                    //_localesAfectados,
-                                    { minheight: 600 },
+                                    _lineasOferta,
+                                    { minWidth : 100},
+                                    _basesOferta
                                 ]
                             },
-                            //_lineasOferta,
-                            {
-                                minheight: 200
-                            }
+                            
+                           
+                           
                         ],
                         scroll:true
                     }
@@ -191,10 +185,12 @@ export default class OfertasForm extends JetView {
             this.loadEmpresas();
             this.loadAgentes();
             this.loadClientes();
-            this.loadMantenedores();
+            //this.loadMantenedores();
             this.loadFormasPago();
             this.loadTiposProyecto();  
             $$("fechaOferta").setValue(new Date());//fecha por defecto
+            lineasOferta.loadGrid(null);
+            basesOferta.loadGrid(null);
             
             return;
         }
@@ -212,11 +208,11 @@ export default class OfertasForm extends JetView {
                 this.loadAgentes(oferta.agenteId);
                 this.loadEmpresas(oferta.empresaId);
                 this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
-                this.loadMantenedores(oferta.mantenedorId);
+                //this.loadMantenedores(oferta.mantenedorId);
                 this.loadFormasPago(oferta.formaPagoId);
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
-                lineasOferta.loadGrid(oferta.oferta);
-
+                lineasOferta.loadGrid(oferta.ofertaId);
+                basesOferta.loadGrid(oferta.ofertaId);
                 
             })
             .catch((err) => {
@@ -262,7 +258,7 @@ export default class OfertasForm extends JetView {
             data.importeAgente = 0
             data.importeCliente = 0
             data.importeMantenedor = 0
-            if( data.mantenedorId == "")  data.mantenedorId  = null;
+            data.mantenedorId  = null;
 
             ofertasService.postOferta(data)
                 .then((result) => {
@@ -386,7 +382,7 @@ export default class OfertasForm extends JetView {
     }
 
 
-    loadMantenedores(mantenedorId) {
+    /* loadMantenedores(mantenedorId) {
         clientesService.getMantenedoresActivos()
         .then(rows => {
             var mantenedores = generalApi.prepareDataForCombo('mantenedorId', 'nombre', rows);
@@ -404,7 +400,7 @@ export default class OfertasForm extends JetView {
             }
             return;
         });
-    }
+    } */
 
     cambioTipoProyecto(tipoProyectoId) {
         tiposProyectoService.getTipoProyecto(tipoProyectoId)

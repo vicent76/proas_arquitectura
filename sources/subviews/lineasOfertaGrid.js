@@ -2,7 +2,7 @@
 
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
-//import { lineasOfertaWindow } from "../subviews/lineasOfertaWindow";
+import { ofertasService } from "../services/ofertas_service";
 //import { facturacionService } from "../services/facturacion_service";
 
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
@@ -76,7 +76,7 @@ export const lineasOferta = {
             pager: "mypager3",
             select: "row",
             autoheight:true,
-            footer:true,
+            footer: false,
             ready:function(){ $$('lineasOfertaGrid').attachEvent("onItemDblClick", function(id, e, node){
                 var curRow = this.data.pull[id.row]
                 var proId = $$('cmbProveedores').getValue();
@@ -91,14 +91,14 @@ export const lineasOferta = {
                 
                 { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 50  },
-                { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat, footer:{content:'summColumn'}  },
-                { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, footer:{content:'summColumn'}  },
+                { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
+                { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
                 
                 { id: "proveedorId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "proveedorNombre", header: [translate("Proveedor"), { content: "textFilter" }], sort: "string", fillspace: true},
                 { id: "importeProveedor", header: [translate("€/Ud. Pro."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
-                { id: "dtoProveedor", header: [translate("Descuento pro."), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat, footer:{content:'summColumn'}  },
-                { id: "costeLineaProveedor", header: [translate("Imp pro."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, footer:{content:'summColumn'}  },
+                { id: "dtoProveedor", header: [translate("Descuento pro."), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
+                { id: "costeLineaProveedor", header: [translate("Imp pro."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
                 
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
             ],
@@ -176,13 +176,13 @@ export const lineasOferta = {
          
         numLineas = 0;
         if(ofertaId) {
-            partesService.getlineasOferta(ofertaId)
+            ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
                 if(rows.length > 0) {
-                    numLineas = rows.length;
-                    PartesFormWindow.estableceNumLineas(numLineas);
+                   /*  numLineas = rows.length;
+                    PartesFormWindow.estableceNumLineas(numLineas); */
                     $$("lineasOfertaGrid").clearAll();
-                    $$("lineasOfertaGrid").parse(generalApi.prepareDataForDataTable("parteLineaId", rows));
+                    $$("lineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
                     var numReg = $$("lineasOfertaGrid").count();
                     $$("partesLineasNReg").config.label = "NREG: " + numReg;
                     $$("partesLineasNReg").refresh();
@@ -190,17 +190,11 @@ export const lineasOferta = {
                 }else {
                     $$("lineasOfertaGrid").clearAll();
                     //lineasOferta.estableceContado(null);
-                    PartesFormWindow.estableceNumLineas(numLineas);
+                    //PartesFormWindow.estableceNumLineas(numLineas);
                 }
             })
             .catch((err) => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
+                messageApi.errorMessageAjax(err);
             });
         } else {
             $$("lineasOfertaGrid").clearAll();

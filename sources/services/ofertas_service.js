@@ -62,6 +62,50 @@ export const ofertasService = {
         })
 
     },
+
+    getLineasOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaId + "/" + false + "/" + false;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getBasesOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/bases/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
     postOferta: (oferta) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
