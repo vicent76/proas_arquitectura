@@ -3,7 +3,7 @@
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
-//import { facturacionService } from "../services/facturacion_service";
+import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
 
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
@@ -23,7 +23,12 @@ export const lineasOferta = {
     getGrid: (app) => {
        
         const translate = app.getService("locale")._;
-        //lineasOfertaWindow.getWindow(app);
+        try {
+            LineasOfertaWindow.getWindow(app);
+        }catch(e) {
+            console.log(e);
+        }
+  
         var toolbarlineasOferta = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
@@ -39,24 +44,20 @@ export const lineasOferta = {
                         // Alta de una nueva relación
                         if (!ofertaId) {
                             // Hay que dar de alta previamente el concepto.
-                            messageApi.errorMessage(translate("Debe dar de alta el parte antes las lineas"));
+                            messageApi.errorMessage(translate("Debe dar de alta el oferta antes las lineas"));
                             return;
                         }
-                        else if($$('cmbProveedores').getValue() == '') {
-                            messageApi.errorMessage(translate("Tiene que asignar un profesional al parte"));
-                            return;
+                        try {
+                            var cliId = $$('cmbClientes').getValue();
+                            LineasOfertaWindow.loadWindow(ofertaId, null, cliId, null);
+                        }catch (e) {
+                            console.log(e)
                         }
-                        else {
-                            var proId = $$('cmbProveedores').getValue();
-                            var cliId = $$('cliId').getValue();
-                          
-                            lineasOfertaWindow.loadWindow(ofertaId, null, cliId, proId, );
-                        }
-
+                            
                     }
                 },
                 {
-                    view: "label", id: "partesLineasNReg", label: "NREG: "
+                    view: "label", id: "ofertasLineasNReg", label: "NREG: "
                 },
                 {
                     view: "pager", id: "mypager3", css: { "text-align": "right" },
@@ -79,12 +80,18 @@ export const lineasOferta = {
             footer: false,
             ready:function(){ $$('lineasOfertaGrid').attachEvent("onItemDblClick", function(id, e, node){
                 var curRow = this.data.pull[id.row]
-                var proId = $$('cmbProveedores').getValue();
+                var proId = $$('proveedorId').getValue();
                 var cliId = $$('cliId').getValue();
-                lineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.parteLineaId, cliId, proId,);
+                try {
+
+                }catch(e) {
+                    LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId, proId);
+                }
+                
             });},
             columns: [
                 { id: "ofertaLineaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
+                { id: "ofertaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "linea", header: [translate("Linea"), { content: "textFilter" }], sort: "string", width: 80  },
                 { id: "unidades", header: [translate("Uds."), { content: "textFilter" }], sort: "string", width: 40 },
                 { id: "descripcion", header: [translate("Concepto"), { content: "textFilter" }], sort: "string", fillspace: true},
@@ -120,10 +127,15 @@ export const lineasOferta = {
                 },
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
-                    var proId = $$('cmbProveedores').getValue();
+                    var proId = $$('proveedorId').getValue();
                     var cliId = $$('cliId').getValue();
                     
-                    lineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.parteLineaId,  cliId, proId, );
+                    try{
+
+                    }catch(e) {
+                        LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId, proId, );
+                    }
+                   
                 }
             },
             editable: true,
@@ -154,14 +166,14 @@ export const lineasOferta = {
                 },
                 "onAfterFilter": function () {
                     var numReg = $$("lineasOfertaGrid").count();
-                    $$("partesLineasNReg").config.label = "NREG: " + numReg;
-                    $$("partesLineasNReg").refresh();
+                    $$("ofertasLineasNReg").config.label = "NREG: " + numReg;
+                    $$("ofertasLineasNReg").refresh();
                 }
             }
         }
         var _view = {
             view: "layout",
-            id: "lineasDelParte",
+            id: "lineasDelOferta",
             rows: [
                 toolbarlineasOferta,
                 pagerlineasOferta,
@@ -180,17 +192,17 @@ export const lineasOferta = {
             .then(rows => {
                 if(rows.length > 0) {
                    /*  numLineas = rows.length;
-                    PartesFormWindow.estableceNumLineas(numLineas); */
+                    OfertasFormWindow.estableceNumLineas(numLineas); */
                     $$("lineasOfertaGrid").clearAll();
                     $$("lineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
                     var numReg = $$("lineasOfertaGrid").count();
-                    $$("partesLineasNReg").config.label = "NREG: " + numReg;
-                    $$("partesLineasNReg").refresh();
+                    $$("ofertasLineasNReg").config.label = "NREG: " + numReg;
+                    $$("ofertasLineasNReg").refresh();
                     //lineasOferta.estableceContado(rows);
                 }else {
                     $$("lineasOfertaGrid").clearAll();
                     //lineasOferta.estableceContado(null);
-                    //PartesFormWindow.estableceNumLineas(numLineas);
+                    //OfertasFormWindow.estableceNumLineas(numLineas);
                 }
             })
             .catch((err) => {
@@ -207,7 +219,7 @@ export const lineasOferta = {
         const translate = app.getService("locale")._;
         var self = this;
         if(facproveLineaId || facturaLineaId) {
-            name += ". Este parte tiene facturas asocidas. La linea que borre tembién será eliminada de la facturas en la que se encuentre."
+            name += ". Este oferta tiene facturas asocidas. La linea que borre tembién será eliminada de la facturas en la que se encuentre."
         }
         webix.confirm({
             title: translate("AVISO"),
@@ -215,7 +227,7 @@ export const lineasOferta = {
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
-                    partesService.deleteLineaParte(id, ofertaId)
+                    ofertasService.deleteLineaOferta(id, ofertaId)
                         .then(result => {
                             if(facproveLineaId) {
                                 facprove = 
@@ -257,7 +269,7 @@ export const lineasOferta = {
                                         }
                                     });
                             } 
-                             console.log($$("cmbEstadosParteProfesional").getValue())
+                             console.log($$("cmbEstadosOfertaProfesional").getValue())
                                 lineasOferta.loadGrid(ofertaId);
                                 $$('importeCli').setValue(result.importe_cliente);
                                 $$('importeCliIva').setValue(result.importe_cliente_iva);
