@@ -126,10 +126,7 @@ export const LineasOfertaWindow = {
                         rows: [
                             {
                                 cols: [
-                                    {
-                                        view: "text", id: "unidades", name: "unidades",
-                                        label: "Unidades", labelPosition: "top", width: 80, format: "1.00"
-                                    },
+                                    
                                     {
                                         view: "text", id: "precioCliente", value: 0, name: "precioCliente",  required: true, 
                                         label: "Precio", labelPosition: "top", minWidth: 100, format: "1.00"
@@ -168,7 +165,13 @@ export const LineasOfertaWindow = {
                             {
                                 cols: [
                                     {
-                                        width: 80
+                                        view: "combo", id: "cmbProveedor", name: "proveedorIdId", required: true,
+                                        label: "Cliente (empezar busquedas con @)", labelPosition: "top",
+                                        suggest:{
+                                            view:"mentionsuggest",
+                                            id: "proveedoresList",
+                                            data: [] 
+                                        }        
                                     },
                                     {
                                         view: "text", id: "precioProveedor", value: 0, name: "precioProveedor",  required: true,
