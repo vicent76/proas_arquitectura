@@ -42,8 +42,8 @@ export default class OfertasForm extends JetView {
                         rows: [
                             {
                                 view: "toolbar", padding: 3, elements: [
-                                    { view: "icon", icon: "mdi mdi-transcribe", width: 37, align: "left" },
-                                    { view: "label", label: "Avisos" }
+                                    { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                                    { view: "label", label: "Ofertas" }
                                 ]
                             },
                             {
@@ -196,6 +196,7 @@ export default class OfertasForm extends JetView {
         }
         ofertasService.getOferta(ofertaId)
             .then((oferta) => {
+                $$("cmbTiposProyecto").blockEvent();
                 delete oferta.empresa;
                 delete oferta.cliente;
                 delete oferta.tipo;
@@ -213,6 +214,7 @@ export default class OfertasForm extends JetView {
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
                 lineasOferta.loadGrid(oferta.ofertaId);
                 basesOferta.loadGrid(oferta.ofertaId);
+                $$("cmbTiposProyecto").unblockEvent();
                 
             })
             .catch((err) => {
@@ -274,6 +276,11 @@ export default class OfertasForm extends JetView {
                             }
                 });
         } else {
+            data.porcentajeBeneficio = 0
+            data.importeBeneficio = 0
+            data.porcentajeAgente = 0
+            data.importeAgente = 0
+            data.importeMantenedor = 0
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
                     this.$scope.show('/top/ofertas?ofertaId=' + data.ofertaId);

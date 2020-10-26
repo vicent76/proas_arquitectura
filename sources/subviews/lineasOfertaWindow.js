@@ -143,7 +143,7 @@ export const LineasOfertaWindow = {
                                         label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
                                     },
                                     {
-                                        view: "text", id: "costeLinea", name: "costeLinea", disabled: true,
+                                        view: "text", id: "coste", name: "coste", disabled: true,
                                         label: "total coste", labelPosition: "top", minwidth: 80,format: "1,00"
                                     }
                                 ]
@@ -251,7 +251,7 @@ export const LineasOfertaWindow = {
             $$('cantidad').setValue('');
             $$('precioCliente').setValue(0);
             $$('precioProveedor').setValue(0);
-            $$('costeLinea').setValue(0);
+            $$('coste').setValue(0);
            /*  $$('importeClienteIva').setValue(0);
             $$('importeProveedorIva').setValue(0);
             $$('totalClienteIva').setValue(0);
@@ -272,9 +272,9 @@ export const LineasOfertaWindow = {
                 var dtoCli =  ($$('dto').getValue());
                 if(dtoCli != '' || dtoCli > 0) {
                     dtoCli = parseFloat(dtoCli);
-                    $$('costeLinea').setValue(precioCli-dtoCli);
+                    $$('coste').setValue(precioCli-dtoCli);
                 } else {
-                    $$('costeLinea').setValue(precioCli);
+                    $$('coste').setValue(precioCli);
                 }
             }
             
@@ -336,9 +336,9 @@ export const LineasOfertaWindow = {
                  var dtoCli =  ($$('dto').getValue());
                  if(dtoCli != '' || dtoCli > 0) {
                      dtoCli = parseFloat(dtoCli);
-                     $$('costeLinea').setValue(precioCli-dtoCli);
+                     $$('coste').setValue(precioCli-dtoCli);
                  } else {
-                     $$('costeLinea').setValue(precioCli);
+                     $$('coste').setValue(precioCli);
                  }
             }
          });
@@ -378,7 +378,7 @@ export const LineasOfertaWindow = {
                 //se calcula el descuento cliente
                 $$('dto').setValue(descuento);
                 var resultado = parseFloat(precio-descuento);
-                $$('costeLinea').setValue(resultado);
+                $$('coste').setValue(resultado);
             }
 
          });
@@ -626,13 +626,8 @@ export const LineasOfertaWindow = {
 
     enviaDatos: () => {
                 var data = $$("LineasOfertafrm").getValues();
-                delete data.unidades;
-                delete data.grupoArticuloId;
-                data.ofertaId = ofertaId;
-                data.totalLinea = $$('costeLinea').getValue();
-                data.totalLineaProveedor = $$('costeLineaProveedor').getValue();
-                data.coste = data.costeLinea;
-                delete data.costeLinea;
+                data = LineasOfertaWindow.formateaDatos(data);
+                
                 // controlamos si es un alta o una modificación.
                 if (data.ofertaLineaId) {
                     // Es una modificación
@@ -667,6 +662,17 @@ export const LineasOfertaWindow = {
                     });
                 } 
        
+    },
+
+    formateaDatos(data) {
+        delete data.unidades;
+        delete data.grupoArticuloId;
+        data.ofertaId = ofertaId;
+        data.totalLinea = $$('coste').getValue();
+        data.totalLineaProveedor = $$('costeLineaProveedor').getValue();
+        data.porcentajeBeneficio = 0;
+        data.porcentajeAgente = 0;
+        return data;
     },
 
     preparaDatos(data) {
@@ -992,7 +998,7 @@ export const LineasOfertaWindow = {
                     var preCli = parseFloat($$('importeCliente').getValue());
                     $$('importeCliente').setValue(parseFloat(preCli));
                     $$('precioCliente').setValue(parseFloat(uni * preCli));
-                    $$('costeLinea').setValue(parseFloat(uni * preCli));
+                    $$('coste').setValue(parseFloat(uni * preCli));
                 }
             }
             if(rows.length == 0) {

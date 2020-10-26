@@ -198,64 +198,10 @@ export const lineasOferta = {
                 if (action === true) {
                     ofertasService.deleteLineaOferta(id, ofertaLinea)
                         .then(result => {
-                            if(facproveLineaId) {
-                                facprove = 
-                                    {
-                                        facproveId: facproveId,
-                                        facproveLineaId: facproveLineaId
-                                    };
-                                facturacionService.deleteLineaFacprove(facproveLineaId, facprove)
-                                    .then(result2 => {
-                                        
-                                    })
-                                    .catch(err => {
-                                        var error = err.response;
-                                        var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                        if(index != -1) {
-                                             messageApi.errorRestriccion()
-                                        } else {
-                                            messageApi.errorMessageAjax(err);
-                                        }
-                                    });
-                            } 
-                            if(facturaLineaId) {
-                                factura = 
-                                    {
-                                        facturaId: facturaId,
-                                        facturaLineaId: facturaLineaId
-                                    };
-                                facturacionService.deleteLineaFactura(facturaLineaId, factura)
-                                    .then(result => {
-                                       
-                                    })
-                                    .catch(err => {
-                                        var error = err.response;
-                                        var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                        if(index != -1) {
-                                             messageApi.errorRestriccion()
-                                        } else {
-                                            messageApi.errorMessageAjax(err);
-                                        }
-                                    });
-                            } 
-                             console.log($$("cmbEstadosOfertaProfesional").getValue())
-                                lineasOferta.loadGrid(ofertaId);
-                                $$('importeCli').setValue(result.importe_cliente);
-                                $$('importeCliIva').setValue(result.importe_cliente_iva);
-
-                                $$('importePro').setValue(result.importe_profesional);
-                                $$('importeProIva').setValue(result.importe_profesional_iva);
-                                $$('aCuentaProfesional').setValue(result.aCuentaProfesional);
-                            
+                           lineasOferta.loadGrid(ofertaId);
                         })
                         .catch(err => {
-                            var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
+                            messageApi.errorMessageAjax(err);
                         });
                 }
             }

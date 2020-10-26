@@ -242,7 +242,7 @@ export const ofertasService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/" + ofertaLineaId;
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
