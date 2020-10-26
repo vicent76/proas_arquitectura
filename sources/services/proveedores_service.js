@@ -85,11 +85,11 @@ export const proveedoresService = {
 
     },
 
-    getPrecioUnitarioArticulo(proveedorId, codigoReparacion) {
+    getPrecioUnitarioArticulo(proveedorId, articuloId) {
         return new webix.promise((success, fail) => {
             devConfig.getConfig().
             then(conf => {
-                var url = conf.urlApi + "/api/proveedores/tarifa/por/codigo/" + proveedorId +"/" + codigoReparacion;
+                var url = conf.urlApi + "/api/proveedores/tarifa/por/articuloId/" + proveedorId + "/" + articuloId;
                 return webix.ajax()
                     .timeout(10000)
                     .headers({

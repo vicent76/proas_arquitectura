@@ -6,9 +6,9 @@ import { generalApi } from "../utilities/general";
 
 import { clientesService } from "../services/clientes_service";
 import { tiposIvaService } from "../services/tipos_iva_service";
-
+import { unidadesService } from "../services/unidades_service";
+import { ofertasService } from "../services/ofertas_service";
 import { proveedoresService } from "../services/proveedores_service";
-
 import { tiposProfesionalService } from "../services/tiposProfesional_service";
 import { articulosService } from "../services/articulos_service";
 import { infoTarifasGridWindow } from "../subviews/info_tarifas_grid";
@@ -36,17 +36,11 @@ export const LineasOfertaWindow = {
         const _view2 = {
             view: "form",
             id: "LineasOfertafrm",
+            scroll: "y",
+            scroll: true,
             elements: [
                 { template: "Linea del oferta", type: "section" },
-                {
-                    cols: [
-                       
-                        
-                        {
-                            minWidth:100
-                        }
-                    ]
-                },
+                
                 {
                     view:"fieldset", 
                     label:"GENERAL",
@@ -59,29 +53,23 @@ export const LineasOfertaWindow = {
                                     {
                                         cols: [
                                             {
-                                                view:"button", type:"icon", id: "tarifas", width: 120, icon: " mdi mdi-information", css:"webix_secondary", 
-                                                tooltip: translate("Mostrar Información de tarifas"), click: () => {
-                                                    LineasOfertaWindow.muestraVentanaTarifas();
-                                                }
-                                            },
-                                            {
-                                                minWidth:100
-                                            },
-                                            
+                                                view: "text", id: "capituloLinea", name: "capituloLinea", required: true,
+                                                label: "Texto del capitulo", labelPosition: "top", disabled: true
+                                            }, 
                                         ]
                                     },
                                     {
                                         cols: [
                                             {
                                                 view: "text", id: "linea", name: "linea", required: true,
-                                                label: "Linea", labelPosition: "top", width:50
+                                                label: "Linea", labelPosition: "top", width:80
                                             },
                                             {
-                                                view: "combo", id: "cmbGrupoArticulo", name: "cmbGrupoArticulo", required: true, options: {},
-                                                label: "Capítulo", labelPosition: "top", width: 120
+                                                view: "combo", id: "cmbGrupoArticulo", name: "grupoArticuloId", required: true, options: {},
+                                                label: "Capítulo", labelPosition: "top", minwidth: 250
                                             },
                                             {
-                                                view: "combo", id: "cmbArticulos", name: "cmbArticulos", 
+                                                view: "combo", id: "cmbArticulos", name: "articuloId", minwidth: 200,
                                                 label: "Unidad constructiva", labelPosition: "top", options:{
                                                     filter:function(item, input){
                                                         var id = item.id;
@@ -93,11 +81,11 @@ export const LineasOfertaWindow = {
                                             },
                                             {
                                                 view: "combo", id: "cmbUnidades", name: "unidadId", options: {},
-                                                label: "Unidades", labelPosition: "top", width: 120
+                                                label: "Unidades", labelPosition: "top", width: 120, width: 150
                                             },
                                             {
                                                 view: "text", id: "cantidad", name: "cantidad", required: true,
-                                                label: "Cantidad", labelPosition: "top", width:50
+                                                label: "Cantidad", labelPosition: "top", width:100
                                             },
                                             
                                            
@@ -126,31 +114,38 @@ export const LineasOfertaWindow = {
                         rows: [
                             {
                                 cols: [
-                                    
                                     {
-                                        view: "text", id: "precioCliente", value: 0, name: "precioCliente",  required: true, 
-                                        label: "Precio", labelPosition: "top", minWidth: 100, format: "1.00"
+                                        view: "combo", id: "cmbTiposIvaCliente", name: "tipoIvaId", required: true, options: {},
+                                        label: "IVA", labelPosition: "top", width: 180
                                     },
                                     {
-                                        view: "combo", id: "cmbTiposIvaCliente", name: "tipoIvaClienteId", required: true, options: {},
-                                        label: "IVA", labelPosition: "top", minWidth: 120
+                                        view: "text", id: "porcentaje", name: "porcentaje",
+                                        label: "Porcentaje", labelPosition: "top", minwidth: 80,format: "1.00", hidden: true
                                     },
                                     {
-                                        view: "text", id: "ivaCliente", name: "ivaCliente",hidden: true,
-                                        label: "IVA", labelPosition: "top", width: 80,format: "1,00"
+                                        view: "text", id: "importeCliente", name: "importe",
+                                        label: "coste/ud", labelPosition: "top", minwidth: 80,format: "1.00"
                                     },
                                     {
-                                        view: "text", id: "importeCliente", value: 0, name: "importeCliente",  required: false,
-                                        label: "Base imponible", labelPosition: "top",format: "1,00",  minWidth: 100,disabled: true
-                                    },
-                                   /*  {
-                                        view: "text", id: "totalClienteIva", value: 0, name: "totalClienteIva",  required: false,
-                                        label: "Total Iva", labelPosition: "top",format: "1,00", minWidth:100, disabled: true
+                                        view: "text", id: "perdto", name: "perdto",
+                                        label: "% Descuento", labelPosition: "top", minwidth: 80,format: "1,00"
+                                    },           
+                                ]
+                            },
+                            {
+                                cols: [
+                                    {
+                                        view: "text", id: "precioCliente", value: 0, name: "precio",  required: true, 
+                                        label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
                                     },
                                     {
-                                        view: "text", id: "importeClienteIva", value: 0, name: "importeClienteIva",  required: false,
-                                        label: "Total con Iva", labelPosition: "top",format: "1,00", minWidth:100, disabled:true
-                                    } */
+                                        view: "text", id: "dto", value: 0, name: "dto",  required: true, 
+                                        label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
+                                    },
+                                    {
+                                        view: "text", id: "costeLinea", name: "costeLinea", disabled: true,
+                                        label: "total coste", labelPosition: "top", minwidth: 80,format: "1,00"
+                                    }
                                 ]
                             }
                         ]
@@ -165,8 +160,8 @@ export const LineasOfertaWindow = {
                             {
                                 cols: [
                                     {
-                                        view: "combo", id: "cmbProveedor", name: "proveedorIdId", required: true,
-                                        label: "Cliente (empezar busquedas con @)", labelPosition: "top",
+                                        view: "combo", id: "cmbProveedores", name: "proveedorId", required: true,
+                                        label: "Proveedor (empezar busquedas con @)", labelPosition: "top", width: 350,
                                         suggest:{
                                             view:"mentionsuggest",
                                             id: "proveedoresList",
@@ -174,45 +169,39 @@ export const LineasOfertaWindow = {
                                         }        
                                     },
                                     {
-                                        view: "text", id: "precioProveedor", value: 0, name: "precioProveedor",  required: true,
-                                        label: "Precio", labelPosition: "top", minWidth: 100, format: "1.00"
-                                    },
-                                    {
                                         view: "combo", id: "cmbTiposIvaProveedor", name: "tipoIvaProveedorId", required: true, options: {},
-                                        label: "IVA", labelPosition: "top", minWidth: 120
+                                        label: "IVA", labelPosition: "top", minWidth: 80
                                     },
                                     {
-                                        view: "text", id: "ivaProveedor", name: "ivaProveedor",hidden: true,
-                                        label: "IVA", labelPosition: "top", minWidth: 80,format: "1,00", disabled:true
-                                    },
-                                     
-                                    {
-                                        view: "text", id: "importeProveedor", value: 0, name: "importeProveedor",  required: false,
-                                        label: "Base imponible", labelPosition: "top", format: "1,00",  minWidth: 100,disabled: true
-                                    },
-                                    /* {
-                                        view: "text", id: "totalProveedorIva", value: 0, name: "totalProveedorIva",  required: false,
-                                        label: "Total Iva", labelPosition: "top",format: "1,00", minWidth:100, disabled: true
-                                    }, */
-                                   /*  {
-                                        view: "text", id: "importeProveedorIva", value: 0, name: "importeProveedorIva",  required: false,
-                                        label: "Total con Iva", labelPosition: "top", format: "1,00", minWidth:100,disabled:true
+                                        view: "text", id: "importeProveedor", name: "importeProveedor",
+                                        label: "coste/ud", labelPosition: "top", minwidth: 80,format: "1.00"
                                     },
                                     {
-                                        view: "text", id: "aCuentaProveedor", value: 0, name: "aCuentaProveedor",  required: false,
-                                        label: "contado", labelPosition: "top", minWidth:100,  format: "1.00"
-                                    }, */
+                                        view: "text", id: "perdtoProveedor", name: "perdtoProveedor",
+                                        label: "% Descuento", labelPosition: "top", minwidth: 80,format: "1.00"
+                                    },
                                     
+                                    
+                                ]
+                            },
+                            {
+                                cols: [
+                                    {
+                                        view: "text", id: "precioProveedor", value: 0, name: "precioProveedor",  required: true, 
+                                        label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
+                                    },
+                                    {
+                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor",  required: true, 
+                                        label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
+                                    },
+                                    {
+                                        view: "text", id: "costeLineaProveedor", name: "costeLineaProveedor",
+                                        label: "total coste", labelPosition: "top", minwidth: 80,format: "1,00", disabled: true
+                                    }
                                 ]
                             }
                         ]
                     }
-                },
-                {
-                                               
-                    view: "textarea", id: "comentarios", name: "comentarios",
-                    label: "Comentarios", labelPosition: "top", width: 1150,  height: 70
-                
                 },
                 {
                     margin: 5, cols: [
@@ -227,8 +216,9 @@ export const LineasOfertaWindow = {
         webix.ui({
             view: "window",
             id: "lineasOfertaWindow",
-            position: "center", move: true, resize: true,
+            position: "top", move: true, resize: true,
             width: 1100,
+            height: 700,
             head: {
                 view: "toolbar", cols: [
                     {},
@@ -245,73 +235,119 @@ export const LineasOfertaWindow = {
 
         //EVENTOS
 
-        $$("cmbCodigo").attachEvent("onChange", function(newv, oldv){
-            var cod = newv;
-            
-            
-            if(cod || cod != "") {
-                //buscamos en el array de articulos
-            
-                articulos.forEach(e => {
-                    if(e.codigoReparacion == cod) {
-                        LineasOfertaWindow.loadCmbDescripcion(cod);
-                        return;
-                    }
-                   
-                });
-               // si se trata de un articulo existente no cargamos las tarifas, puesto que ya existen
-                    //recuperamos el precio del articulo en base a la tarifa del cliente
-                    if(cliId) {
-                        LineasOfertaWindow.recuperaTarifaCliente(cod);
-                    }
-                    
-
-                    //recuperamos el precio del articulo en base a la tarifa del proveedor
-                    if(proId) {
-                        LineasOfertaWindow.recuperaTarifaProveedor(cod);
-                    }
-                
-               
-               
-            }
+        $$("cmbGrupoArticulo").attachEvent("onChange", function(newv, oldv){
+            if(newv == '') return;
+            LineasOfertaWindow.loadArticulos(newv, null);
+            LineasOfertaWindow.crearTextoDeCapituloAutomatico(newv);
          });
 
-         $$("cmbTipoProfesionales2").attachEvent("onChange", function(newv, oldv){
+         $$("cmbArticulos").attachEvent("onChange", function(newv, oldv){
              if(newv && newv != "") {
-               
-                LineasOfertaWindow.loadCodigosArticulos(null, newv)
+                LineasOfertaWindow.cambioArticulo(newv);
              }
          });
 
-         
-        $$("cmbDescripcion").attachEvent("onChange", function(newv, oldv){
-            if(oldv == "" && ofertaLineaId) return false; // si se carga la linea bloqueamos el evento
-            var cod = newv;
-            if(cod || cod != "") {
-                LineasOfertaWindow.loadCodigosArticulos(cod, null)
-            }
+         $$("cantidad").attachEvent("onFocus", function(current_view, prev_view){
+            $$('cantidad').setValue('');
+            $$('precioCliente').setValue(0);
+            $$('precioProveedor').setValue(0);
+            $$('costeLinea').setValue(0);
+           /*  $$('importeClienteIva').setValue(0);
+            $$('importeProveedorIva').setValue(0);
+            $$('totalClienteIva').setValue(0);
+            $$('totalProveedorIva').setValue(0); */
         });
 
-         $$("unidades").attachEvent("onFocus", function(current, prev){
-                $$('unidades').setValue('');
-                $$('importeCliente').setValue(0);
-                $$('importeProveedor').setValue(0);
-               /*  $$('importeClienteIva').setValue(0);
-                $$('importeProveedorIva').setValue(0);
-                $$('totalClienteIva').setValue(0);
-                $$('totalProveedorIva').setValue(0); */
+        $$("cantidad").attachEvent("onBlur", function(a, b){
+            var uni = $$('cantidad').getValue();
+            var prePro = $$('importeProveedor').getValue();
+            var preCli = $$('importeCliente').getValue();
+        
+            if(preCli != "") {
+                preCli = parseFloat(preCli);
+                var precioCli = parseFloat(uni * preCli)
+                $$('precioCliente').setValue(parseFloat(precioCli));
+
+                //calculamos el descuento  del cliente
+                var dtoCli =  ($$('dto').getValue());
+                if(dtoCli != '' || dtoCli > 0) {
+                    dtoCli = parseFloat(dtoCli);
+                    $$('costeLinea').setValue(precioCli-dtoCli);
+                } else {
+                    $$('costeLinea').setValue(precioCli);
+                }
+            }
+            
+            if(prePro != '') {
+                prePro = parseFloat(prePro);
+                var precioPro = parseFloat(uni * prePro);
+                $$('precioProveedor').setValue(precioPro);
+
+                //calculamos el descuento  del proveedor
+                var dtoPro =  ($$('dtoProveedor').getValue());
+                if(dtoPro != '' || dtoPro > 0) {
+                    dtoPro = parseFloat(dtoPro);
+                    $$('costeLineaProveedor').setValue(precioPro-dtoPro);
+                } else {
+                    $$('costeLineaProveedor').setValue(precioPro);
+                }
+            }
+
+            
+           
          });
-         $$("cmbTiposIvaCliente").attachEvent("onChange", function(newv, oldv){
-            var tipo;
-             if(newv != ""){
-                 tipo = $$('cmbTiposIvaCliente').getText();
-                 if(tipo =='Exento') {
-                     $$('ivaCliente').setValue(0);
-                 }else {
-                    tipo = $$('cmbTiposIvaCliente').getText();
-                    tipo = tipo.replace('%', '');
-                    $$('ivaCliente').setValue(parseFloat(tipo));
+
+         $$("importeProveedor").attachEvent("onChange", function(newv, oldv){
+            var prePro = parseFloat(newv);
+            var uni = $$('cantidad').getValue();
+            if(uni != "") {
+                var uni = parseFloat(uni);
+            }
+           
+            if(uni != "") {
+                var precioPro = parseFloat(uni * prePro);
+                $$('precioProveedor').setValue(precioPro);
+            
+                 //calculamos el descuento  del cliente
+                 var dtoPro =  ($$('dtoProveedor').getValue());
+                 if(dtoPro != '' || dtoPro > 0) {
+                    dtoPro = parseFloat(dtoPro);
+                     $$('costeLineaProveedor').setValue(precioPro-dtoPro);
+                 } else {
+                     $$('costeLineaProveedor').setValue(precioPro);
                  }
+
+            }
+         });
+
+         $$("importeCliente").attachEvent("onChange", function(newv, oldv){
+            if(newv == "") { newv = 0}
+            var preCli = parseFloat(newv);
+            var uni = $$('cantidad').getValue();
+  
+            if(uni != "") {
+                var uni = parseFloat(uni);
+            }
+           
+            if(uni != "") {
+                var precioCli = parseFloat(uni * preCli)
+                $$('precioCliente').setValue(parseFloat(precioCli));
+                 //calculamos el descuento  del cliente
+                 var dtoCli =  ($$('dto').getValue());
+                 if(dtoCli != '' || dtoCli > 0) {
+                     dtoCli = parseFloat(dtoCli);
+                     $$('costeLinea').setValue(precioCli-dtoCli);
+                 } else {
+                     $$('costeLinea').setValue(precioCli);
+                 }
+            }
+         });
+       
+         
+         $$("cmbTiposIvaCliente").attachEvent("onChange", function(newv, oldv){
+           
+             if(newv != ""){
+                LineasOfertaWindow.cambioTipoIva(newv)
              }
          });
 
@@ -329,147 +365,169 @@ export const LineasOfertaWindow = {
              }
          });
 
-         $$("unidades").attachEvent("onChange", function(newv, oldv){
-            var uni = parseFloat(newv);
-            var prePro = $$('precioProveedor').getValue();
-            var preCli = $$('precioCliente').getValue();
-            var ivaCliente = $$('ivaCliente').getValue();
-            var ivaProveedor = $$('ivaProveedor').getValue();
+         $$('perdto').attachEvent("onBlur", function(a, b) {
+             //calculo en caso de descuento cliente
+             var perdto = $$('perdto').getValue();
+             var precio =  $$('precioCliente').getValue()
+             if((perdto > 0 || perdto != '') && (precio > 0 || precio != '')) {
+                perdto = parseFloat(perdto);
+                precio =   parseFloat(precio);
 
-            if(preCli != "") {
-                preCli = parseFloat(preCli);
-                var precioCli = parseFloat(uni * preCli)
-                $$('importeCliente').setValue(parseFloat(precioCli));
+                perdto = perdto / 100;
+                var descuento = parseFloat(precio * perdto);
+                //se calcula el descuento cliente
+                $$('dto').setValue(descuento);
+                var resultado = parseFloat(precio-descuento);
+                $$('costeLinea').setValue(resultado);
             }
+
+         });
+
+
+         //Eventos del proveedor
+
+         $$("cmbProveedores").attachEvent("onChange", function(newv, oldv){
+            if(newv == '') return;
+            LineasOfertaWindow.recuperaTarifaProveedor(newv);
+            LineasOfertaWindow.recuperaIvaProveedor(newv);
             
-            if(prePro != '') {
-                prePro = parseFloat(prePro);
-                var precioPro = parseFloat(uni * prePro);
-                $$('importeProveedor').setValue(precioPro);
-            }
-
-            var precioPro = parseFloat(uni * prePro);
-            $$('importeProveedor').setValue(precioPro);
-
-            /* if(ivaProveedor !== "" && prePro !== "") {
-                var soloIvaPro = ((precioPro * ivaProveedor)/100);
-                var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
-                $$('importeProveedorIva').setValue(ivaPro);
-                $$('totalProveedorIva').setValue(soloIvaPro);
-            }
-
-            if(ivaCliente !== "" && preCli !== "") {
-                var soloIvaCli = ((precioCli * ivaCliente)/100);
-                var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
-                $$('importeClienteIva').setValue(ivaCli);
-                $$('totalClienteIva').setValue(soloIvaCli);
-            } */
-
          });
 
-         $$("ivaCliente").attachEvent("onChange", function(newv, oldv){
-             if(newv != "") {
-                var ivaCliente = parseInt(newv);
-             }
-             if(newv === 0) {
-                var ivaCliente = parseInt(newv);
-             }
-           
-            var preCli = $$('precioCliente').getValue();
-            var uni = $$('unidades').getValue();
 
-            /* if(ivaCliente !== "" && preCli !== "") {
-                var precioCli = parseFloat(preCli * uni);
-                var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
-                var soloIvaCli = ((precioCli * ivaCliente)/100);
-                $$('importeClienteIva').setValue(ivaCli);
-                $$('totalClienteIva').setValue(soloIvaCli);
-            } */
 
-         });
+         $$('perdtoProveedor').attachEvent("onBlur", function(a, b) {
+            //calculo en caso de descuento cliente
+            var perdtoPro = $$('perdtoProveedor').getValue();
+            var precio =  $$('precioProveedor').getValue()
+            if((perdtoPro > 0 || perdtoPro != '') && (precio > 0 || precio != '')) {
+               perdtoPro = parseFloat(perdtoPro);
+               precio =   parseFloat(precio);
 
-         $$("ivaProveedor").attachEvent("onChange", function(newv, oldv){
-            if(newv != "") {
-               var ivaProveedor = parseInt(newv);
-            }
-            if(newv === 0) {
-               var ivaProveedor = parseInt(newv);
-            }
-           var prePro = $$('precioProveedor').getValue();
-          
-           var uni = $$('unidades').getValue();
+               perdtoPro = perdtoPro / 100;
+               var descuento = parseFloat(precio * perdtoPro);
+               //se calcula el descuento cliente
+               $$('dtoProveedor').setValue(descuento);
+               var resultado = parseFloat(precio-descuento);
+               $$('costeLineaProveedor').setValue(resultado);
+           }
 
-           
-
-           /* if(ivaProveedor !== "" && prePro !== "") {
-               var precioPro = parseFloat(prePro * uni);
-               var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
-               var soloIvaPro = ((precioPro * ivaProveedor)/100);
-               $$('importeProveedorIva').setValue(ivaPro);
-               $$('totalProveedorIva').setValue(soloIvaPro);
-           } */
         });
 
-         $$("precioProveedor").attachEvent("onChange", function(newv, oldv){
-            var prePro = parseFloat(newv);
-            var uni = $$('unidades').getValue();
-            var ivaProveedor = $$('ivaProveedor').getValue();
-            if(uni != "") {
-                var uni = parseFloat(uni);
-            }
-           
-            /* if(uni != "") {
-                var precioPro = parseFloat(uni * prePro);
-                $$('importeProveedor').setValue(precioPro);
 
-                var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
-                var soloIvaPro = ((precioPro * ivaProveedor)/100);
-                $$('importeProveedorIva').setValue(ivaPro);
-                $$('totalProveedorIva').setValue(soloIvaPro);
-            } */
-         });
+    
 
-         $$("precioCliente").attachEvent("onChange", function(newv, oldv){
-             if(newv == "") { newv = 0}
-            var preCli = parseFloat(newv);
-            var uni = $$('unidades').getValue();
-            var ivaCliente = $$('ivaCliente').getValue();
-            if(uni != "") {
-                var uni = parseFloat(uni);
-            }
+        
+
+        //  $$("ivaCliente").attachEvent("onChange", function(newv, oldv){
+        //      if(newv != "") {
+        //         var ivaCliente = parseInt(newv);
+        //      }
+        //      if(newv === 0) {
+        //         var ivaCliente = parseInt(newv);
+        //      }
            
-            /* if(uni != "") {
-                var precioCli = parseFloat(uni * preCli)
-                $$('importeCliente').setValue(parseFloat(precioCli));
+        //     var preCli = $$('importeCliente').getValue();
+        //     var uni = $$('cantidad').getValue();
+
+        //     /* if(ivaCliente !== "" && preCli !== "") {
+        //         var precioCli = parseFloat(preCli * uni);
+        //         var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
+        //         var soloIvaCli = ((precioCli * ivaCliente)/100);
+        //         $$('importeClienteIva').setValue(ivaCli);
+        //         $$('totalClienteIva').setValue(soloIvaCli);
+        //     } */
+
+        //  });
+
+        //  $$("ivaProveedor").attachEvent("onChange", function(newv, oldv){
+        //     if(newv != "") {
+        //        var ivaProveedor = parseInt(newv);
+        //     }
+        //     if(newv === 0) {
+        //        var ivaProveedor = parseInt(newv);
+        //     }
+        //    var prePro = $$('precioProveedor').getValue();
+          
+        //    var uni = $$('cantidad').getValue();
+
+           
+
+        //    /* if(ivaProveedor !== "" && prePro !== "") {
+        //        var precioPro = parseFloat(prePro * uni);
+        //        var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
+        //        var soloIvaPro = ((precioPro * ivaProveedor)/100);
+        //        $$('importeProveedorIva').setValue(ivaPro);
+        //        $$('totalProveedorIva').setValue(soloIvaPro);
+        //    } */
+        // });
+
+        //  $$("precioProveedor").attachEvent("onChange", function(newv, oldv){
+        //     var prePro = parseFloat(newv);
+        //     var uni = $$('cantidad').getValue();
+        //     var ivaProveedor = $$('ivaProveedor').getValue();
+        //     if(uni != "") {
+        //         var uni = parseFloat(uni);
+        //     }
+           
+        //     /* if(uni != "") {
+        //         var precioPro = parseFloat(uni * prePro);
+        //         $$('importeProveedor').setValue(precioPro);
+
+        //         var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
+        //         var soloIvaPro = ((precioPro * ivaProveedor)/100);
+        //         $$('importeProveedorIva').setValue(ivaPro);
+        //         $$('totalProveedorIva').setValue(soloIvaPro);
+        //     } */
+        //  });
+
+        //  $$("importeCliente").attachEvent("onChange", function(newv, oldv){
+        //      if(newv == "") { newv = 0}
+        //     var preCli = parseFloat(newv);
+        //     var uni = $$('cantidad').getValue();
+        //     var ivaCliente = $$('ivaCliente').getValue();
+        //     if(uni != "") {
+        //         var uni = parseFloat(uni);
+        //     }
+           
+        //     /* if(uni != "") {
+        //         var precioCli = parseFloat(uni * preCli)
+        //         $$('importeCliente').setValue(parseFloat(precioCli));
 
                 
-                var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
-                var soloIvaCli = ((precioCli * ivaCliente)/100);
-                $$('importeClienteIva').setValue(ivaCli);
-                $$('totalClienteIva').setValue(soloIvaCli);
-            } */
-         });
+        //         var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
+        //         var soloIvaCli = ((precioCli * ivaCliente)/100);
+        //         $$('importeClienteIva').setValue(ivaCli);
+        //         $$('totalClienteIva').setValue(soloIvaCli);
+        //     } */
+        //  });
 
         return
     },
-    loadWindow: (ofertaid, ofertaLineaid, cliid, proid) => {
+    loadWindow: (ofertaid, ofertaLineaid, cliid) => {
         var tipo;
         tarifaProveedorId = null;
         contaError = 0;
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
-        proId = proid;
-        antcod = null;
         $$('lineasOfertaWindow').show();
         if (ofertaLineaId) {
             LineasOfertaWindow.bloqueaEventos();
-            
         } else {
-            tipo = $$('cmbTipoProfesionales').getValue();
+            $$('perdto').setValue(0);
+            $$('dto').setValue(0);
+            $$('perdtoProveedor').setValue(0);
+            $$('dtoProveedor').setValue(0);
+            LineasOfertaWindow.loadProveedores(null);
+            LineasOfertaWindow.loadGruposArticulo(null);
+            LineasOfertaWindow.loadUnidades(null);
+            LineasOfertaWindow.loadTiposIvaCliente(null);
+            LineasOfertaWindow.loadTiposIvaProveedor(null);
+            LineasOfertaWindow.nuevaLinea();
+            /* tipo = $$('cmbTipoProfesionales').getValue();
             $$("LineasOfertafrm").clear();
-            $$('unidades').setValue(1);
-            $$('precioCliente').setValue(0);
+            $$('cantidad').setValue(1);
+            $$('importeCliente').setValue(0);
             $$('precioProveedor').setValue(0);
             $$('importeCliente').setValue(0);
             $$('importeProveedor').setValue(0);
@@ -478,147 +536,110 @@ export const LineasOfertaWindow = {
             //LineasOfertaWindow.loadTiposIvaCliente();
             //LineasOfertaWindow.loadTiposIvaProveedor(3);
            LineasOfertaWindow.recuperaIvaProveedor(proId);
-            LineasOfertaWindow.recuperaIvaCliente(cliId);
+            LineasOfertaWindow.recuperaIvaCliente(cliId); */
 
         }
 
     },
 
-    bloqueaEventos: () => {
-        $$("cmbCodigo").blockEvent();
-        //$$("cmbDescripcion").blockEvent();
-        $$("cmbTiposIvaCliente").blockEvent();
-        $$("cmbTiposIvaProveedor").blockEvent();
-        $$("unidades").blockEvent();
-        $$("ivaCliente").blockEvent();
-        $$("ivaProveedor").blockEvent();
-        $$("precioProveedor").blockEvent();
-        $$("precioCliente").blockEvent();
-
-        ofertasService.getLineaOferta(ofertaId, ofertaLineaId)
-        .then(data => {
-            $$("LineasOfertafrm").clear();
-            $$("LineasOfertafrm").setValues(data);
-            //recuperamos el tipo profesional correspondiente al articulo
-            articulosService.getArticuloCodigo(data.codigoArticulo)
-            .then( (rows) => {
-                if(rows) {
-                    LineasOfertaWindow.loadCodigosArticulos(data.codigoArticulo, rows.tipoProfesionalId);
-                    tipIvaCli = data.tipoIvaClienteId;
-                    //LineasOfertaWindow.loadTiposIvaProveedor(data.tipoIvaProveedorId);
-                    LineasOfertaWindow.loadTiposIvaCliente(data.tipoIvaClienteId);
-                    LineasOfertaWindow.loadTiposIvaProveedor(data.tipoIvaProveedorId);
-                    //$$("cmbCodigo").unblockEvent();
-                }
-            })
-            .catch((err) => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-            })
+    crearTextoDeCapituloAutomatico: (grupoArticuloId) =>  {
+        var numeroCapitulo = Math.floor($$('linea').getValue());
+        var nombreCapitulo = "Capitulo " + numeroCapitulo + ": ";
+        // ahora hay que buscar el nombre del capitulo para concatenarlo
+        articulosService.getGrupoArticulos(grupoArticuloId)
+        .then ( row => {
+            var capituloAntiguo = $$('capituloLinea').getValue();
+            nombreCapitulo += row.nombre;
+            if(capituloAntiguo != nombreCapitulo) {
+                $$('capituloLinea').setValue(nombreCapitulo);
+            }
         })
-        .catch((err) => {
-            var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
+        .catch ( err => {
+            messageApi.errorMessageAjax(err);
         });
     },
 
+    nuevaLinea: () => {
+        //limpiaDataLinea();
+        ofertasService.getSiguienteLinea(ofertaId)
+        .then( row => {
+            if(row) {
+                $$('linea').setValue(row);
+            }
+        })
+        .catch( err => {
+            messageApi.errorMessageAjax(err);
+        });
+    },
+
+    bloqueaEventos: () => {
+        $$("cmbTiposIvaCliente").blockEvent();
+        $$("cmbTiposIvaProveedor").blockEvent();
+        $$("importeProveedor").blockEvent();
+        $$("importeCliente").blockEvent();
+        $$("cmbArticulos").blockEvent();
+        $$("cmbGrupoArticulo").blockEvent();
+
+        ofertasService.getLineaOferta(ofertaLineaId)
+        .then(data => {
+            var datos = data[0]
+            $$("LineasOfertafrm").clear();
+            $$("LineasOfertafrm").setValues(datos);
+            LineasOfertaWindow.loadProveedores(datos.proveedorId);
+            LineasOfertaWindow.loadUnidades(datos.unidadId);
+            LineasOfertaWindow.loadTiposIvaCliente(datos.tipoIvaId);
+            LineasOfertaWindow.loadTiposIvaProveedor(datos.tipoIvaProveedorId);
+            LineasOfertaWindow.recuperaCapituloId(datos.articuloId);
+        })
+        .catch((err) => {
+            messageApi.errorMessageAjax(err);
+        });
+    },
+
+    recuperaCapituloId: (articuloId) => {
+        articulosService.getArticulo(articuloId)
+        .then( row => {
+            if(row) {
+                LineasOfertaWindow.loadGruposArticulo(row.grupoArticuloId, articuloId)
+            }
+        })
+        .catch( err => {
+            messageApi.errorMessageAjax(err);
+        })
+    },
+
     desbloqueaEventos: () => {
-        $$("cmbCodigo").unblockEvent();
-        $$("cmbDescripcion").unblockEvent();
         $$("cmbTiposIvaCliente").unblockEvent();
         $$("cmbTiposIvaProveedor").unblockEvent();
-        $$("unidades").unblockEvent();
-        $$("ivaCliente").unblockEvent();
-        $$("ivaProveedor").unblockEvent();
-        $$("precioProveedor").unblockEvent();
-        $$("precioCliente").unblockEvent();
+        $$("importeProveedor").unblockEvent();
+        $$("importeCliente").unblockEvent();
+        $$("cmbArticulos").unblockEvent();
+        $$("cmbGrupoArticulo").unblockEvent();
     },
     accept: () => {
-        var ivaCli = $$('ivaCliente').getValue();
-        var ivaPro =  $$('ivaProveedor').getValue();
         if (!$$("LineasOfertafrm").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
-        }
-        if(!ivaCli || ivaCli == '') {
-            messageApi.errorMessage("Error interno, no hay iva de cliente, seleccionelo de nuevo");
-            return;
-        } else if (!ivaPro || ivaPro == '') {
-            messageApi.errorMessage("Error interno, no hay iva de proveedor, seleccionelo de nuevo");
-            return;
-        }
-        
+        }        
         LineasOfertaWindow.enviaDatos();
     },
 
     enviaDatos: () => {
                 var data = $$("LineasOfertafrm").getValues();
-                data = LineasOfertaWindow.preparaDatos(data);
-                
+                delete data.unidades;
+                delete data.grupoArticuloId;
+                data.ofertaId = ofertaId;
+                data.totalLinea = $$('costeLinea').getValue();
+                data.totalLineaProveedor = $$('costeLineaProveedor').getValue();
+                data.coste = data.costeLinea;
+                delete data.costeLinea;
                 // controlamos si es un alta o una modificación.
                 if (data.ofertaLineaId) {
                     // Es una modificación
-                    if(data.facproveLineaId || data.facturaLineaId) {// si hay facturas asociadas
-                        webix.confirm({
-                            title: translate("AVISO"),
-                            text: translate("Este oferta tiene facturas asociadas que resultarán afectadas con las modificaciones. ¿ Desea continuar ?"),
-                            type: "confirm-warning",
-                            callback: (action) => {
-                                if (action === true) {
-                                    data.codigoArticulo = data.codigoId
-                                    delete data.codigoId;
-                                    ofertasService.putLineaOferta(data)
-                                        .then(row => {
-                                            //comprobamos si hay una factura asociada
-                                            if(data.facproveLineaId){
-                                                LineasOfertaWindow.updateFacprove(data, proId);
-                                            }
-                                            if(data.facturaLineaId){
-                                                LineasOfertaWindow.updateFactura(data);
-                                            }
-                                            // Hay que cerrar la ventana y refrescar el grid
-                                            $$('lineasOfertaWindow').hide();
-                                            $$('importeCli').setValue(row.importe_cliente);
-                                            $$('importePro').setValue(row.importe_profesional);
-                                            $$('importeCliIva').setValue(row.importe_cliente_iva);
-                                            $$('importeProIva').setValue(row.importe_profesional_iva);
-                                            LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
-                                        })
-                                        .catch((err) => {
-                                            var error = err.response;
-                                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                    if(index != -1) {
-                                        messageApi.errorRestriccion()
-                                    } else {
-                                        messageApi.errorMessageAjax(err);
-                                    }
-                                        });
-        
-                                }
-                            }
-                    });
-                        
-                    }else {//no hay facturas asociadas
-                        data.codigoArticulo = data.codigoId
-                        delete data.codigoId;
-                        ofertasService.putLineaOferta(data)
+                    ofertasService.putLineaOferta(data, data.ofertaLineaId)
                         .then(row => {
                             // Hay que cerrar la ventana y refrescar el grid
                             $$('lineasOfertaWindow').hide();
-                            $$('importeCli').setValue(row.importe_cliente);
-                            $$('importePro').setValue(row.importe_profesional);
-                            $$('importeCliIva').setValue(row.importe_cliente_iva);
-                            $$('importeProIva').setValue(row.importe_profesional_iva);
                             LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
                         })
                         .catch((err) => {
@@ -630,51 +651,19 @@ export const LineasOfertaWindow = {
                                         messageApi.errorMessageAjax(err);
                                     }
                         });
-                    }
+                    
                 } else {
                     // es un alta
-                    var facturaId = $$('facturaId').getValue();
-                    var facproveId = $$('facproveId').getValue();
-                    data.codigoArticulo = data.codigoId
-                    delete data.codigoId;
-                    ofertasService.postLineaOferta(data, ofertaId)
+                    data.ofertaLineaId = 0;
+                    ofertasService.postLineaOferta(data)
                     .then(row => {
-                        //si hay factura asociada se crea la linea en la factura
-                        if(facturaId || facturaId != '') {
-                            facturacionService.postLineaOfertaFactura(row.lineaOfertaId, facturaId)
-                            .then( result => {
-
-                            })
-                            .catch( err => {
-                                messageApi.errorMessageAjax(err.message);
-                            })
-                        }
-                        //si hay factura de proveedor asociada se crea la linea en la factura
-                        if(facproveId || facproveId != '') {
-                            facturacionService.postLineaOfertaFacprove(row.lineaOfertaId, facproveId, proId)
-                            .then( result => {
-
-                            })
-                            .catch( err => {
-                                messageApi.errorMessageAjax(err.message);
-                            })
-                        }
+                        
                         // Hay que cerrar la ventana y refrescar el grid
                         $$('lineasOfertaWindow').hide();
-                        $$('importeCli').setValue(row.importe_cliente);
-                        $$('importePro').setValue(row.importe_profesional);
-                        $$('importeCliIva').setValue(row.importe_cliente_iva);
-                        $$('importeProIva').setValue(row.importe_profesional_iva);
                         LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
                     })
                     .catch((err) => {
-                        var error = err.response;
-                                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                    if(index != -1) {
-                                        messageApi.errorRestriccion()
-                                    } else {
-                                        messageApi.errorMessageAjax(err);
-                                    }
+                        messageApi.errorMessageAjax(err);
                     });
                 } 
        
@@ -728,49 +717,22 @@ export const LineasOfertaWindow = {
         if(ofertaId) {
             ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
-                if(rows != null) {
-                    $$("LineasOfertaGrid").clearAll();
-                    $$("LineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
-                    OfertasFormWindow.estableceNumLineas(rows.length);
-                    lineasOferta.estableceContado(rows)
-                }else {
-                    $$("LineasOfertaGrid").clearAll();
-                    OfertasFormWindow.estableceNumLineas(0);
-                    $$('aCuentaProfesional').setValue(0);
-                    return;
+                if(rows != null || rows.length > 0) {
+                    $$("lineasOfertaGrid").clearAll();
+                    $$("lineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
+                    var numReg = $$("lineasOfertaGrid").count();
+                    $$("ofertasLineasNReg").config.label = "NREG: " + numReg;
+                    $$("ofertasLineasNReg").refresh();
+                    $$('lineasOfertaWindow').hide();
+                } else {
+                    $$('lineasOfertaWindow').hide();
                 }
             })
             .catch((err) => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-        });
-        
-        } else {
-            ofertasService.getLineasOfertaServicio()
-            .then(rows => {
-                $$("LineasOfertaGrid").clearAll();
-                $$("LineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
-                $$('lineasOfertaWindow').hide();
-                OfertasFormWindow.estableceNumLineas(rows.length);
-            })
-            .catch((err) => {
-                $$('lineasOfertaWindow').hide();
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
+                messageApi.errorMessageAjax(err);
             });
-
-        }
-       
+        
+        } 
     },
 
     loadCodigosArticulos: (codigoReparacion, tipoProfesionalId) => {
@@ -869,10 +831,8 @@ export const LineasOfertaWindow = {
                 var list = $$("cmbTiposIvaCliente").getPopup().getList();
                 list.clearAll();
                 list.parse(tiposIva);
-                if (tipoIvaClienteId) {
-                    $$("cmbTiposIvaCliente").setValue(tipoIvaClienteId);
-                    $$("cmbTiposIvaCliente").refresh();
-                }
+                $$("cmbTiposIvaCliente").setValue(tipoIvaClienteId);
+                $$("cmbTiposIvaCliente").refresh();
                 return;
             })
     },
@@ -884,18 +844,101 @@ export const LineasOfertaWindow = {
                 var list = $$("cmbTiposIvaProveedor").getPopup().getList();
                 list.clearAll();
                 list.parse(tiposIva);
-                if (tipoIvaProveedorId) {
-                    $$("cmbTiposIvaProveedor").setValue(tipoIvaProveedorId);
-                    $$("cmbTiposIvaProveedor").refresh();
-                }
-                setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                $$("cmbTiposIvaProveedor").setValue(tipoIvaProveedorId);
+                $$("cmbTiposIvaProveedor").refresh();
                 //
                 return;
             })
     },
 
+    loadGruposArticulo: (grupoArticuloId, articuloId) => {
+        articulosService.getGruposArticulos()
+            .then(rows => {
+                var gruposArticulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
+                var list = $$("cmbGrupoArticulo").getPopup().getList();
+                list.clearAll();
+                list.parse(gruposArticulos);
+                $$("cmbGrupoArticulo").setValue(grupoArticuloId);
+                $$("cmbGrupoArticulo").refresh();
+                LineasOfertaWindow.loadArticulos(grupoArticuloId, articuloId);
+                return;
+            })
+    },
 
-    recuperaIvaCliente(cliId) {
+    loadArticulos: (grupoArticuloId, articuloId) => {
+            articulosService.getArticulosGrupo(grupoArticuloId)
+            .then(rows => {
+                var articulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
+                var list = $$("cmbArticulos").getPopup().getList();
+                list.clearAll();
+                list.parse(articulos);
+
+                $$("cmbArticulos").setValue(articuloId);
+                $$("cmbArticulos").refresh();
+
+                setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                //
+                return;
+            });
+    },
+
+    loadUnidades: (unidadId) => {
+        unidadesService.getUnidades()
+            .then(rows => {
+                var unidades = generalApi.prepareDataForCombo('unidadId', 'abrev', rows);
+                var list = $$("cmbUnidades").getPopup().getList();
+                list.clearAll();
+                list.parse(unidades);
+                $$("cmbUnidades").setValue(unidadId);
+                $$("cmbUnidades").refresh();
+                return;
+            })
+    },
+
+    loadProveedores: (proveedorId) => {
+        proveedoresService.getProveedores()
+            .then(rows => {
+                var tiposIva = generalApi.prepareDataForCombo('proveedorId', 'nombre', rows);
+                var list = $$("cmbProveedores").getList();
+                list.clearAll();
+                list.parse(tiposIva);
+                if (proveedorId) {
+                    $$("cmbProveedores").setValue(unidadId);
+                    $$("cmbProveedores").refresh();
+                }
+                return;
+            });
+    },
+
+    cambioArticulo: (articuloId) => {
+        articulosService.getArticulo(articuloId)
+        .then ( row => {
+            if(row) {
+                $$("cmbUnidades").setValue(row.unidadId);
+                $$("cmbUnidades").refresh();
+                $$('descripcion').setValue(row.descripcion);
+                $$('cantidad').setValue(1);
+                LineasOfertaWindow.recuperaTarifaCliente();
+                LineasOfertaWindow.recuperaIvaCliente();
+            }
+        })
+        .catch( err => {
+            messageApi.errorMessageAjax(err);
+        });
+    },
+
+    cambioTipoIva: (tipoIvaId) => {
+        tiposIvaService.getTipoIva(tipoIvaId)
+            .then(row => {
+               if(row) {
+                   $$('porcentaje').setValue(row.porcentaje);
+               }
+            })
+    },
+
+    
+    recuperaIvaCliente() {
+        var cliId = $$('cmbClientes').getValue();
         clientesService.getCliente(cliId)
         .then( rows => {
             if(rows.tipoIvaId) {
@@ -936,23 +979,25 @@ export const LineasOfertaWindow = {
     },
 
 
-    recuperaTarifaCliente(codigoReparacion) {
-        clientesService.getPrecioUnitarioArticulo(cliId, codigoReparacion)
+    recuperaTarifaCliente() {
+        clientesService.getPrecioUnitarioArticulo($$('cmbClientes').getValue(), $$('cmbArticulos').getValue())
         .then( rows => {
             if(rows.length > 0) {
-                $$('precioCliente').setValue(rows[0].precioCliente);
+                $$('importeCliente').setValue(rows[0].precioCliente);
 
                 //miramos si hay unidades y actualizamos totales en función del nuevo precio
-                var uni = $$('unidades').getValue();
+                var uni = $$('cantidad').getValue();
 
                 if(uni != "") {
-                    var preCli = parseFloat($$('precioCliente').getValue());
-                    $$('importeCliente').setValue(parseFloat(uni * preCli));
+                    var preCli = parseFloat($$('importeCliente').getValue());
+                    $$('importeCliente').setValue(parseFloat(preCli));
+                    $$('precioCliente').setValue(parseFloat(uni * preCli));
+                    $$('costeLinea').setValue(parseFloat(uni * preCli));
                 }
             }
             if(rows.length == 0) {
-                $$('precioCliente').setValue(0);
-                LineasOfertaWindow.recuperaPrecioVenta(codigoReparacion);
+                $$('importeCliente').setValue(0);
+                //LineasOfertaWindow.recuperaPrecioVenta(codigoReparacion);
             }
         })
         .catch( err => {
@@ -968,21 +1013,24 @@ export const LineasOfertaWindow = {
 
     recuperaPrecioVenta(codigo) {
         articulos.forEach(e => {
-            if(e.codigoReparacion == codigo)  $$('precioCliente').setValue(e.precioVenta);
+            if(e.codigoReparacion == codigo)  $$('importeCliente').setValue(e.precioVenta);
         });
     },
 
-    recuperaTarifaProveedor(codigoReparacion) {
-        proveedoresService.getPrecioUnitarioArticulo(proId, codigoReparacion)
+    recuperaTarifaProveedor(proveedorId) {
+        var articuloId = $$('cmbArticulos').getValue();
+        proveedoresService.getPrecioUnitarioArticulo(proveedorId, articuloId)
         .then( rows => {
             if(rows.length > 0) {
-                $$('precioProveedor').setValue(rows[0].precioProveedor)
+                $$('importeProveedor').setValue(rows[0].precioProveedor)
                 //miramos si hay unidades y actualizamos totales en función del nuevo precio
-                var uni = $$('unidades').getValue();
+                var uni = $$('cantidad').getValue();
                 if(uni != "") {
                     var prePro = parseFloat($$('precioProveedor').getValue());
                     var precioPro = parseFloat(uni * prePro);
-                    $$('importeProveedor').setValue(precioPro);
+                    $$('importeProveedor').setValue(parseFloat(prePro));
+                    $$('precioProveedor').setValue(parseFloat(precioPro));
+                    $$('costeLineaProveedor').setValue(parseFloat(precioPro));
 
                 }
             }

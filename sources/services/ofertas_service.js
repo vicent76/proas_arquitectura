@@ -85,6 +85,28 @@ export const ofertasService = {
 
     },
 
+    getLineaOferta: (ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/linea/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
     getBasesOferta: (ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
@@ -106,6 +128,29 @@ export const ofertasService = {
         })
 
     },
+
+    getSiguienteLinea: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/nextlinea/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
     postOferta: (oferta) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
@@ -147,17 +192,63 @@ export const ofertasService = {
                 });
         });
     },
-    deleteEmpresa: (empresaId) => {
+
+    postLineaOferta: (ofertaLinea) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/empresas/" + empresaId;
+                    var url = conf.urlApi + "/api/ofertas/lineas";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
-                        .del(url);
+                        .post(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+    
+    putLineaOferta: (ofertaLinea, ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .put(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+    
+    
+    deleteLineaOferta: (ofertaLineaId, ofertaLinea) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url, {ofertaLinea: ofertaLinea});
                 })
                 .then(function (result) {
                     success(result.json());

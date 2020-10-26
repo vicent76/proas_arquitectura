@@ -4,7 +4,94 @@ export const articulosService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/articulos";
+                    var url = conf.urlApi + "/api/articulos/";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+    getArticulosGrupo: (grupoArticuloId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/articulos/grupo/" + grupoArticuloId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+
+    getArticulo: (articuloId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/articulos/" + articuloId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+
+    getGruposArticulos: () => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/grupo_articulo/departamento/" + 5;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+
+    getGrupoArticulos: (grupoArticuloId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
