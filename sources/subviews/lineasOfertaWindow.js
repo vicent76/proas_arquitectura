@@ -160,7 +160,7 @@ export const LineasOfertaWindow = {
                             {
                                 cols: [
                                     {
-                                        view: "combo", id: "cmbProveedores", name: "proveedorId", required: true,
+                                        view: "combo", id: "cmbProveedores", name: "proveedorId",
                                         label: "Proveedor (empezar busquedas con @)", labelPosition: "top", width: 350,
                                         suggest:{
                                             view:"mentionsuggest",
@@ -169,7 +169,7 @@ export const LineasOfertaWindow = {
                                         }        
                                     },
                                     {
-                                        view: "combo", id: "cmbTiposIvaProveedor", name: "tipoIvaProveedorId", required: true, options: {},
+                                        view: "combo", id: "cmbTiposIvaProveedor", name: "tipoIvaProveedorId",  options: {},
                                         label: "IVA", labelPosition: "top", minWidth: 80
                                     },
                                     {
@@ -191,11 +191,11 @@ export const LineasOfertaWindow = {
                             {
                                 cols: [
                                     {
-                                        view: "text", id: "precioProveedor", value: 0, name: "precioProveedor",  required: true, 
+                                        view: "text", id: "precioProveedor", value: 0, name: "precioProveedor", 
                                         label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
                                     },
                                     {
-                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor",  required: true, 
+                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor",
                                         label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
                                     },
                                     {
@@ -459,7 +459,7 @@ export const LineasOfertaWindow = {
 
     limpiaWindow: () => {
         $$('porcentaje').setValue(0);
-        $$('porcentajeProveedor').setValue();
+        $$('porcentajeProveedor').setValue(0);
         $$('importeCliente').setValue(0);
         $$('perdto').setValue(0);
         $$('dto').setValue(0);
@@ -471,6 +471,7 @@ export const LineasOfertaWindow = {
         $$('dto').setValue(0);
         $$('perdtoProveedor').setValue(0);
         $$('dtoProveedor').setValue(0);
+        $$('costeLineaProveedor').setValue(0);
         $$('totalLineaProveedorIva').setValue(0);
         LineasOfertaWindow.loadProveedores(null);
         LineasOfertaWindow.loadGruposArticulo(null, null);
@@ -565,7 +566,8 @@ export const LineasOfertaWindow = {
     enviaDatos: () => {
                 var data = $$("LineasOfertafrm").getValues();
                 data = LineasOfertaWindow.formateaDatos(data);
-                
+                if(data.proveedorId == "") data.proveedorId = null;
+                if(data.tipoIvaProveedorId == "") data.tipoIvaProveedorId = null;
                 // controlamos si es un alta o una modificación.
                 if (data.ofertaLineaId) {
                     // Es una modificación
@@ -659,7 +661,16 @@ export const LineasOfertaWindow = {
     },
     refreshGridCloseWindow: (ofertaId) => {
         if(ofertaId) {
-            ofertasService.getLineasOferta(ofertaId)
+            
+            LineasOfertaWindow.refreshLineas(ofertaId);
+            LineasOfertaWindow.refreshBases(ofertaId);
+            LineasOfertaWindow.refreshProveedoresOferta(ofertaId)
+        
+        } 
+    },
+
+    refreshLineas: (ofertaId) => {
+        ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
                 if(rows != null || rows.length > 0) {
                     $$("lineasOfertaGrid").clearAll();
@@ -676,31 +687,50 @@ export const LineasOfertaWindow = {
                 messageApi.errorMessageAjax(err);
             });
 
-            ofertasService.getProveedoresOferta(ofertaId)
+    },
+
+    refreshBases: (ofertaId) => {
+        ofertasService.getBasesOferta(ofertaId)
             .then(rows => {
                 if(rows.length > 0) {
-                    for(var i = 0; i < rows.length; i++) {
-                        if(rows[i].proveedorId == null) {
-                            rows[i].proveedorId =  0;
-                            rows[i].proveedornombre = "Sin proveedor asignado";
-                            rows[i].totalProveedorIva = rows[i].totalLinea;
-                            
-                        }
-                    }
-                    $$("proveedoresOfertaGrid").clearAll();
-                    $$("proveedoresOfertaGrid").parse(generalApi.prepareDataForDataTable("proveedorId", rows));
-                    var numReg = $$("proveedoresOfertaGrid").count();
-                    $$("poeveedoresNReg").config.label = "NREG: " + numReg;
-                    $$("poeveedoresNReg").refresh();
+                    $$("basesOfertaGrid").clearAll();
+                    $$("basesOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaBaseId", rows));
+                    var numReg = $$("basesOfertaGrid").count();
+                    $$("basesLineasNReg").config.label = "NREG: " + numReg;
+                    $$("basesLineasNReg").refresh();
                 }else {
-                    $$("proveedoresOfertaGrid").clearAll();
+                    $$("basesOfertaGrid").clearAll();
                 }
             })
             .catch((err) => {
                 messageApi.errorMessageAjax(err);
             });
-        
-        } 
+    },
+
+    refreshProveedoresOferta: (ofertaId) => {
+        ofertasService.getProveedoresOferta(ofertaId)
+        .then(rows => {
+            if(rows.length > 0) {
+                for(var i = 0; i < rows.length; i++) {
+                    if(rows[i].proveedorId == null) {
+                        rows[i].proveedorId =  0;
+                        rows[i].proveedornombre = "Sin proveedor asignado";
+                        rows[i].totalProveedorIva = rows[i].totalLinea;
+                        
+                    }
+                }
+                $$("proveedoresOfertaGrid").clearAll();
+                $$("proveedoresOfertaGrid").parse(generalApi.prepareDataForDataTable("proveedorId", rows));
+                var numReg = $$("proveedoresOfertaGrid").count();
+                $$("poeveedoresNReg").config.label = "NREG: " + numReg;
+                $$("poeveedoresNReg").refresh();
+            }else {
+                $$("proveedoresOfertaGrid").clearAll();
+            }
+        })
+        .catch((err) => {
+            messageApi.errorMessageAjax(err);
+        });
     },
 
     loadCodigosArticulos: (codigoReparacion, tipoProfesionalId) => {

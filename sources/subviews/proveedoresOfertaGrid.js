@@ -92,7 +92,7 @@ export const proveedoresOferta = {
         if(ofertaId) {
             ofertasService.getProveedoresOferta(ofertaId)
             .then(rows => {
-                if(rows.length > 0) {
+                if(rows) {
                     for(var i = 0; i < rows.length; i++) {
                         if(rows[i].proveedorId == null) {
                             //rows[i].proveedorId =  111111110;
