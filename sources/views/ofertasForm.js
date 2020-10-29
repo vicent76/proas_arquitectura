@@ -11,14 +11,13 @@ import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
+import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 import { basesOferta } from "../subviews/basesOfertaGrid";
 
 
 var ofertaId = 0;
-var parteId = 0;
 var usuarioId;
 var usuario;
-var cliId = null;
 var limiteCredito = 0;
 var importeCobro = 0;
 
@@ -27,6 +26,7 @@ export default class OfertasForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOferta.getGrid(this.app);
+        const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
         const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
@@ -153,10 +153,15 @@ export default class OfertasForm extends JetView {
                 {
                     header:  "Lineas proveedores",
                     body: {
-                        rows:[
-                            
-                        ]
+                    //solapa ofertas
+                    view: "layout",
+                    id: "proveedoresGrid",
+                    multiview: true,
+                    cols: [
+                        _proveedoresOferta
+                    ]
                     }
+                    
                 }
     ]
         }
@@ -191,6 +196,7 @@ export default class OfertasForm extends JetView {
             $$("fechaOferta").setValue(new Date());//fecha por defecto
             lineasOferta.loadGrid(null);
             basesOferta.loadGrid(null);
+            proveedoresOferta.loadGrid(null);
             
             return;
         }
@@ -214,6 +220,7 @@ export default class OfertasForm extends JetView {
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
                 lineasOferta.loadGrid(oferta.ofertaId);
                 basesOferta.loadGrid(oferta.ofertaId);
+                proveedoresOferta.loadGrid(oferta.ofertaId);
                 $$("cmbTiposProyecto").unblockEvent();
                 
             })
@@ -329,7 +336,6 @@ export default class OfertasForm extends JetView {
                 $$("cmbAgentes").setValue(agenteId);
                 $$("cmbAgentes").refresh();
             }
-            cliId = null;
             return;
         });
 }
@@ -389,25 +395,7 @@ export default class OfertasForm extends JetView {
     }
 
 
-    /* loadMantenedores(mantenedorId) {
-        clientesService.getMantenedoresActivos()
-        .then(rows => {
-            var mantenedores = generalApi.prepareDataForCombo('mantenedorId', 'nombre', rows);
-            var list = $$("mantenedoresList").getList();
-            list.clearAll();
-            list.parse(mantenedores);
-            if(mantenedorId) {
-                $$("cmbMantenedores").setValue(mantenedorId);
-                $$("cmbMantenedores").refresh();
-            
-            } else {
-                $$("cmbMantenedores").setValue(null);
-                $$("cmbMantenedores").refresh();
-            
-            }
-            return;
-        });
-    } */
+   
 
     cambioTipoProyecto(tipoProyectoId) {
         tiposProyectoService.getTipoProyecto(tipoProyectoId)
@@ -428,38 +416,7 @@ export default class OfertasForm extends JetView {
         })
     }
 
-    /* loadProId(clienteId, agenteId) {
-        if(agenteId) {
-            clientesService.getClientesAgenteActivos(agenteId)
-            .then(rows => {
-                var clientes = generalApi.prepareDataForCombo('clienteId', 'proId', rows);
-                var list = $$("cmbProId").getPopup().getList();
-                list.clearAll();
-                list.parse(clientes);
-                if (clienteId) {
-                    $$("cmbProId").setValue(clienteId);
-                    $$("cmbProId").refresh();
-                }else {
-                    $$("cmbProId").setValue(null);
-                    $$("cmbProId").refresh();
-                }
-                return;
-            });
-        } else {
-            clientesService.getClientesActivos()
-            .then(rows => {
-                var clientes = generalApi.prepareDataForCombo('clienteId', 'proId', rows);
-                var list = $$("cmbProId").getPopup().getList();
-                list.clearAll();
-                list.parse(clientes);
-                    $$("cmbProId").setValue(null);
-                    $$("cmbProId").refresh();
-                
-                return;
-            });
-        }
-    } */
-
+    
     loadFormasPago(formaPagoId) {
         formasPagoService.getFormasPago()
         .then( rows => {

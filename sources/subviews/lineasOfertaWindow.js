@@ -173,6 +173,10 @@ export const LineasOfertaWindow = {
                                         label: "IVA", labelPosition: "top", minWidth: 80
                                     },
                                     {
+                                        view: "text", id: "porcentajeProveedor", name: "porcentajeProveedor",
+                                        label: "Porcentaje Proveedor", labelPosition: "top", minwidth: 80,format: "1.00", hidden: true
+                                    },
+                                    {
                                         view: "text", id: "importeProveedor", name: "importeProveedor",
                                         label: "coste/ud", labelPosition: "top", minwidth: 80,format: "1.00"
                                     },
@@ -197,6 +201,10 @@ export const LineasOfertaWindow = {
                                     {
                                         view: "text", id: "costeLineaProveedor", name: "costeLineaProveedor",
                                         label: "total coste", labelPosition: "top", minwidth: 80,format: "1,00", disabled: true
+                                    },
+                                    {
+                                        view: "text", id: "totalLineaProveedorIva", name: "totalLineaProveedorIva", hidden: true,
+                                        label: "total con iva", labelPosition: "top", minwidth: 80,format: "1,00", disabled: true
                                     }
                                 ]
                             }
@@ -262,6 +270,7 @@ export const LineasOfertaWindow = {
             var uni = $$('cantidad').getValue();
             var prePro = $$('importeProveedor').getValue();
             var preCli = $$('importeCliente').getValue();
+            var porPro = $$('porcentajeProveedor').getValue();
         
             if(preCli != "") {
                 preCli = parseFloat(preCli);
@@ -291,6 +300,14 @@ export const LineasOfertaWindow = {
                 } else {
                     $$('costeLineaProveedor').setValue(precioPro);
                 }
+
+                //caculamos el iva del proveedor
+                if(porPro !== null) {
+                    var total = $$('costeLineaProveedor').getValue();
+                    var porIva = porPro / 100;
+                    var totalProIva = total + (total * porIva);
+                    $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
+                 }
             }
 
             
@@ -315,6 +332,14 @@ export const LineasOfertaWindow = {
                      $$('costeLineaProveedor').setValue(precioPro-dtoPro);
                  } else {
                      $$('costeLineaProveedor').setValue(precioPro);
+                 }
+
+                 //caculamos el iva del proveedor
+                if(porPro !== null) {
+                    var total = $$('costeLineaProveedor').getValue();
+                    var porIva = porPro / 100;
+                    var totalProIva = total + (total * porIva);
+                    $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
                  }
 
             }
@@ -353,15 +378,8 @@ export const LineasOfertaWindow = {
 
          $$("cmbTiposIvaProveedor").attachEvent("onChange", function(newv, oldv){
             var tipo;
-             if(newv != ""){
-                 tipo = $$('cmbTiposIvaProveedor').getText();
-                 if(tipo =='Exento') {
-                     $$('ivaProveedor').setValue(0);
-                 }else {
-                    tipo = $$('cmbTiposIvaProveedor').getText();
-                    tipo = tipo.replace('%', '');
-                    $$('ivaProveedor').setValue(parseFloat(tipo));
-                 }
+            if(newv != ""){
+                LineasOfertaWindow.cambioTipoIvaProveedor(newv)
              }
          });
 
@@ -386,17 +404,17 @@ export const LineasOfertaWindow = {
 
          //Eventos del proveedor
 
-         $$("cmbProveedores").attachEvent("onChange", function(newv, oldv){
-            if(newv == '') return;
-            LineasOfertaWindow.recuperaTarifaProveedor(newv);
-            LineasOfertaWindow.recuperaIvaProveedor(newv);
+         $$("proveedoresList").attachEvent("onValueSuggest", function(obj){
+            if(!obj) return;
+            LineasOfertaWindow.recuperaTarifaProveedor(obj.id);
+            LineasOfertaWindow.recuperaIvaProveedor(obj.id);
             
          });
 
 
 
          $$('perdtoProveedor').attachEvent("onBlur", function(a, b) {
-            //calculo en caso de descuento cliente
+            //calculo en caso de descuento proveedor
             var perdtoPro = $$('perdtoProveedor').getValue();
             var precio =  $$('precioProveedor').getValue()
             if((perdtoPro > 0 || perdtoPro != '') && (precio > 0 || precio != '')) {
@@ -409,97 +427,17 @@ export const LineasOfertaWindow = {
                $$('dtoProveedor').setValue(descuento);
                var resultado = parseFloat(precio-descuento);
                $$('costeLineaProveedor').setValue(resultado);
+
+               //caculamos el iva del proveedor
+               if(porPro !== null) {
+                var total = $$('costeLineaProveedor').getValue();
+                var porIva = porPro / 100;
+                var totalProIva = total + (total * porIva);
+                $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
+             }
            }
 
         });
-
-
-    
-
-        
-
-        //  $$("ivaCliente").attachEvent("onChange", function(newv, oldv){
-        //      if(newv != "") {
-        //         var ivaCliente = parseInt(newv);
-        //      }
-        //      if(newv === 0) {
-        //         var ivaCliente = parseInt(newv);
-        //      }
-           
-        //     var preCli = $$('importeCliente').getValue();
-        //     var uni = $$('cantidad').getValue();
-
-        //     /* if(ivaCliente !== "" && preCli !== "") {
-        //         var precioCli = parseFloat(preCli * uni);
-        //         var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
-        //         var soloIvaCli = ((precioCli * ivaCliente)/100);
-        //         $$('importeClienteIva').setValue(ivaCli);
-        //         $$('totalClienteIva').setValue(soloIvaCli);
-        //     } */
-
-        //  });
-
-        //  $$("ivaProveedor").attachEvent("onChange", function(newv, oldv){
-        //     if(newv != "") {
-        //        var ivaProveedor = parseInt(newv);
-        //     }
-        //     if(newv === 0) {
-        //        var ivaProveedor = parseInt(newv);
-        //     }
-        //    var prePro = $$('precioProveedor').getValue();
-          
-        //    var uni = $$('cantidad').getValue();
-
-           
-
-        //    /* if(ivaProveedor !== "" && prePro !== "") {
-        //        var precioPro = parseFloat(prePro * uni);
-        //        var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
-        //        var soloIvaPro = ((precioPro * ivaProveedor)/100);
-        //        $$('importeProveedorIva').setValue(ivaPro);
-        //        $$('totalProveedorIva').setValue(soloIvaPro);
-        //    } */
-        // });
-
-        //  $$("precioProveedor").attachEvent("onChange", function(newv, oldv){
-        //     var prePro = parseFloat(newv);
-        //     var uni = $$('cantidad').getValue();
-        //     var ivaProveedor = $$('ivaProveedor').getValue();
-        //     if(uni != "") {
-        //         var uni = parseFloat(uni);
-        //     }
-           
-        //     /* if(uni != "") {
-        //         var precioPro = parseFloat(uni * prePro);
-        //         $$('importeProveedor').setValue(precioPro);
-
-        //         var ivaPro = precioPro + ((precioPro * ivaProveedor)/100);
-        //         var soloIvaPro = ((precioPro * ivaProveedor)/100);
-        //         $$('importeProveedorIva').setValue(ivaPro);
-        //         $$('totalProveedorIva').setValue(soloIvaPro);
-        //     } */
-        //  });
-
-        //  $$("importeCliente").attachEvent("onChange", function(newv, oldv){
-        //      if(newv == "") { newv = 0}
-        //     var preCli = parseFloat(newv);
-        //     var uni = $$('cantidad').getValue();
-        //     var ivaCliente = $$('ivaCliente').getValue();
-        //     if(uni != "") {
-        //         var uni = parseFloat(uni);
-        //     }
-           
-        //     /* if(uni != "") {
-        //         var precioCli = parseFloat(uni * preCli)
-        //         $$('importeCliente').setValue(parseFloat(precioCli));
-
-                
-        //         var ivaCli = precioCli + ((precioCli * ivaCliente)/100);
-        //         var soloIvaCli = ((precioCli * ivaCliente)/100);
-        //         $$('importeClienteIva').setValue(ivaCli);
-        //         $$('totalClienteIva').setValue(soloIvaCli);
-        //     } */
-        //  });
 
         return
     },
@@ -514,32 +452,32 @@ export const LineasOfertaWindow = {
         if (ofertaLineaId) {
             LineasOfertaWindow.bloqueaEventos();
         } else {
-            $$('perdto').setValue(0);
-            $$('dto').setValue(0);
-            $$('perdtoProveedor').setValue(0);
-            $$('dtoProveedor').setValue(0);
-            LineasOfertaWindow.loadProveedores(null);
-            LineasOfertaWindow.loadGruposArticulo(null);
-            LineasOfertaWindow.loadUnidades(null);
-            LineasOfertaWindow.loadTiposIvaCliente(null);
-            LineasOfertaWindow.loadTiposIvaProveedor(null);
-            LineasOfertaWindow.nuevaLinea();
-            /* tipo = $$('cmbTipoProfesionales').getValue();
-            $$("LineasOfertafrm").clear();
-            $$('cantidad').setValue(1);
-            $$('importeCliente').setValue(0);
-            $$('precioProveedor').setValue(0);
-            $$('importeCliente').setValue(0);
-            $$('importeProveedor').setValue(0);
-            $$('aCuentaProveedor').setValue(0);
-            LineasOfertaWindow.loadCodigosArticulos(null, tipo);
-            //LineasOfertaWindow.loadTiposIvaCliente();
-            //LineasOfertaWindow.loadTiposIvaProveedor(3);
-           LineasOfertaWindow.recuperaIvaProveedor(proId);
-            LineasOfertaWindow.recuperaIvaCliente(cliId); */
-
+            LineasOfertaWindow.limpiaWindow();
         }
 
+    },
+
+    limpiaWindow: () => {
+        $$('porcentaje').setValue(0);
+        $$('porcentajeProveedor').setValue();
+        $$('importeCliente').setValue(0);
+        $$('perdto').setValue(0);
+        $$('dto').setValue(0);
+        $$('coste').setValue(0);
+        $$('precioCliente').setValue(0);
+        $$('importeProveedor').setValue(0);
+        $$('precioProveedor').setValue(0);
+        $$('perdto').setValue(0);
+        $$('dto').setValue(0);
+        $$('perdtoProveedor').setValue(0);
+        $$('dtoProveedor').setValue(0);
+        $$('totalLineaProveedorIva').setValue(0);
+        LineasOfertaWindow.loadProveedores(null);
+        LineasOfertaWindow.loadGruposArticulo(null, null);
+        LineasOfertaWindow.loadUnidades(null);
+        LineasOfertaWindow.loadTiposIvaCliente(null);
+        LineasOfertaWindow.loadTiposIvaProveedor(null);
+        LineasOfertaWindow.nuevaLinea();
     },
 
     crearTextoDeCapituloAutomatico: (grupoArticuloId) =>  {
@@ -737,6 +675,30 @@ export const LineasOfertaWindow = {
             .catch((err) => {
                 messageApi.errorMessageAjax(err);
             });
+
+            ofertasService.getProveedoresOferta(ofertaId)
+            .then(rows => {
+                if(rows.length > 0) {
+                    for(var i = 0; i < rows.length; i++) {
+                        if(rows[i].proveedorId == null) {
+                            rows[i].proveedorId =  0;
+                            rows[i].proveedornombre = "Sin proveedor asignado";
+                            rows[i].totalProveedorIva = rows[i].totalLinea;
+                            
+                        }
+                    }
+                    $$("proveedoresOfertaGrid").clearAll();
+                    $$("proveedoresOfertaGrid").parse(generalApi.prepareDataForDataTable("proveedorId", rows));
+                    var numReg = $$("proveedoresOfertaGrid").count();
+                    $$("poeveedoresNReg").config.label = "NREG: " + numReg;
+                    $$("poeveedoresNReg").refresh();
+                }else {
+                    $$("proveedoresOfertaGrid").clearAll();
+                }
+            })
+            .catch((err) => {
+                messageApi.errorMessageAjax(err);
+            });
         
         } 
     },
@@ -872,20 +834,37 @@ export const LineasOfertaWindow = {
     },
 
     loadArticulos: (grupoArticuloId, articuloId) => {
+        if(grupoArticuloId) {
             articulosService.getArticulosGrupo(grupoArticuloId)
             .then(rows => {
-                var articulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
-                var list = $$("cmbArticulos").getPopup().getList();
-                list.clearAll();
-                list.parse(articulos);
-
-                $$("cmbArticulos").setValue(articuloId);
-                $$("cmbArticulos").refresh();
-
-                setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
-                //
-                return;
+                 if(rows) {
+                    var articulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
+                    var list = $$("cmbArticulos").getPopup().getList();
+                    list.clearAll();
+                    list.parse(articulos);
+    
+                    $$("cmbArticulos").setValue(articuloId);
+                    $$("cmbArticulos").refresh();
+    
+                    setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                 }
             });
+        } else {
+            articulosService.getArticulos()
+            .then(rows => {
+                 if(rows) {
+                    var articulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
+                    var list = $$("cmbArticulos").getPopup().getList();
+                    list.clearAll();
+                    list.parse(articulos);
+    
+                    $$("cmbArticulos").setValue(articuloId);
+                    $$("cmbArticulos").refresh();
+    
+                    setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                 }
+            });
+        }
     },
 
     loadUnidades: (unidadId) => {
@@ -939,6 +918,22 @@ export const LineasOfertaWindow = {
                if(row) {
                    $$('porcentaje').setValue(row.porcentaje);
                }
+            })
+    },
+
+    cambioTipoIvaProveedor: (tipoIvaId) => {
+        tiposIvaService.getTipoIva(tipoIvaId)
+            .then(row => {
+               if(row) {
+                   $$('porcentajeProveedor').setValue(row.porcentaje);
+
+                   if(row.porcentaje !== null) {
+                        var total = $$('costeLineaProveedor').getValue();
+                        var porIva = row.porcentaje / 100;
+                        var totalProIva = total + (total * porIva);
+                        $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
+                   }
+                }
             })
     },
 
