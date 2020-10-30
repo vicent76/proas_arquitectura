@@ -217,11 +217,11 @@ export default class OfertasForm extends JetView {
                 this.loadEmpresas(oferta.empresaId);
                 this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
                 //this.loadMantenedores(oferta.mantenedorId);
-                this.loadFormasPago(oferta.formaPagoId);
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
                 lineasOferta.loadGrid(oferta.ofertaId);
                 basesOferta.loadGrid(oferta.ofertaId);
                 proveedoresOferta.loadGrid(oferta.ofertaId);
+                this.loadFormasPago(oferta.formaPagoId);
                 $$("cmbTiposProyecto").unblockEvent();
                 
             })
@@ -351,7 +351,6 @@ export default class OfertasForm extends JetView {
                 if (clienteId) {
                     $$("cmbClientes").setValue(clienteId);
                     $$("cmbClientes").refresh();
-                    this.loadClienteData(clienteId);
                 }else {
                     $$("cmbClientes").setValue(null);
                     $$("cmbClientes").refresh();
@@ -425,14 +424,8 @@ export default class OfertasForm extends JetView {
                 var list = $$("cmbFormasPago").getPopup().getList();
                 list.clearAll();
                 list.parse(formaspago);
-                if (formaPagoId) {
-                    $$("cmbFormasPago").setValue(formaPagoId);
-                    $$("cmbFormasPago").refresh();
-                } else {
-                    $$("cmbFormasPago").setValue(null);
-                    $$("cmbFormasPago").refresh();
-                }
-                return;
+                $$("cmbFormasPago").setValue(formaPagoId);
+                $$("cmbFormasPago").refresh();
         })
         .catch( err => {
             messageApi.errorMessageAjax(err);
