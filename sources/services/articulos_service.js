@@ -1,14 +1,14 @@
 import { devConfig } from "../config/config";
-export const serviciosService = {
-    getServiciosPartes: (id, esCliente) => {
+export const articulosService = { 
+    getArticulos: () => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/partes/" + id + "/" + esCliente;
+                    var url = conf.urlApi + "/api/articulos/";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/json"
                         })
                         .get(url);
 
@@ -21,15 +21,15 @@ export const serviciosService = {
                 });
         });
     },
-    getServicioParte: (servicioId, parteId) => {
+    getArticulosGrupo: (grupoArticuloId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/parte/uno/" + servicioId + "/" + parteId;
+                    var url = conf.urlApi + "/api/articulos/grupo/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/json"
                         })
                         .get(url);
 
@@ -42,17 +42,19 @@ export const serviciosService = {
                 });
         });
     },
-    getServiciosComercial: (usu) => {
+
+    getArticulo: (articuloId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/agente/" + usu.comercialId;
+                    var url = conf.urlApi + "/api/articulos/" + articuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
                         .get(url);
+
                 })
                 .then((result) => {
                     success(result.json());
@@ -62,119 +64,92 @@ export const serviciosService = {
                 });
         });
     },
-    getServicio: (servicioId) => {
+
+    getGruposArticulos: () => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/" + servicioId;
+                    var url = conf.urlApi + "/api/grupo_articulo/departamento/" + 5;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
                         .get(url);
+
                 })
-                .then(function (result) {
+                .then((result) => {
                     success(result.json());
                 })
-                .catch(function (inXhr) {
+                .catch((inXhr) => {
                     fail(inXhr);
                 });
         });
     },
 
-    getNumServicio: () => {
+    getGrupoArticulos: (grupoArticuloId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/nuevo/numero/servicio";
+                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
                         .get(url);
+
                 })
-                .then(function (result) {
+                .then((result) => {
                     success(result.json());
                 })
-                .catch(function (inXhr) {
+                .catch((inXhr) => {
                     fail(inXhr);
                 });
         });
     },
-    
-    postServicio: (servicio) => {
+
+    getArticuloCodigo: (codigoReparacion) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + "/api/servicios";
-                    return webix.ajax()
-                        .timeout(10000)
-                        .headers({
-                            "Content-Type": "application/json",
-                        })
-                        .post(url, { servicio: servicio })
-
-                })
-                .then(function (result) {
-                    success(result.json());
-                })
-                .catch(function (inXhr) {
-                    fail(inXhr);
-                });
-
-        });
-    },
-    putServicio: (servicio) => {
-        //servicio = serviciosService.cleanServicio(servicio);
-        return new webix.promise((success, fail) => {
-            devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/" + servicio.servicioId;
+                .then(conf => { 
+                    var url = conf.urlApi + "/api/articulos/codigo/"+ codigoReparacion;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
-                        .put(url, { servicio: servicio });
+                        .get(url);
+
                 })
-                .then(function (result) {
+                .then((result) => {
                     success(result.json());
                 })
-                .catch(function (inXhr) {
+                .catch((inXhr) => {
                     fail(inXhr);
                 });
         });
     },
-    deleteServicio: (servicioId) => {
+
+    getArticulosTarifas: (clienteId, proveedorId, tipoProfesionalId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + "/api/servicios/" + servicioId;
+                .then(conf => { 
+                    var url = conf.urlApi + "/api/articulos/tarifas/cliente/proveedor/"+ clienteId + "/" + proveedorId + "/" + tipoProfesionalId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
                             "Content-Type": "application/json"
                         })
-                        .del(url);
+                        .get(url);
 
                 })
-                .then(function (result) {
+                .then((result) => {
                     success(result.json());
                 })
-                .catch(function (inXhr) {
+                .catch((inXhr) => {
                     fail(inXhr);
                 });
         });
     },
-
-    prepareData: (data) => {
-        data.forEach(d =>{
-            if(d.fechaEntrada) {
-                d.fechaEntrada = new Date(d.fechaEntrada);
-            }
-        })
-        return data;
-    }
 }

@@ -1,0 +1,304 @@
+import { devConfig } from "../config/config";
+export const ofertasService = {
+    getOfertas: (usuarioId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/usuario/logado/departamento/"+ usuarioId + "/" + 5;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+    getOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+    getSiguienteReferencia: (abrev) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/siguiente_referencia/" + abrev;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getLineasOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaId + "/" + false + "/" + false;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getLineaOferta: (ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/linea/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getBasesOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/bases/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getSiguienteLinea: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/nextlinea/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getProveedoresOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/proveedores/lineas/totales/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    postOferta: (oferta) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, {oferta: oferta});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+    putOferta: (oferta, ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .put(url, {oferta: oferta});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    },
+
+    postLineaOferta: (ofertaLinea) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+    
+    putLineaOferta: (ofertaLinea, ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .put(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+
+    deleteOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    },
+    
+    
+    deleteLineaOferta: (ofertaLineaId, ofertaLinea) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    }
+}
