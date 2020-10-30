@@ -258,6 +258,27 @@ export const ofertasService = {
 
         });
     },
+
+    deleteOferta: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/" + ofertaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    },
     
     
     deleteLineaOferta: (ofertaLineaId, ofertaLinea) => {

@@ -12,6 +12,7 @@ import { proveedoresService } from "../services/proveedores_service";
 import { tiposProfesionalService } from "../services/tiposProfesional_service";
 import { articulosService } from "../services/articulos_service";
 import { infoTarifasGridWindow } from "../subviews/info_tarifas_grid";
+import { OfertasForm } from "../views/ofertasForm";
 
 var _lineasOfertaWindowCreated = false;
 var translate;
@@ -260,10 +261,6 @@ export const LineasOfertaWindow = {
             $$('precioCliente').setValue(0);
             $$('precioProveedor').setValue(0);
             $$('coste').setValue(0);
-           /*  $$('importeClienteIva').setValue(0);
-            $$('importeProveedorIva').setValue(0);
-            $$('totalClienteIva').setValue(0);
-            $$('totalProveedorIva').setValue(0); */
         });
 
         $$("cantidad").attachEvent("onBlur", function(a, b){
@@ -317,6 +314,7 @@ export const LineasOfertaWindow = {
          $$("importeProveedor").attachEvent("onChange", function(newv, oldv){
             var prePro = parseFloat(newv);
             var uni = $$('cantidad').getValue();
+            var porPro = $$('porcentajeProveedor').getValue();
             if(uni != "") {
                 var uni = parseFloat(uni);
             }
@@ -416,7 +414,8 @@ export const LineasOfertaWindow = {
          $$('perdtoProveedor').attachEvent("onBlur", function(a, b) {
             //calculo en caso de descuento proveedor
             var perdtoPro = $$('perdtoProveedor').getValue();
-            var precio =  $$('precioProveedor').getValue()
+            var precio =  $$('precioProveedor').getValue();
+            var porPro = $$('porcentajeProveedor').getValue();
             if((perdtoPro > 0 || perdtoPro != '') && (precio > 0 || precio != '')) {
                perdtoPro = parseFloat(perdtoPro);
                precio =   parseFloat(precio);
@@ -664,7 +663,7 @@ export const LineasOfertaWindow = {
             
             LineasOfertaWindow.refreshLineas(ofertaId);
             LineasOfertaWindow.refreshBases(ofertaId);
-            LineasOfertaWindow.refreshProveedoresOferta(ofertaId)
+            LineasOfertaWindow.refreshProveedoresOferta(ofertaId);
         
         } 
     },
@@ -672,6 +671,7 @@ export const LineasOfertaWindow = {
     refreshLineas: (ofertaId) => {
         ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
+                var total = 0;
                 if(rows != null || rows.length > 0) {
                     $$("lineasOfertaGrid").clearAll();
                     $$("lineasOfertaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
@@ -679,8 +679,13 @@ export const LineasOfertaWindow = {
                     $$("ofertasLineasNReg").config.label = "NREG: " + numReg;
                     $$("ofertasLineasNReg").refresh();
                     $$('lineasOfertaWindow').hide();
+                    for(var i = 0; i < rows.length; i++) {
+                        total = total + rows[i].totalLinea;
+                        $$('importeCli').setValue(total);
+                    }
                 } else {
                     $$('lineasOfertaWindow').hide();
+                    $$('importeCli').setValue(total);
                 }
             })
             .catch((err) => {
@@ -706,6 +711,7 @@ export const LineasOfertaWindow = {
                 messageApi.errorMessageAjax(err);
             });
     },
+
 
     refreshProveedoresOferta: (ofertaId) => {
         ofertasService.getProveedoresOferta(ofertaId)
@@ -918,7 +924,7 @@ export const LineasOfertaWindow = {
                 list.clearAll();
                 list.parse(tiposIva);
                 if (proveedorId) {
-                    $$("cmbProveedores").setValue(unidadId);
+                    $$("cmbProveedores").setValue(proveedorId);
                     $$("cmbProveedores").refresh();
                 }
                 return;
@@ -1028,7 +1034,6 @@ export const LineasOfertaWindow = {
             }
             if(rows.length == 0) {
                 $$('importeCliente').setValue(0);
-                //LineasOfertaWindow.recuperaPrecioVenta(codigoReparacion);
             }
         })
         .catch( err => {
@@ -1040,12 +1045,6 @@ export const LineasOfertaWindow = {
                                 messageApi.errorMessageAjax(err);
                             }
         })
-    },
-
-    recuperaPrecioVenta(codigo) {
-        articulos.forEach(e => {
-            if(e.codigoReparacion == codigo)  $$('importeCliente').setValue(e.precioVenta);
-        });
     },
 
     recuperaTarifaProveedor(proveedorId) {

@@ -112,7 +112,7 @@ export default class OfertasForm extends JetView {
                                             },
                                             {
                                                 view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
-                                                label: "Importem cliente", labelPosition: "top", value: 0 ,format: "1,00"
+                                                label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
                                                  
                                             },
                                             
@@ -157,8 +157,9 @@ export default class OfertasForm extends JetView {
                     view: "layout",
                     id: "proveedoresGrid",
                     multiview: true,
-                    cols: [
-                        _proveedoresOferta
+                    rows: [    
+                        _proveedoresOferta,
+                        { minheight: 500},
                     ]
                     }
                     

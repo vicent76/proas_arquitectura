@@ -7,7 +7,8 @@ import { languageService} from "../locales/language_service";
 
 
 
-var editButton = "<span class='onEdit mdi mdi-printer'></span>";
+var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
+var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 
 export default class Ofertas extends JetView {
     config() {
@@ -60,7 +61,9 @@ export default class Ofertas extends JetView {
                 }
             ]
         };
-       
+        var actionsTemplate = editButton;
+        // Control de permiso de borrado
+        actionsTemplate += deleteButton;
         //grid de la solapa ofertas
         var datatableOfertas = {
             view: "datatable",
@@ -88,40 +91,26 @@ export default class Ofertas extends JetView {
                 },
                 { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "data" },             
                 { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
-                { id: "mantenedor", header: ["Mantenedor", { content: "textFilter" }], sort: "string",adjust: "all" },     
                 { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
                 { id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
                 { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all" },
-                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: editButton , css: { "text-align": "center" }, adjust: "header"  }
+                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "header"  }
             ],
             rightSplit: 1,
             scroll:true,
             onClick: {
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
-                    empresasService.getEmpresa(curRow.empresaId)
-                    .then((data)=> {
-                        if(!data.infFacCliRep) { 
-                            messageApi.errorMessage('Esta empresa no tiene plantilla de oferta asociada');
-                            return
-                        } else {
-                            var rep = data.infFacCliRep;
-                            var file = "/stireport/reports/"+ rep +".mrt";
-                            this.$scope.imprimirWindow.showWindow(curRow.ofertaId, file);
-                            
-                        }
-                    })
-                    .catch((err) => {
-                        var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-                    })
-                       
-                    }
+                    this.$scope.edit(curRow.ofertaId)
+                                           
+                },
+                "onDelete": function (event, id, node) {
+                    var dtable = this;
+                    var id = id.row;
+                    var curRow = this.data.pull[id];
+
+                    this.$scope.delete(curRow.ofertaId);
+                },
             },
             editable: true,
             editaction: "dblclick",
@@ -147,21 +136,7 @@ export default class Ofertas extends JetView {
         //this.imprimirWindow = this.ui(FacturasEpisReport);
          $$('ofertasGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
-                    /* ofertasService.getOferta(curRow.ofertaId)
-                    .then((data)=> {
-                        if(!data.infFacCliRep) { 
-                            messageApi.errorMessage('Esta empresa no tiene plantilla de factura asociada');
-                            return
-                        } else {
-                            var rep = data.infFacCliRep;
-                            var file = "/stireport/reports/"+ rep +".mrt";
-                            this.$scope.imprimirWindow.showWindow(curRow.facturaId, file);
-                            
-                        }
-                    })
-                    .catch((err) => {
-                        messageApi.errorMessage(err.message);
-                    }) */
+
             this.$scope.edit(curRow.ofertaId);
         });
     }
@@ -226,6 +201,16 @@ export default class Ofertas extends JetView {
 
     edit(ofertaId) {
         this.show('/top/ofertasForm?ofertaId=' + ofertaId);
+    }
+
+    delete(ofertaId) {
+        ofertasService.deleteOferta(ofertaId)
+        .then( row => {
+            this.load();
+        })
+        .catch( err => {
+            messageApi.errorMessageAjax(err);
+        })
     }
 }
 

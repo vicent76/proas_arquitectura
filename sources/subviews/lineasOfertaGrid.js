@@ -164,6 +164,7 @@ export const lineasOferta = {
         if(ofertaId) {
             ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
+                var total = 0;
                 if(rows.length > 0) {
                    /*  numLineas = rows.length;
                     OfertasFormWindow.estableceNumLineas(numLineas); */
@@ -172,11 +173,13 @@ export const lineasOferta = {
                     var numReg = $$("lineasOfertaGrid").count();
                     $$("ofertasLineasNReg").config.label = "NREG: " + numReg;
                     $$("ofertasLineasNReg").refresh();
-                    //lineasOferta.estableceContado(rows);
+                    for(var i = 0; i < rows.length; i++) {
+                        total = total + rows[i].totalLinea;
+                        $$('importeCli').setValue(total);
+                    }
                 }else {
                     $$("lineasOfertaGrid").clearAll();
-                    //lineasOferta.estableceContado(null);
-                    //OfertasFormWindow.estableceNumLineas(numLineas);
+                    $$('importeCli').setValue(total);
                 }
             })
             .catch((err) => {
