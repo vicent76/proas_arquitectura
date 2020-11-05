@@ -3,8 +3,11 @@
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
+import OfertasEpisReport  from "../views/facturasEpisReport";
 
 var ofertaId;
+var PrintButton = "<span class='onPrint mdi mdi-printer'></span>";
+
 
 export const proveedoresOferta = {
     // Devuelve el grid con los locales afectados
@@ -49,12 +52,27 @@ export const proveedoresOferta = {
                 { id: "proveedornombre", header: [translate("Proveedor"), { content: "textFilter" }], sort: "string", fillspace: true},
                 { id: "totalProveedor", header: [translate("Base"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
                 { id: "totalProveedorIva", header: [translate("Total"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
+                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }],  css: { "text-align": "center" }, adjust: "all", hidden: false,
+                    template:function(obj){
+                        if (obj.proveedorId == null) {
+                            return "";
+                        } else {
+                            return PrintButton;
+                        }
+                    } 
+                }
             ],
             onClick: {
                 "onDelete": function (event, id, node) {
                 },
                 "onEdit": function (event, id, node) {
                     
+                },
+                "onPrint": function (event, id, node) {
+                    this.imprimirWindow = this.$scope.ui(OfertasEpisReport);
+                    var curRow = this.data.pull[id.row];
+                    var file = "/stireport/reports/oferta_general_proveedores.mrt";
+                    this.imprimirWindow.showWindow(curRow.ofertaId, curRow.proveedorId, file);
                 }
             },
             editable: true,
@@ -67,11 +85,6 @@ export const proveedoresOferta = {
                 },
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
                    
-                },
-                "onAfterFilter": function () {
-                    var numReg = $$("proveedoresOfertaGrid").count();
-                    $$("poeveedoresNReg").config.label = "NREG: " + numReg;
-                    $$("poeveedoresNReg").refresh();
                 }
             }
         }
@@ -84,10 +97,18 @@ export const proveedoresOferta = {
                 datatableproveedoresOferta
             ]
         }
-        
         return _view;
     },
     loadGrid: (ofertaid) => {
+        var a;
+        var visible = $$('proveedoresOfertaGrid').config.columns;
+        for(var i = 0; i < visible.length; i++) {
+            if(i == 3) {
+                if(!visible[i].hidden) {
+                     a = visible[i].hidden
+                }
+            }
+        }
         ofertaId = ofertaid;
         if(ofertaId) {
             ofertasService.getProveedoresOferta(ofertaId)
@@ -101,6 +122,9 @@ export const proveedoresOferta = {
                             
                         }
                     }
+                    if(rows.length == 1 && rows[0].proveedorId == null && !a) {
+                        $$('proveedoresOfertaGrid').hideColumn("actions");
+                    } 
                     $$("proveedoresOfertaGrid").clearAll();
                     $$("proveedoresOfertaGrid").parse(generalApi.prepareDataForDataTable("proveedorId", rows));
                     var numReg = $$("proveedoresOfertaGrid").count();

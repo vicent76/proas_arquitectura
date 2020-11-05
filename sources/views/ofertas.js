@@ -4,11 +4,13 @@ import { ofertasService } from "../services/ofertas_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { languageService} from "../locales/language_service";
+import OfertasEpisReport  from "./ofertasEpisReport";
 
 
 
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
+var PrintButton = "<span class='onPrint mdi mdi-printer'></span>";
 
 export default class Ofertas extends JetView {
     config() {
@@ -61,9 +63,10 @@ export default class Ofertas extends JetView {
                 }
             ]
         };
-        var actionsTemplate = editButton;
+        var actionsTemplate = editButton + " ";
         // Control de permiso de borrado
-        actionsTemplate += deleteButton;
+        actionsTemplate += deleteButton + " ";
+        actionsTemplate += PrintButton;
         //grid de la solapa ofertas
         var datatableOfertas = {
             view: "datatable",
@@ -94,7 +97,7 @@ export default class Ofertas extends JetView {
                 { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
                 { id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
                 { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all" },
-                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "header"  }
+                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "all"  }
             ],
             rightSplit: 1,
             scroll:true,
@@ -111,6 +114,11 @@ export default class Ofertas extends JetView {
 
                     this.$scope.delete(curRow.ofertaId);
                 },
+                "onPrint": function (event, id, node) {
+                    var curRow = this.data.pull[id.row];
+                    var file = "/stireport/reports/oferta_general.mrt";
+                    this.$scope.imprimirWindow.showWindow(curRow.ofertaId, null, file);
+                }
             },
             editable: true,
             editaction: "dblclick",
@@ -133,7 +141,7 @@ export default class Ofertas extends JetView {
         return _view;
     }
     init(view, url) {
-        //this.imprimirWindow = this.ui(FacturasEpisReport);
+        this.imprimirWindow = this.ui(OfertasEpisReport);
          $$('ofertasGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
 
