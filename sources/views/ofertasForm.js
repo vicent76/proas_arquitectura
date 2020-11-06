@@ -13,6 +13,8 @@ import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
 import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 import { basesOferta } from "../subviews/basesOfertaGrid";
+import OfertasEpisReport  from "./ofertasEpisReport";
+
 
 
 var ofertaId = 0;
@@ -20,6 +22,7 @@ var usuarioId;
 var usuario;
 var limiteCredito = 0;
 var importeCobro = 0;
+var _imprimirWindow;
 
 
 export default class OfertasForm extends JetView {
@@ -169,6 +172,7 @@ export default class OfertasForm extends JetView {
         return _view;
     }
     init(view, url) {
+        _imprimirWindow = this.ui(OfertasEpisReport);
         this.cargarEventos();
     }
     
@@ -197,7 +201,7 @@ export default class OfertasForm extends JetView {
             $$("fechaOferta").setValue(new Date());//fecha por defecto
             lineasOferta.loadGrid(null);
             basesOferta.loadGrid(null);
-            proveedoresOferta.loadGrid(null);
+            proveedoresOferta.loadGrid(null, null);
             
             return;
         }
@@ -220,7 +224,7 @@ export default class OfertasForm extends JetView {
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
                 lineasOferta.loadGrid(oferta.ofertaId);
                 basesOferta.loadGrid(oferta.ofertaId);
-                proveedoresOferta.loadGrid(oferta.ofertaId);
+                proveedoresOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
                 this.loadFormasPago(oferta.formaPagoId);
                 $$("cmbTiposProyecto").unblockEvent();
                 

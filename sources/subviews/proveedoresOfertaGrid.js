@@ -3,10 +3,12 @@
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
-import OfertasEpisReport  from "../views/facturasEpisReport";
+import OfertasEpisReport  from "../views/ofertasEpisReport";
 
 var ofertaId;
 var PrintButton = "<span class='onPrint mdi mdi-printer'></span>";
+
+var imprimirWindow;
 
 
 export const proveedoresOferta = {
@@ -69,10 +71,9 @@ export const proveedoresOferta = {
                     
                 },
                 "onPrint": function (event, id, node) {
-                    this.imprimirWindow = this.$scope.ui(OfertasEpisReport);
                     var curRow = this.data.pull[id.row];
                     var file = "/stireport/reports/oferta_general_proveedores.mrt";
-                    this.imprimirWindow.showWindow(curRow.ofertaId, curRow.proveedorId, file);
+                    imprimirWindow.showWindow(curRow.ofertaId, curRow.proveedorId, file);
                 }
             },
             editable: true,
@@ -99,7 +100,8 @@ export const proveedoresOferta = {
         }
         return _view;
     },
-    loadGrid: (ofertaid) => {
+    loadGrid: (ofertaid, _imprimirWindow) => {
+        imprimirWindow = _imprimirWindow
         var a;
         var visible = $$('proveedoresOfertaGrid').config.columns;
         for(var i = 0; i < visible.length; i++) {
