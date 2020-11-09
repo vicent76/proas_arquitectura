@@ -101,7 +101,7 @@ export const proveedoresOferta = {
         return _view;
     },
     loadGrid: (ofertaid, _imprimirWindow) => {
-        imprimirWindow = _imprimirWindow
+        if( _imprimirWindow) imprimirWindow = _imprimirWindow;
         var a;
         var visible = $$('proveedoresOfertaGrid').config.columns;
         for(var i = 0; i < visible.length; i++) {

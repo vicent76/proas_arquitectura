@@ -199,7 +199,7 @@ export default class OfertasForm extends JetView {
             this.loadFormasPago();
             this.loadTiposProyecto();  
             $$("fechaOferta").setValue(new Date());//fecha por defecto
-            lineasOferta.loadGrid(null);
+            lineasOferta.loadGrid(null, null);
             basesOferta.loadGrid(null);
             proveedoresOferta.loadGrid(null, null);
             
@@ -222,7 +222,7 @@ export default class OfertasForm extends JetView {
                 this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
                 //this.loadMantenedores(oferta.mantenedorId);
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
-                lineasOferta.loadGrid(oferta.ofertaId);
+                lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
                 basesOferta.loadGrid(oferta.ofertaId);
                 proveedoresOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
                 this.loadFormasPago(oferta.formaPagoId);

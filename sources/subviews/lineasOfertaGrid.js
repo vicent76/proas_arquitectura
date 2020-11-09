@@ -4,7 +4,7 @@ import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
 import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
-
+import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var currentIdDatatableView;
@@ -15,6 +15,7 @@ var isNewRow = false;
 
 var ofertaId;
 var numLineas;
+var imprimirWindow;
 
 
 export const lineasOferta = {
@@ -157,9 +158,9 @@ export const lineasOferta = {
         
         return _view;
     },
-    loadGrid: (ofertaid) => {
+    loadGrid: (ofertaid, _imprimirWindow) => {
         ofertaId = ofertaid;
-         
+         imprimirWindow = _imprimirWindow
         numLineas = 0;
         if(ofertaId) {
             ofertasService.getLineasOferta(ofertaId)
@@ -202,6 +203,7 @@ export const lineasOferta = {
                     ofertasService.deleteLineaOferta(id, ofertaLinea)
                         .then(result => {
                            lineasOferta.loadGrid(ofertaId);
+                           proveedoresOferta.loadGrid(ofertaId, null);
                         })
                         .catch(err => {
                             messageApi.errorMessageAjax(err);

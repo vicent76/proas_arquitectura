@@ -140,7 +140,7 @@ export const LineasOfertaWindow = {
                                         label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
                                     },
                                     {
-                                        view: "text", id: "dto", value: 0, name: "dto",  required: true, 
+                                        view: "text", id: "dto", value: 0, name: "dto",  required: true, disabled: true,
                                         label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
                                     },
                                     {
@@ -196,7 +196,7 @@ export const LineasOfertaWindow = {
                                         label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
                                     },
                                     {
-                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor",
+                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor", disabled: true, required: true,
                                         label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
                                     },
                                     {
@@ -472,6 +472,7 @@ export const LineasOfertaWindow = {
         $$('dtoProveedor').setValue(0);
         $$('costeLineaProveedor').setValue(0);
         $$('totalLineaProveedorIva').setValue(0);
+        $$('descripcion').setValue('');
         LineasOfertaWindow.loadProveedores(null);
         LineasOfertaWindow.loadGruposArticulo(null, null);
         LineasOfertaWindow.loadUnidades(null);
@@ -926,8 +927,10 @@ export const LineasOfertaWindow = {
                 if (proveedorId) {
                     $$("cmbProveedores").setValue(proveedorId);
                     $$("cmbProveedores").refresh();
+                    return;
                 }
-                return;
+                $$("cmbProveedores").setValue(null);
+                $$("cmbProveedores").refresh();
             });
     },
 
