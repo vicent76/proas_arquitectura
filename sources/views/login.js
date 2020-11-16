@@ -27,7 +27,7 @@ export default class Login extends JetView {
                                     elements: [
                                         {
                                             view: "label", height: 100, align: "center",
-                                            label: "<img src='assets/img/logo.png'/>"
+                                            label: "<img src='assets/img/logo.png' width='155' height='50' />"
                                         },
                                         {
                                             view: "label", align: "center", id: "version",
