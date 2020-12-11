@@ -12,7 +12,7 @@ import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
 import { lineasContrato } from "../subviews/lineasContratoGrid";
 //import { proveedoresContrato } from "../subviews/proveedoresContratoGrid";
-//import { basesContrato } from "../subviews/basesContratoGrid";
+import { basesContrato } from "../subviews/basesContratoGrid";
 //import ContratosEpisReport  from "./contratosEpisReport";
 
 
@@ -30,7 +30,7 @@ export default class ContratosForm extends JetView {
         const translate = this.app.getService("locale")._;
         const _lineasContrato = lineasContrato.getGrid(this.app);
         //const _proveedoresContrato = proveedoresContrato.getGrid(this.app);
-        //const _basesContrato = basesContrato.getGrid(this.app);
+        const _basesContrato = basesContrato.getGrid(this.app);
               
         const _view = {
             view: "tabview",
@@ -143,7 +143,7 @@ export default class ContratosForm extends JetView {
                                     },
                                     _lineasContrato,
                                     { minWidth : 100},
-                                    //_basesContrato
+                                    _basesContrato
                                 ]
                             },
                             
@@ -200,7 +200,7 @@ export default class ContratosForm extends JetView {
             this.loadTiposProyecto();  
             $$("fechaContrato").setValue(new Date());//fecha por defecto
             lineasContrato.loadGrid(null, null);
-            //basesContrato.loadGrid(null);
+            basesContrato.loadGrid(null);
             //proveedoresContrato.loadGrid(null, null);
             
             return;
@@ -223,7 +223,7 @@ export default class ContratosForm extends JetView {
                 //this.loadMantenedores(contrato.mantenedorId);
                 this.loadTiposProyecto(contrato.tipoProyectoId);  
                 lineasContrato.loadGrid(contrato.contratoId);
-                //basesContrato.loadGrid(contrato.contratoId);
+                basesContrato.loadGrid(contrato.contratoId);
                 //proveedoresContrato.loadGrid(contrato.contratoId, _imprimirWindow);
                 this.loadFormasPago(contrato.formaPagoId);
                 $$("cmbTiposProyecto").unblockEvent();
