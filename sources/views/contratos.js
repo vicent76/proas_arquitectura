@@ -141,12 +141,10 @@ export default class Contratos extends JetView {
         return _view;
     }
     init(view, url) {
-       /*  this.imprimirWindow = this.ui(ContratosEpisReport);
-         $$('contratosGrid').attachEvent("onItemDblClick", function(id, e, node){
+        $$('contratosGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
-
             this.$scope.edit(curRow.contratoId);
-        }); */
+        });
     }
     urlChange(view, url) {
         var usu = usuarioService.checkLoggedUser();
@@ -208,7 +206,11 @@ export default class Contratos extends JetView {
     }
 
     edit(contratoId) {
-        this.show('/top/contratosForm?contratoId=' + contratoId);
+        try{
+            this.show('/top/contratosForm?contratoId=' + contratoId);
+        }catch(e) {
+            console.log(e);
+        }
     }
 
     delete(contratoId) {

@@ -67,7 +67,7 @@ export const contratosService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/contratos/lineas/" + contratoId + "/" + false + "/" + false;
+                    var url = conf.urlApi + "/api/contratos/lineas/" + contratoId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
