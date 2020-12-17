@@ -5,6 +5,8 @@ import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
 import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
 import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
+import { AceptarOfertaWindow } from "../subviews/aceptarOfertaWindow"
+
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var currentIdDatatableView;
@@ -25,6 +27,7 @@ export const lineasOferta = {
        
         const translate = app.getService("locale")._;
         try {
+            AceptarOfertaWindow.getWindow(app);
             LineasOfertaWindow.getWindow(app);
         }catch(e) {
             console.log(e);
@@ -228,5 +231,6 @@ export const lineasOferta = {
             }
             $$('aCuentaProfesional').setValue(aCuentaProfesional);
         }, 300);
-    }
+    },
+   
 }

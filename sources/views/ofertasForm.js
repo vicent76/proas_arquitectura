@@ -13,6 +13,9 @@ import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
 import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 import { basesOferta } from "../subviews/basesOfertaGrid";
+import { AceptarOfertaWindow } from "../subviews/aceptarOfertaWindow"
+
+
 import OfertasEpisReport  from "./ofertasEpisReport";
 
 
@@ -25,13 +28,15 @@ var importeCobro = 0;
 var _imprimirWindow;
 
 
+
 export default class OfertasForm extends JetView {
     config() {
+        //AceptarOfertaWindow.getWindow(this.app)
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOferta.getGrid(this.app);
         const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
         const _basesOferta = basesOferta.getGrid(this.app);
-              
+        
         const _view = {
             view: "tabview",
             cells: [
@@ -130,13 +135,17 @@ export default class OfertasForm extends JetView {
                     
                                             },
                                             {
+                                                padding:{
+                                                    top:50, bottom:7, left:50, right: 50
+                                                  },
                                                 rows: [
                                                     {
-                                                        padding: 50,cols: [
+                                                        cols: [
                                                             { view: "button", label: "Cancelar", click: this.cancel, hotkey: "esc" },
                                                             { view: "button", label: "Aceptar", click: this.accept, type: "form" }
                                                         ]
-                                                    }
+                                                    },
+                                                   
                                                 ]
                                             },
                                         ]
@@ -308,6 +317,7 @@ export default class OfertasForm extends JetView {
                 });
         }
     }
+   
 
     loadEmpresas(empresaId) {
         empresasService.getEmpresas()

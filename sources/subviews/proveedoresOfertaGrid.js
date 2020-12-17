@@ -3,6 +3,8 @@
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
+import { AceptarOfertaWindow } from "../subviews/aceptarOfertaWindow"
+
 import OfertasEpisReport  from "../views/ofertasEpisReport";
 
 var ofertaId;
@@ -15,8 +17,9 @@ export const proveedoresOferta = {
     // Devuelve el grid con los locales afectados
     // se le pasa la app porque es necesaria para conservar el translate.
     getGrid: (app) => {
-       
+      
         const translate = app.getService("locale")._;
+        
         try {
         }catch(e) {
             console.log(e);
