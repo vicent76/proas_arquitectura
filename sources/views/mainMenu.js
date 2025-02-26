@@ -19,9 +19,7 @@ export default class MainMenu extends JetView {
                         {id: "parametrosForm", icon: "mdi mdi-settings", value: translate("Parametros")},
                         {id: "usuarios", icon: "mdi mdi-account-key", value: translate("Usuarios")},
                         {id: "capitulos", icon: "mdi mdi-swap-vertical", value: translate("Capitulos")},
-                        {id: "estadosParteProfesional", icon: "mdi mdi-swap-horizontal", value: translate("Estados de parte(profesional)")},
-                        {id: "estadosPresupuesto", icon: "mdi mdi-sync", value: translate("Estados de presupuesto")},
-                        {id: "rechazosPresupuesto", icon: "mdi  mdi-thumb-down", value: translate("Causas rechazo de presupuesto")},
+                        {id: "unidadesObra", icon: "mdi mdi-swap-vertical", value: translate("Unidades de obra")}
                     ]
                 },
                 {

@@ -64,3 +64,15 @@
     background-repeat: no-repeat;
     background-position: center center;
 }
+
+.multiline-cell {
+    white-space: normal !important; /* Permite múltiples líneas */
+    word-wrap: break-word; /* Divide el texto en palabras */
+    overflow-wrap: break-word; /* Asegura el ajuste automático */
+    line-height: 1.5; /* Espaciado adecuado */
+    padding: 5px;
+    min-height: 50px; /* Altura mínima para ver el texto */
+    display: flex;
+    align-items: center;
+}
+

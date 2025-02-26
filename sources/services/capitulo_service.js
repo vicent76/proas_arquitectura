@@ -6,7 +6,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo/";
+                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -26,7 +26,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig().
                 then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -47,7 +47,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo/";
+                    var url = conf.urlApi + "/api/grupo_articulo_tecnico";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -70,7 +70,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo/"+ capitulo.grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/"+ capitulo.grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -92,7 +92,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

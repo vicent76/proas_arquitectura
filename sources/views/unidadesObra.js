@@ -1,9 +1,11 @@
 import { JetView } from "webix-jet";
-import { capituloService } from "../services/capitulo_service";
+import { unidadesObraService } from "../services/unidades_obra_service";
 import { usuarioService } from "../services/usuario_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { languageService} from "../locales/language_service";
+import "../styles/app.css"; 
+
 
 
 
@@ -12,9 +14,11 @@ var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
+let usu = null;
 
 export default class Capitulos extends JetView {
-    config() {
+    config() {        
+        usu = usuarioService.getUsuarioCookie();
         const translate = this.app.getService("locale")._;
         var toolbarCapitulos = {
             view: "toolbar", padding: 3, elements: [
@@ -76,13 +80,20 @@ export default class Capitulos extends JetView {
             pager: "mypager",
             select: "row",
             columns: [
-                { id: "grupoArticuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number" },
-                { id: "nombre", fillspace: true, header: [translate("Nombre capitulo"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 200 },
-                { id: "referencia", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text" },
-                { id: "departamentoId", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text", hidden: true},
-                { id: "esTecnico", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text" , hidden: true},
-                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" } }
-            ],
+                { id: "grupoArticuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number", minWidth: 100 },
+                { id: "nombre", header: [translate("Nombre"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 250 },
+                { id: "capitulo", fillspace: true, adjust: "header", header: [translate("Capitulo"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 350 },
+                { 
+                    id: "descripcion", 
+                    header: [translate("Descripcion"), { content: "textFilter" }], 
+                    sort: "string", 
+                    editor: "text",
+                    minWidth: 250,
+                    fillspace: true
+                },
+                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" }, minWidth: 100 }
+            ],            
+            
             rightSplit:1,
             onClick: {
                 "onDelete": function (event, id, node) {
@@ -160,7 +171,7 @@ export default class Capitulos extends JetView {
         this.load(id);
     }
     load(id) {
-        capituloService.getCapitulos()
+        unidadesObraService.getUnidadesObra(usu.usuarioId, 5)
             .then((data) => {
                 $$("capitulosGrid").clearAll();
                 $$("capitulosGrid").parse(generalApi.prepareDataForDataTable("grupoArticuloId", data));
