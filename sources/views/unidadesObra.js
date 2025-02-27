@@ -1,5 +1,7 @@
 import { JetView } from "webix-jet";
 import { unidadesObraService } from "../services/unidades_obra_service";
+import { capituloService } from "../services/capitulo_service";
+import { articulosService } from "../services/articulos_service";
 import { usuarioService } from "../services/usuario_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
@@ -15,15 +17,18 @@ var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
 let usu = null;
+var colGrupoArticulos = [];
 
-export default class Capitulos extends JetView {
+
+
+export default class UnidadesObra extends JetView {
     config() {        
         usu = usuarioService.getUsuarioCookie();
         const translate = this.app.getService("locale")._;
         var toolbarCapitulos = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-account-key", width: 37, align: "left" },
-                { view: "label", label: translate("Capitulos") }
+                { view: "label", label: translate("Unidades de Obra") }
             ]
         }
         var pagerCapitulos = {
@@ -33,15 +38,14 @@ export default class Capitulos extends JetView {
                     tooltip: translate("Nuevo registro en formulario (Ctrl+A)"),
                     click: function () {
                         let newId = webix.uid(); // Genera un ID único temporal
-                        $$("capitulosGrid").add({
+                        $$("unidadesObraGrid").add({
                             id: newId,
-                            grupoArticuloId: 0, // Temporal, se asignará al guardar
+                            articuloId: 0,
                             nombre: "",
-                            referencia: "",
-                            departamentoId: 5,
-                            estecnico: 1
+                            grupoArticuloId: 0, // Temporal, se asignará al guardar
+                            descripcion: "",
                         }, 0); // Agregar al inicio
-                        $$("capitulosGrid").edit(newId); // Editar automáticamente
+                        $$("unidadesObraGrid").edit(newId); // Editar automáticamente
                     }
                 },
                 {
@@ -55,9 +59,9 @@ export default class Capitulos extends JetView {
                     view: "button", type: "icon", icon: "wxi-download", width: 37, align: "right",
                     tooltip: translate("Descargar como Excel"),
                     click: () => {
-                        webix.toExcel($$("capitulosGrid"), {
-                            filename: "capitulos",
-                            name: "Capitulos",
+                        webix.toExcel($$("unidadesObraGrid"), {
+                            filename: "unidadesObra",
+                            name: "UnidadesObra",
                             rawValues: true,
                             ignore: { "actions": true }
                         });
@@ -76,24 +80,48 @@ export default class Capitulos extends JetView {
         };
         var datatableCapitulos = {
             view: "datatable",
-            id: "capitulosGrid",
+            id: "unidadesObraGrid",
             pager: "mypager",
             select: "row",
+            fixedRowHeight: true,
+              ready:function(){
+                this.adjustRowHeight();
+              },
             columns: [
-                { id: "grupoArticuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number", minWidth: 100 },
-                { id: "nombre", header: [translate("Nombre"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 250 },
-                { id: "capitulo", fillspace: true, adjust: "header", header: [translate("Capitulo"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 350 },
+                { id: "articuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number", minWidth: 100 },
+                {
+                    id: "grupoArticuloId",  
+                    header: [translate("Capitulo"),  { content: "selectFilter" }],
+                    sort: "string", 
+                    fillspace: true,
+                    minWidth: 350,
+                    editor: "combo", 
+                    collection: colGrupoArticulos,
+                   
+                },
+                { id: "nombre", header: [translate("Unidad de obra"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 250 },
                 { 
                     id: "descripcion", 
                     header: [translate("Descripcion"), { content: "textFilter" }], 
                     sort: "string", 
                     editor: "text",
-                    minWidth: 250,
-                    fillspace: true
+                    width: 350,
+                    on: {
+                        onItemClick: function (id, e, node) {
+                            // Verifica si el clic fue en la columna "descripcion"
+                            if (id.column === "descripcion") {
+                                let datatable = this;
+                                let currentValue = datatable.config.fixedRowHeight;
+                                
+                                datatable.define("fixedRowHeight", !currentValue); // Cambia el valor
+                                datatable.refresh(); // Aplica el cambio
+                            }
+                        }
+                    }
                 },
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" }, minWidth: 100 }
             ],            
-            
+            css: {"word-wrap": "break-word"},
             rightSplit:1,
             onClick: {
                 "onDelete": function (event, id, node) {
@@ -109,9 +137,17 @@ export default class Capitulos extends JetView {
             editable: true,
             editaction: "dblclick",
             rules: {
-                "nombre": webix.rules.isNotEmpty,
+                "nombre": webix.rules.isNotEmpty
             },
             on: {
+                "onBeforeLoad": function() {
+                    capituloService.getCapitulos()
+                    .then(rows => {
+                        colGrupoArticulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
+                        $$("unidadesObraGrid").getColumnConfig("grupoArticuloId").collection = colGrupoArticulos;
+                        $$("unidadesObraGrid").refreshColumns(); // Refrescar opciones
+                    })
+                },
                 "onAfterEditStart": function (id) {
                     currentIdDatatableView = id.row;
                     currentRowDatatableView = this.data.pull[currentIdDatatableView];
@@ -120,28 +156,35 @@ export default class Capitulos extends JetView {
                     var rowId = editor.row;
                     var rowData = this.getItem(rowId);
 
-                    if ((state.value != state.old) || rowData.grupoArticuloId == 0) {
+                    if ((state.value != state.old) || rowData.articuloId == 0) {
                         if (!this.validate(rowId)) {
-                            messageApi.errorMessage("Valores incorrectos");
+                            return
+                            //messageApi.errorMessage("Valores incorrectos");
                         } else {
-                            delete rowData.id; // Asegurar que no se envíe un ID incorrecto
-                            if (rowData.grupoArticuloId == 0) {
-                                capituloService.postCapitulo(rowData)
+                            delete rowData.id; // Asegurar que no se envíen campos incorrectos
+                            delete rowData.tipoIVA;
+                            delete rowData.porceIva;
+                            delete rowData.profesion;
+                            delete rowData.capitulo;
+                            delete rowData.departamento;
+                            delete rowData.$height;
+                            if (rowData.articuloId == 0) {
+                                articulosService.postArticulo(rowData)
                                     .then((result) => {
-                                        rowData.grupoArticuloId = result.grupoArticuloId; // Actualizar con el ID real
-                                        $$("capitulosGrid").updateItem(rowId, rowData);
-                                        $$("capitulosGrid").editStop();
+                                        rowData.articuloId = result.articuloId; // Actualizar con el ID real
+                                        $$("unidadesObraGrid").updateItem(rowId, rowData);
+                                        $$("unidadesObraGrid").editStop();
                                     })
                                     .catch((err) => handleServerError(err));
                             } else {
-                                capituloService.putCapitulo(rowData)
+                                articulosService.putArticulo(rowData)
                                     .catch((err) => handleServerError(err));
                             }
                         }
                     }
                 },
                 "onAfterFilter": function () {
-                    var numReg = $$("capitulosGrid").count();
+                    var numReg = $$("unidadesObraGrid").count();
                     $$("CapitulosNReg").config.label = "NREG: " + numReg;
                     $$("CapitulosNReg").refresh();
                 }
@@ -160,32 +203,33 @@ export default class Capitulos extends JetView {
         usuarioService.checkLoggedUser();
         languageService.setLanguage(this.app, 'es');
         var id = null;
-        if (url[0].params.grupoArticuloId) {
-            id = url[0].params.grupoArticuloId;
+        if (url[0].params.articuloId) {
+            id = url[0].params.articuloId;
         }
         webix.UIManager.addHotKey("Esc", function () {
-            $$('capitulosGrid').remove(-1);
+            $$('unidadesObraGrid').remove(-1);
             return false;
-        }, $$('capitulosGrid'));
-        webix.extend($$("capitulosGrid"), webix.ProgressBar);
+        }, $$('unidadesObraGrid'));
+        webix.extend($$("unidadesObraGrid"), webix.ProgressBar);
         this.load(id);
     }
     load(id) {
         unidadesObraService.getUnidadesObra(usu.usuarioId, 5)
             .then((data) => {
-                $$("capitulosGrid").clearAll();
-                $$("capitulosGrid").parse(generalApi.prepareDataForDataTable("grupoArticuloId", data));
+                $$("unidadesObraGrid").clearAll();
+                $$("unidadesObraGrid").parse(generalApi.prepareDataForDataTable("articuloId", data));
                 if (id) {
-                    $$("capitulosGrid").select(id);
-                    $$("capitulosGrid").showItem(id);
+                    $$("unidadesObraGrid").select(id);
+                    $$("unidadesObraGrid").showItem(id);
+                   
                 }
-                var numReg = $$("capitulosGrid").count();
+                var numReg = $$("unidadesObraGrid").count();
                 $$("CapitulosNReg").config.label = "NREG: " + numReg;
                 $$("CapitulosNReg").refresh();
-                $$("capitulosGrid").hideProgress();
+                $$("unidadesObraGrid").hideProgress();
             })
             .catch((err) => {
-                $$("capitulosGrid").hideProgress();
+                $$("unidadesObraGrid").hideProgress();
                 var error = err.response;
                             var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
                             if(index != -1) {
@@ -196,7 +240,7 @@ export default class Capitulos extends JetView {
             });
     }
     edit(id) {
-        this.show('/top/capitulosForm?grupoArticuloId=' + id);
+        this.show('/top/capitulosForm?articuloId=' + id);
     }
     delete(id, name) {
         const translate = this.app.getService("locale")._;
@@ -208,7 +252,7 @@ export default class Capitulos extends JetView {
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
-                    capituloService.deleteCapitulo(id)
+                    articulosService.deleteArticulo(id)
                         .then(result => {
                             self.load();
                         })
@@ -226,7 +270,7 @@ export default class Capitulos extends JetView {
         });
     }
     cleanAndload() {
-        $$("capitulosGrid").eachColumn(function (id, col) {
+        $$("unidadesObraGrid").eachColumn(function (id, col) {
             if (col.id == 'actions') return;
             var filter = this.getFilter(id);
             if (filter) {
@@ -235,5 +279,5 @@ export default class Capitulos extends JetView {
             }
         });
         this.load();
-    }
+    }    
 }

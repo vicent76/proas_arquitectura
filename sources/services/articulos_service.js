@@ -152,4 +152,70 @@ export const articulosService = {
                 });
         });
     },
+
+    postArticulo: (articulo) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/articulos";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, {articulo: articulo})
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((err) => {
+                    fail(err);
+                });
+        });
+    },
+
+ 
+    putArticulo: (articulo) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/articulos/"+ articulo.articuloId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .put(url,{articulo: articulo})
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((err) => {
+                    fail(err);
+                });
+        });
+    },
+
+  
+    deleteArticulo: (articuloId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/articulo/" + articuloId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url)
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((err) => {
+                    fail(err);
+                });
+        });
+    }
 }

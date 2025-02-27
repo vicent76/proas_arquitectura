@@ -6,7 +6,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/";
+                    var url = conf.urlApi + "/api/grupo_articulo";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
