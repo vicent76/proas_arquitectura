@@ -8,7 +8,9 @@ export default class MainMenu extends JetView {
             view: "sidebar",
             width: 280,
             id: "main:menu",
-            activeTitle: true, select: true,
+            activeTitle: true, 
+            select: true,
+            collapsed: true,
             data: [
                 {
                     id: "inicio", icon: "mdi mdi-home", value: "Inicio"
@@ -25,6 +27,7 @@ export default class MainMenu extends JetView {
                 {
                     id: "gestion", icon: "mdi mdi-book",  value: translate("Gestión"), open: true,
                     data: [
+                        {id: "expedientes", icon: "mdi mdi-currency-eur", value: translate("Expedientes")},
                         {id: "ofertas", icon: "mdi mdi-currency-eur", value: translate("Ofertas")},
                         
                     ]

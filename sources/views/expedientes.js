@@ -37,14 +37,14 @@ export default class Expedientes extends JetView {
                     view: "button", type: "icon", icon: "mdi mdi-refresh", width: 37, align: "left", hotkey: "Ctrl+R",
                     tooltip: translate("Refrescar la lista (Ctrl+R)"),
                     click: ()=>{
-                        this.cleanAndload();
+                        this.cleanAndloadSolicitud();
                     }
                 },
                 {
                     view: "button", type: "icon", icon: "wxi-download", width: 37, align: "right",
                     tooltip: translate("Descargar como Excel"),
                     click: () => {
-                        webix.toExcel($$("expedientesGrid"), {
+                        webix.toExcel($$("expedientesGridSolicitud"), {
                             filename: "expedientes",
                             name: "oferta",
                             rawValues: true,
@@ -52,9 +52,7 @@ export default class Expedientes extends JetView {
                         });
                     }
                 },
-                {
-                    view: "label", id: "expedientesNReg", label: "NREG: "
-                },
+              
                 {
                     view: "pager", id: "mypager1", css: { "text-align": "right" },
                     template: "{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}",
@@ -69,67 +67,171 @@ export default class Expedientes extends JetView {
         actionsTemplate += PrintButton;
         //grid de la solapa expedientes
         var datatableExpedientes = {
-            view: "datatable",
-            css: {"font-size": "0.9em"},
-            id: "expedientesGrid",
-            scroll: "x,y",
-            pager: "mypager1",
-            select: "row",
-            scheme:{
-                $change:function(item){
-                        var odd = $$("expedientesGrid").getIndexById(item.id)%2
-                        if (!odd) {
-                            item.$css = {"background":"#E6E7E7"};
-                        }
-                }
-            },
-            columns: [  
-                { id: "ofertaId", header: ["Id", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
-                { id: "empresaId", header: ["IdEmpresa", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
-                { id: "referencia", header: ["Ref.", { content: "textFilter" }], sort: "string", adjust: "data" },
-                { id: "tipo", header: ["Tipo.", { content: "textFilter" }], sort: "string", adjust: "data" },
+            view: "tabview",
+            cells: [
                 {
-                 id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
-                 adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
-                },
-                { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "data" },             
-                { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
-                { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
-                { id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
-                { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all" },
-                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "all"  }
-            ],
-            rightSplit: 1,
-            scroll:true,
-            onClick: {
-                "onEdit": function (event, id, node) {
-                    var curRow = this.data.pull[id.row];
-                    this.$scope.edit(curRow.ofertaId)
-                                           
-                },
-                "onDelete": function (event, id, node) {
-                    var dtable = this;
-                    var id = id.row;
-                    var curRow = this.data.pull[id];
+                    header:  "Solicitud",
+                    body: {
+                       
+                        view: "datatable",
+                        css: {"font-size": "0.9em"},
+                        id: "expedientesGridSolicitud",
+                        scroll: "x,y",
+                        pager: "mypager1",
+                        select: "row",
+                        footer: true,
+                        scheme:{
+                            $change:function(item){
+                                    var odd = $$("expedientesGridSolicitud").getIndexById(item.id)%2
+                                    if (!odd) {
+                                        item.$css = {"background":"#E6E7E7"};
+                                    }
+                            }
+                        },
+                        columns: [  
+                            { id: "expedienteId", header: ["Id", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
+                            { id: "empresaId", header: ["IdEmpresa", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
+                            { id: "referencia", header: ["Ref.", { content: "textFilter" }], sort: "string", adjust: "data"},
+                            { id: "estado", header: ["Tipo.", { content: "textFilter" }], sort: "string", adjust: "data", hidden: true },       
+                            { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
+                            { id: "titulo", header: ["Titulo", { content: "textFilter" }], sort: "string",adjust: "all"}, 
+                            {
+                                id: "fecha", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
+                                adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
+                            },
+                            { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "all" },      
+                            { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "all" }, 
+                            { id: "comercial", header: ["Comercial", { content: "textFilter" }], sort: "string",adjust: "all" },
+                            { id: "jefeGrupo", header: ["Jefe de grupo", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150  },
+                            { id: "jefeObras", header: ["Jefe de obras", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 },  
+                            { id: "oficinatecnica", header: ["Oficina técnica", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 },
+                            { id: "asesorTecnico", header: ["Asesor técnico", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 }, 
 
-                    this.$scope.delete(curRow.ofertaId);
+                            //{ id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
+                            { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all", fillspace: true, minWidth: 150 },
+                            { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "all"  }
+                        ],
+                       
+                        rightSplit: 1,
+                        leftSplit: 6,
+                        scroll:true,
+                        onClick: {
+                            "onEdit": function (event, id, node) {
+                                var curRow = this.data.pull[id.row];
+                                this.$scope.edit(curRow.ofertaId)
+                                                    
+                            },
+                            "onDelete": function (event, id, node) {
+                                var dtable = this;
+                                var id = id.row;
+                                var curRow = this.data.pull[id];
+
+                                this.$scope.delete(curRow.ofertaId);
+                            },
+                            "onPrint": function (event, id, node) {
+                                var curRow = this.data.pull[id.row];
+                                var file = "/stireport/reports/oferta_general.mrt";
+                                this.$scope.imprimirWindow.showWindow(curRow.ofertaId, null, file);
+                            }
+                            },
+                            editable: true,
+                            editaction: "dblclick",
+                            rules: {
+                                "direccionTrabajo": webix.rules.isNotEmpty
+                            },
+                            on: {
+                                "onAfterFilter": function(){
+                                    webix.storage.local.put("stateGridExpedientes", this.getState());
+                                },
+                                "onAfterLoad" : function () {
+                                    this.getColumnConfig("referencia").footer = { text: "NREG: " + this.count(), colspan: 3 };
+                                    this.refreshColumns();
+                                },
+                            }
+                    }
                 },
-                "onPrint": function (event, id, node) {
-                    var curRow = this.data.pull[id.row];
-                    var file = "/stireport/reports/oferta_general.mrt";
-                    this.$scope.imprimirWindow.showWindow(curRow.ofertaId, null, file);
-                }
-            },
-            editable: true,
-            editaction: "dblclick",
-            rules: {
-                "direccionTrabajo": webix.rules.isNotEmpty
-            },
-            on: {
-                "onAfterFilter": function(){
-                    webix.storage.local.put("stateGridExpedientes", this.getState());
-                  }
-            }
+                {
+                    header:  "Estudio",
+                    body: {
+                        view: "datatable",
+                        css: {"font-size": "0.9em"},
+                        id: "expedientesGridEstudio",
+                        scroll: "x,y",
+                        pager: "mypager1",
+                        select: "row",
+                        footer: true,
+                        scheme:{
+                            $change:function(item){
+                                    var odd = $$("expedientesGridEstudio").getIndexById(item.id)%2
+                                    if (!odd) {
+                                        item.$css = {"background":"#E6E7E7"};
+                                    }
+                            }
+                        },
+                        columns: [  
+                            { id: "expedienteId", header: ["Id", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
+                            { id: "empresaId", header: ["IdEmpresa", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
+                            { id: "referencia", header: ["Ref.", { content: "textFilter" }], sort: "string", adjust: "data"},
+                            { id: "estado", header: ["Tipo.", { content: "textFilter" }], sort: "string", adjust: "data", hidden: true },       
+                            { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
+                            { id: "titulo", header: ["Titulo", { content: "textFilter" }], sort: "string",adjust: "all"}, 
+                            {
+                                id: "fecha", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
+                                adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
+                            },
+                            { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "all" },      
+                            { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "all" }, 
+                            { id: "comercial", header: ["Comercial", { content: "textFilter" }], sort: "string",adjust: "all" },
+                            { id: "jefeGrupo", header: ["Jefe de grupo", { content: "textFilter" }], sort: "string", minWidth: 150 },
+                            { id: "jefeObras", header: ["Jefe de obras", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 },  
+                            { id: "oficinatecnica", header: ["Oficina técnica", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 },
+                            { id: "asesorTecnico", header: ["Asesor técnico", { content: "textFilter" }], sort: "string",adjust: "all", minWidth: 150 }, 
+
+                            //{ id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
+                            { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all", fillspace: true, minWidth: 150 },
+                            { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "all"  }
+                        ],
+                        rightSplit: 1,
+                        leftSplit: 6,
+                        scroll:true,
+                        onClick: {
+                            "onEdit": function (event, id, node) {
+                                var curRow = this.data.pull[id.row];
+                                this.$scope.edit(curRow.ofertaId)
+                                                    
+                            },
+                            "onDelete": function (event, id, node) {
+                                var dtable = this;
+                                var id = id.row;
+                                var curRow = this.data.pull[id];
+
+                                this.$scope.delete(curRow.ofertaId);
+                            },
+                            "onPrint": function (event, id, node) {
+                                var curRow = this.data.pull[id.row];
+                                var file = "/stireport/reports/oferta_general.mrt";
+                                this.$scope.imprimirWindow.showWindow(curRow.ofertaId, null, file);
+                            }
+                        },
+                        editable: true,
+                        editaction: "dblclick",
+                        rules: {
+                                "direccionTrabajo": webix.rules.isNotEmpty
+                        },
+                        on: {
+                            "onAfterFilter": function(){
+                                webix.storage.local.put("stateGridExpedientes", this.getState());
+                            },
+                            "onAfterLoad" : function () {
+                                    this.getColumnConfig("referencia").footer = { text: "NREG: " + this.count(), colspan: 3 };
+                                    this.refreshColumns();
+                                },
+                        }
+                    
+                    }
+                },
+                
+                    ]
         }
         var _view = {
             rows: [
@@ -142,21 +244,50 @@ export default class Expedientes extends JetView {
     }
     init(view, url) {
         this.imprimirWindow = this.ui(OfertasEpisReport);
-         $$('expedientesGrid').attachEvent("onItemDblClick", function(id, e, node){
+         /* $$('expedientesGridSolicitud').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
 
             this.$scope.edit(curRow.ofertaId);
-        });
+        }); */
     }
     urlChange(view, url) {
         var usu = usuarioService.checkLoggedUser();
         var id = usu.usuarioId;
         languageService.setLanguage(this.app, 'es');
-        this.load(id);
+        this.loadSolicitud(id);
+        this.loadEstudio(id)
     }
     
-    load(id) {
-        expedientesService.getExpedientes(id)
+
+    formateaCampos(data) {
+        data.forEach(e => {
+            e.empresa = e.empresa.substr(0,3);
+            e.fecha = new Date(e.fecha);
+        });
+        return data;
+    }
+   
+   
+    
+
+    edit(ofertaId) {
+        this.show('/top/expedientesForm?ofertaId=' + ofertaId);
+    }
+
+    delete(ofertaId) {
+        expedientesService.deleteOferta(ofertaId)
+        .then( row => {
+            this.loadSolicitud();
+            this.loadEstudio()
+        })
+        .catch( err => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+    /////
+
+    loadSolicitud(id) {
+        expedientesService.getExpedientes(1)
         .then((data)=> {
             if(!data) {
                 data = []
@@ -165,14 +296,12 @@ export default class Expedientes extends JetView {
             //acortamos el nombre de la empresa a 3 digitos y formateamos la fecha
             data = this.formateaCampos(data);
             
-            $$("expedientesGrid").clearAll();
-            $$("expedientesGrid").parse(generalApi.prepareDataForDataTable("ofertaId", data));
+            $$("expedientesGridSolicitud").clearAll();
+            $$("expedientesGridSolicitud").parse(generalApi.prepareDataForDataTable("ofertaId", data));
             
-            var numReg = $$("expedientesGrid").count();
-            $$("expedientesNReg").config.label = "NREG: " + numReg;
-            $$("expedientesNReg").refresh();
+            
             var stateDt = webix.storage.local.get("stateGridExpedientes");
-            if(stateDt) this.$$('expedientesGrid').setState(stateDt);
+            if(stateDt) this.$$('expedientesGridSolicitud').setState(stateDt);
         })
         .catch((err) => {
        
@@ -186,17 +315,37 @@ export default class Expedientes extends JetView {
         });
     }
 
-    formateaCampos(data) {
-        data.forEach(e => {
-            e.empresa = e.empresa.substr(0,3);
-            e.fechaOferta = new Date(e.fechaOferta);
+    loadEstudio(id) {
+        expedientesService.getExpedientes(2)
+        .then((data)=> {
+            if(!data) {
+                data = []
+            }
+        
+            //acortamos el nombre de la empresa a 3 digitos y formateamos la fecha
+            data = this.formateaCampos(data);
+            
+            $$("expedientesGridEstudio").clearAll();
+            $$("expedientesGridEstudio").parse(generalApi.prepareDataForDataTable("expedienteId", data));
+            
+            
+            var stateDt = webix.storage.local.get("stateGridExpedientes");
+            if(stateDt) this.$$('expedientesGridEstudio').setState(stateDt);
+        })
+        .catch((err) => {
+       
+            var error = err.response;
+                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                    if(index != -1) {
+                        messageApi.errorRestriccion()
+                    } else {
+                        messageApi.errorMessageAjax(err);
+                    }
         });
-        return data;
     }
-   
-   
-    cleanAndload() {
-        $$("expedientesGrid").eachColumn(function (id, col) {
+
+    cleanAndloadSolicitud() {
+        $$("expedientesGridSolicitud").eachColumn(function (id, col) {
             if (col.id == 'actions') return;
             var filter = this.getFilter(id);
             if (filter) {
@@ -204,21 +353,7 @@ export default class Expedientes extends JetView {
                 else filter.value = "";					// html-based: select & text
             }
         });
-       this.load();
-    }
-
-    edit(ofertaId) {
-        this.show('/top/expedientesForm?ofertaId=' + ofertaId);
-    }
-
-    delete(ofertaId) {
-        expedientesService.deleteOferta(ofertaId)
-        .then( row => {
-            this.load();
-        })
-        .catch( err => {
-            messageApi.errorMessageAjax(err);
-        })
+       this.loadSolicitud();
     }
 }
 
