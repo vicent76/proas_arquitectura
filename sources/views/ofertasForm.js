@@ -14,10 +14,12 @@ import { lineasOferta } from "../subviews/lineasOfertaGrid";
 import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 import { basesOferta } from "../subviews/basesOfertaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
+import { expedientesService } from "../services/expedientes_service";
 
 
 
 var ofertaId = 0;
+var expedienteId = 0;
 var usuarioId;
 var usuario;
 var limiteCredito = 0;
@@ -187,22 +189,30 @@ export default class OfertasForm extends JetView {
         if (url[0].params.ofertaId) {
             ofertaId = url[0].params.ofertaId;
         }
+        if (url[0].params.expedienteId) {
+            expedienteId = url[0].params.expedienteId;
+        }
         this.cargarEventos();
-        this.load(ofertaId);
+        this.load(ofertaId, expedienteId);
     }
-    load(ofertaId) {
-        if (ofertaId == 0) {
-            this.loadEmpresas();
-            this.loadAgentes();
-            this.loadClientes();
-            //this.loadMantenedores();
-            this.loadFormasPago();
-            this.loadTiposProyecto();  
-            $$("fechaOferta").setValue(new Date());//fecha por defecto
-            lineasOferta.loadGrid(null, null);
-            basesOferta.loadGrid(null);
-            proveedoresOferta.loadGrid(null, null);
-            
+    load(ofertaId, expedienteId) {
+        if (ofertaId == 0 && expedienteId > 0) {
+            expedientesService.getExpediente(expedienteId)
+            .then((expediente) => {
+                this.loadEmpresas(expediente.empresaId);
+                this.loadAgentes(expediente.agenteId);
+                this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
+                this.loadFormasPago();
+                this.loadTiposProyecto();  
+                $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
+                this.$$("referencia").setValue(expediente.referencia)
+                lineasOferta.loadGrid(null, null);
+                basesOferta.loadGrid(null);
+                proveedoresOferta.loadGrid(null, null);    
+            })
+            .catch((err) => {
+                messageApi.errorMessageAjax(err);
+            }); 
             return;
         }
         ofertasService.getOferta(ofertaId)
@@ -273,6 +283,7 @@ export default class OfertasForm extends JetView {
             data.importeCliente = 0
             data.importeMantenedor = 0
             data.mantenedorId  = null;
+            data.expedienteId = expedienteId;
 
             ofertasService.postOferta(data)
                 .then((result) => {

@@ -45,7 +45,7 @@ export const ofertasService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/siguiente_referencia/" + abrev;
+                    var url = conf.urlApi + "/api/ofertas/siguiente_referencia/" + abrev + "/" + true;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

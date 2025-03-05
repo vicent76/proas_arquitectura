@@ -101,4 +101,26 @@ export const agentesService = {
         }
         return result;
     },
+    
+    getAgentesActivosQuery: (query) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/comerciales/activos?nombre=" + query;
+                    return webix.ajax()
+                        .timeout(20000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
 }
