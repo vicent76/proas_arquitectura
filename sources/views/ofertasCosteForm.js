@@ -1,21 +1,26 @@
 import { JetView } from "webix-jet";
 import { usuarioService } from "../services/usuario_service";
 import { clientesService } from "../services/clientes_service";
-import { estadosService } from "../services/estados_service";
-import { tiposViaService } from "../services/tipos_via_service";
+import { colaboradoresService } from "../services/colaboradores_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { agentesService } from "../services/agentes_service";
-import { colaboradoresService } from "../services/colaboradores_service";
-import { expedientesService } from "../services/expedientes_service";
+import { ofertasService } from "../services/ofertas_service";
 import { tiposProyectoService } from "../services/tipos_proyesto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
+import { formasPagoService } from "../services/formas_pago_service";
+import { lineasOferta } from "../subviews/lineasOfertaGrid";
+import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
+import { basesOferta } from "../subviews/basesOfertaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
+import { expedientesService } from "../services/expedientes_service";
+import { capituloService } from "../services/capitulo_service";
+import { unidadesObraService } from "../services/unidades_obra_service";
 
 
 
-
+var ofertaId = 0;
 var expedienteId = 0;
 var usuarioId;
 var usuario;
@@ -25,35 +30,34 @@ var _imprimirWindow;
 var cliId = null;
 
 
-export default class ExpedientesForm extends JetView {
+export default class OfertasCosteForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
-        //const _lineasOferta = lineasOferta.getGrid(this.app);
-        //const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
-        //const _basesOferta = basesOferta.getGrid(this.app);
+        const _lineasOferta = lineasOferta.getGrid(this.app);
+        const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
+        const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
             view: "tabview",
             cells: [
                 {
-                    header:  "Datos",
-                    width: 100,
+                    header:  "Oferta",
                     body: {
-                        //solapa expedientes
+                        //solapa ofertas
                         view: "layout",
-                        id: "expedientesForm",
+                        id: "ofertasCosteForm",
                         multiview: true,
                         rows: [
                             {
-                                view: "toolbar", padding: 3, css: {"background-color": "#F4F5F9"}, elements: [
+                                view: "toolbar", padding: 3, elements: [
                                     { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
-                                    { view: "label", label: "Expediente" }
+                                    { view: "label", label: "Oferta de coste" }
                                 ]
                             },
                             {
                                 view: "form",
                                 scroll:"y",
-                                id: "frmExpedientes",
+                                id: "frmOfertas",
                                 maxWidth: 2500,
                                 autoheight:true,
                                 elements: [
@@ -66,22 +70,34 @@ export default class ExpedientesForm extends JetView {
                                     {
                                         cols: [
                                             {
-                                                view: "text", id: "expedienteId", name: "expedienteId", hidden: true,
-                                                label: "ID", labelPosition: "top", width: 100, disabled: true
+                                                view: "text", id: "ofertaId", name: "ofertaId", hidden: true,
+                                                label: "ID", labelPosition: "top", width: 50, disabled: true
                                             },
                                             {
                                                 view: "text", id: "referencia", name: "referencia", required: true,
-                                                label: "Referencia", labelPosition: "top", maxWidth:130
+                                                label: "Referencia", labelPosition: "top", width:250
                                             },
                                             {
                                                 view: "combo", id: "cmbEmpresas", name: "empresaId", required: true, options: {},
-                                                label: "Empresa", labelPosition: "top", maxWidth: 280
+                                                label: "Empresa", labelPosition: "top", width: 250
                                             },
                                             {
-                                                view: "combo", id: "cmbEstados", name: "estadoExpedienteId", required: true, options: {},
-                                                label: "Estado", labelPosition: "top", maxWidth: 100
+                                                view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
+                                                label: "Fecha de Solicitud", labelPosition: "top", required: true
                                             },
                                             {
+                                                view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
+                                                label: "Tipo proyecto", labelPosition: "top", options:{}
+                                            },
+                                            {
+                                                view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
+                                                label: "Expediente", labelPosition: "top", options:{}
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        cols: [
+                                              {
                                                 view: "combo", id: "cmbClientes", name: "clienteId", required: true, minWidth:300,
                                                 label: "Cliente", labelPosition: "top",
                                                 options:{},
@@ -102,46 +118,84 @@ export default class ExpedientesForm extends JetView {
                                                     }.bind(this)
                                                 }
                                             },
-                                            {
-                                                view: "text", id: "titulo", name: "titulo", required: true,
-                                                label: "Titulo", labelPosition: "top", maxwidth:250
-                                            },
-                                            {
-                                                view: "datepicker", id: "fecha", name: "fecha",  maxWidth: 150,
-                                                label: "Fecha", labelPosition: "top", required: true
-                                            },
-                                           /*  {
-                                                view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
-                                                label: "Tipo proyecto", labelPosition: "top", options:{}
-                                            } */
+                                        
+                                                    
                                         ]
                                     },
                                     {
                                         cols: [
                                             {
-                                                view: "combo", id: "cmbTiposVia", name: "tipoViaId", options: {},
-                                                label: "tipo de via", labelPosition: "top", maxWidth: 150
+                                                rows: [
+                                                    { view: "label", label: "Tipos de Proyecto", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listTiposProyecto",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                this.$scope.loadCapitulos(id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
                                             },
                                             {
-                                                view: "text", id: "direccion", name: "direccion",
-                                                label: "Direccion", labelPosition: "top"
+                                                rows: [
+                                                    { view: "label", label: "Capítulos", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listCapitulos",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                this.$scope.loadUnidadesObra(id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
                                             },
                                             {
-                                                view: "text", id: "poblacion", name: "poblacion", 
-                                                label: "Población", labelPosition: "top", maxWidth:130
+                                                rows: [
+                                                    { view: "label", label: "Partidas", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listUnidadesObra",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                // this.loadUnidadesObra(id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },                                    
+                                    
+                                    {
+                                        cols: [
+                                            {
+                                                view: "combo", id: "cmbFormasPago", name: "formaPagoId", required: true, options: {},
+                                                label: "Forma de pago", labelPosition: "top", minWidth: 250
                                             },
                                             {
-                                                view: "text", id: "codPostal", name: "codPostal", 
-                                                label: "Cod. postal", labelPosition: "top", maxWidth:130
+                                                view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
+                                                label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
+                                                 
                                             },
-                                            {
-                                                view: "text", id: "provincia", name: "provincia", 
-                                                label: "Provincia", labelPosition: "top", maxWidth:130
-                                            },
-                                            {
-                                                view: "text", id: "contacto", name: "contacto",
-                                                label: "Contacto", labelPosition: "top"
-                                            },
+                                            
                                         ]
                                     },
                                     {
@@ -273,21 +327,6 @@ export default class ExpedientesForm extends JetView {
                                             },
                                         ]
                                     },
-                                    
-                                   /*  {
-                                        cols: [
-                                            {
-                                                view: "combo", id: "cmbFormasPago", name: "formaPagoId", required: true, options: {},
-                                                label: "Forma de pago", labelPosition: "top", minWidth: 250
-                                            },
-                                            {
-                                                view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
-                                                label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
-                                                 
-                                            },
-                                            
-                                        ]
-                                    }, */
                                     {
                                         cols: [
                                            
@@ -308,6 +347,9 @@ export default class ExpedientesForm extends JetView {
                                             },
                                         ]
                                     },
+                                    _lineasOferta,
+                                    { minWidth : 100},
+                                    _basesOferta
                                 ]
                             },
                             
@@ -318,42 +360,15 @@ export default class ExpedientesForm extends JetView {
                     }
                 },
                 {
-                    header:  "Costes",
-                    width: 100,
+                    header:  "Lineas proveedores",
                     body: {
+                    //solapa ofertas
                     view: "layout",
-                    id: "presupuestoCosteGrid",
+                    id: "proveedoresGrid",
                     multiview: true,
-                    rows: [
-                        {
-                            padding: 10,cols: [
-                                { view: "button", label: "Crear presupuesto coste", type: "form", width: 300, click: () => {
-                                    this.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId);
-                                } }
-                            ]
-                        },
-                        {minHeight: 100}
-                    ]
-                    }
-                    
-                },
-                {
-                    header:  "Ventas",
-                    width: 100,
-                    body: {
-                    //solapa expedientes
-                    view: "layout",
-                    id: "presupuestoGrid",
-                    multiview: true,
-                    rows: [
-                        {
-                            padding: 10,cols: [
-                                { view: "button", label: "Crear presupuesto ventas", type: "form", width: 300, click: () => {
-                                    this.show('/top/ofertasForm?ofertaId=0&expedienteId=' + expedienteId);
-                                } }
-                            ]
-                        },
-                        {minHeight: 100}
+                    rows: [    
+                        _proveedoresOferta,
+                        { minheight: 500},
                     ]
                     }
                     
@@ -370,74 +385,80 @@ export default class ExpedientesForm extends JetView {
        
     urlChange(view, url) {
         if (url[0].params.NEW) {
-            messageApi.normalMessage('Expediente correctamente, puede crear ahora las  lineas asociadas.')
+            messageApi.normalMessage('Oferta correctamente, puede crear ahora las  lineas asociadas.')
         }
         usuario = usuarioService.checkLoggedUser();
         usuarioId = usuario.usuarioId;
         languageService.setLanguage(this.app, 'es');
+        if (url[0].params.ofertaId) {
+            ofertaId = url[0].params.ofertaId;
+        }
         if (url[0].params.expedienteId) {
             expedienteId = url[0].params.expedienteId;
         }
         this.cargarEventos();
-        this.load(expedienteId);
+        this.load(ofertaId, expedienteId);
     }
-    load(expedienteId) {
-        if (expedienteId == 0) {
-            this.loadEmpresas();
-            this.loadAgentes();
-            this.loadClientes();
-            this.loadEstados();
-            this.loadTiposVia();
-            //
-          
-            this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", null);
-            this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", null);
-            this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", null);
-            this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", null);
-            this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", null);
-            //this.loadMantenedores();
-            //this.loadFormasPago();
-            //this.loadTiposProyecto();  
-            $$("fecha").setValue(new Date());//fecha por defecto
-            //lineasOferta.loadGrid(null, null);
-            //basesOferta.loadGrid(null);f
-            //proveedoresOferta.loadGrid(null, null);
-            
-            return;
-        }
-        expedientesService.getExpediente(expedienteId)
+    load(ofertaId, expedienteId) {
+        if (ofertaId == 0 && expedienteId > 0) {
+            expedientesService.getExpediente(expedienteId)
             .then((expediente) => {
-                //$$("cmbTiposProyecto").blockEvent();
-                delete expediente.empresa;
-                delete expediente.cliente;
-                delete expediente.estado;
-                delete expediente.agente;
-                delete expediente.comercial;
-                delete expediente.jefeGrupo;
-                delete expediente.jefeObras;
-                delete expediente.oficinatecnica;
-                delete expediente.asesorTecnico;
-                expediente.fecha = new Date(expediente.fecha);
-                $$("frmExpedientes").setValues(expediente);
-                //this.loadTiposProfesional(expediente.tipoProfesionalId);
-                //this.loadAgentes(expediente.agenteId);
                 this.loadEmpresas(expediente.empresaId);
+                this.loadAgentes(expediente.agenteId);
                 this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
-                this.loadAgenteCliente(expediente.agenteId);
-                this.loadEstados(expediente.estadoExpedienteId);
+                this.loadFormasPago();
+                this.loadTiposProyecto();  
+                this.loadExpediente(expediente);
+                $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
+                this.$$("referencia").setValue(expediente.referencia);
+
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
                 this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
                 this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
-                
-                //this.loadMantenedores(expediente.mantenedorId);
-                //this.loadTiposProyecto(expediente.tipoProyectoId);  
-                //lineasOferta.loadGrid(expediente.expedienteId, _imprimirWindow);
-                //basesOferta.loadGrid(expediente.expedienteId);
-                //proveedoresOferta.loadGrid(expediente.expedienteId, _imprimirWindow);
-                //this.loadFormasPago(expediente.formaPagoId);
-                //$$("cmbTiposProyecto").unblockEvent();
+
+                //this.loadMantenedores();
+                lineasOferta.loadGrid(null, null);
+                basesOferta.loadGrid(null);
+                proveedoresOferta.loadGrid(null, null);    
+            })
+            .catch((err) => {
+                messageApi.errorMessageAjax(err);
+            }); 
+            return;
+        }
+        ofertasService.getOferta(ofertaId)
+            .then((oferta) => {
+                $$("cmbTiposProyecto").blockEvent();
+                delete oferta.empresa;
+                delete oferta.cliente;
+                delete oferta.tipo;
+                delete oferta.mantenedor;
+                delete oferta.agente;
+                delete oferta.formaPago
+                oferta.fechaOferta = new Date(oferta.fechaOferta);
+                $$("frmOfertas").setValues(oferta);
+                //this.loadTiposProfesional(oferta.tipoProfesionalId);
+                this.loadAgentes(oferta.agenteId);
+                this.loadEmpresas(oferta.empresaId);
+                this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
+                //this.loadMantenedores(oferta.mantenedorId);
+                this.loadTiposProyecto(oferta.tipoProyectoId);  
+                lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
+                basesOferta.loadGrid(oferta.ofertaId);
+                proveedoresOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
+                this.loadFormasPago(oferta.formaPagoId);
+
+                ////
+
+                this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", oferta.comercialId);
+                this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", oferta.jefeGrupoId)
+                this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
+                this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
+                this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
+
+                $$("cmbTiposProyecto").unblockEvent();
                 
             })
             .catch((err) => {
@@ -445,31 +466,42 @@ export default class ExpedientesForm extends JetView {
             }); 
     }
 
-    cargarEventos() {
-      
-   
+    cargarEventos() {   
 
-  /*       $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
+        $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
            if(newv == "" || !newv) return;
            this.cambioTipoProyecto(newv)
-        }); */
+        });
     }
 
     cancel() {
-        this.$scope.show('/top/expedientes');
+        this.$scope.show('/top/ofertas');
     }
     accept() {
-        if (!$$("frmExpedientes").validate()) {
+        if (!$$("frmOfertas").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
         }
-        var data = $$("frmExpedientes").getValues();
+        var data = $$("frmOfertas").getValues();
        
-        if (expedienteId == 0) {
-            data.expedienteId = 0;
-            expedientesService.postExpediente(data)
+        if (ofertaId == 0) {
+            data.ofertaId = 0;
+            data.tipoOfertaId = 5
+            data.coste = 0
+            data.porcentajeBeneficio = 0
+            data.importeBeneficio = 0
+            data.ventaNeta = 0
+            data.porcentajeAgente = 0
+            data.importeAgente = 0
+            data.importeCliente = 0
+            data.importeMantenedor = 0
+            data.mantenedorId  = null;
+            data.expedienteId = expedienteId;
+            data.esCoste = 1
+
+            ofertasService.postOferta(data)
                 .then((result) => {
-                    this.$scope.show('/top/expedientesForm?expedienteId=' + result.expedienteId + "&NEW");
+                    this.$scope.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + "&NEW");
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -481,10 +513,14 @@ export default class ExpedientesForm extends JetView {
                             }
                 });
         } else {
-            
-            expedientesService.putExpediente(data, data.expedienteId)
+            data.porcentajeBeneficio = 0
+            data.importeBeneficio = 0
+            data.porcentajeAgente = 0
+            data.importeAgente = 0
+            data.importeMantenedor = 0
+            ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
-                    this.$scope.show('/top/expedientes?expedienteId=' + data.expedienteId);
+                    this.$scope.show('/top/ofertas?ofertaId=' + data.ofertaId);
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -516,11 +552,13 @@ export default class ExpedientesForm extends JetView {
             });
     }
 
-    loadAgentes(agenteId) {
+    loadAgentes(agenteId, clienteId) {
         agentesService.getAgentes()
         .then(rows => {
+            
+
             var agentes = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
-            var list = $$("cmbAgentes").getList();
+            var list = $$("agentesList").getList();
             list.clearAll();
             list.parse(agentes);
             if(agenteId) { 
@@ -530,40 +568,7 @@ export default class ExpedientesForm extends JetView {
             }
             return;
         });
-    }
-
-
-    loadEstados(estadoExpedienteId) {
-        estadosService.getEstados()
-        .then(rows => {
-            var estados = generalApi.prepareDataForCombo('estadoExpedienteId', 'nombre', rows);
-            var list = $$("cmbEstados").getPopup().getList();
-            list.clearAll();
-            list.parse(estados);
-            if(estadoExpedienteId) { 
-                $$("cmbEstados").setValue(estadoExpedienteId);
-                $$("cmbEstados").refresh();
-            }
-            return;
-        });
-    }
-
-    
-    loadTiposVia(tipoViaId) {
-        tiposViaService.getTiposVia()
-        .then(rows => {
-            var tiposVia = generalApi.prepareDataForCombo('tipoViaId', 'nombre', rows);
-            var list = $$("cmbTiposVia").getPopup().getList();
-            list.clearAll();
-            list.parse(tiposVia);
-            if(tipoViaId) { 
-                $$("cmbTiposVia").setValue(tipoViaId);
-                $$("cmbTiposVia").refresh();
-            }
-            return;
-        });
-    }
-
+}
     loadClientesAgente(clienteId, agenteId) {
         if(agenteId) {
             clientesService.getClientesAgenteActivos(agenteId)
@@ -600,7 +605,7 @@ export default class ExpedientesForm extends JetView {
                     // a must be equal to b
                     return 0;
                   });
-                var list = $$("cmbClientes").getList();
+                var list = $$("clientesList").getList();
                 list.clearAll();
                 list.parse(clientes);
                     $$("cmbClientes").setValue(null);
@@ -614,12 +619,8 @@ export default class ExpedientesForm extends JetView {
         if(clienteId) {
             clientesService.getCliente(clienteId)
             .then(rows => {
-                this.loadTiposVia(rows.tipoViaId2);
-                $$('direccion').setValue(rows.direccion2);
-                $$('poblacion').setValue(rows.poblacion2);
-                $$('provincia').setValue(rows.provincia2);
-                $$('codPostal').setValue(rows.codPostal2);
-                //$$('cmbFormasPago').refresh()
+                $$('cmbFormasPago').setValue(rows.formaPagoId);
+                $$('cmbFormasPago').refresh()
             });
         }
     }
@@ -631,7 +632,7 @@ export default class ExpedientesForm extends JetView {
         tiposProyectoService.getTipoProyecto(tipoProyectoId)
         .then( row => {
             if(row) {
-                expedientesService.getSiguienteReferencia(row.abrev)
+                ofertasService.getSiguienteReferencia(row.abrev)
                 .then( row => {
                     var nuevaReferencia = row;
                     this.$$('referencia').setValue(nuevaReferencia);
@@ -647,7 +648,7 @@ export default class ExpedientesForm extends JetView {
     }
 
     
-/*     loadFormasPago(formaPagoId) {
+    loadFormasPago(formaPagoId) {
         formasPagoService.getFormasPago()
         .then( rows => {
             var formaspago = generalApi.prepareDataForCombo('formaPagoId', 'nombre', rows);
@@ -660,21 +661,9 @@ export default class ExpedientesForm extends JetView {
         .catch( err => {
             messageApi.errorMessageAjax(err);
         })
-    } */
-
-    loadTiposProfesionales(tipoProfesionalId) {
-        tiposProfesionalService.getTiposProfesional()
-        .then(rows => {
-            var tiposProfesionales = generalApi.prepareDataForCombo('tipoProfesionalId', 'nombre', rows);
-            var list = $$("cmbTiposProfesional").getPopup().getList();
-            list.clearAll();
-            list.parse(tiposProfesionales);
-            if(tipoProfesionalId) { 
-                $$("cmbTiposProfesional").setValue(tipoProfesionalId);
-                $$("cmbTiposProfesional").refresh();
-            }
-        });
     }
+
+
 
 /*     loadTiposProyecto(tipoProyectoId) {
         tiposProyectoService.getTiposProyecto(usuarioId)
@@ -688,9 +677,47 @@ export default class ExpedientesForm extends JetView {
                 $$("cmbTiposProyecto").refresh();
             }
         });
-    } */
+    }
+ */
 
+    loadTiposProyecto(tipoProyectoId) {
+        tiposProyectoService.getTiposProyecto(usuarioId)
+        .then(rows => {
+            var tiposProyecto = generalApi.prepareDataForCombo('tipoProyectoId', 'nombre', rows);
+            var list = $$("listTiposProyecto"); // Obtener la lista en lugar del combo
+    
+            list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+            list.parse(tiposProyecto); // Cargar los datos en la lista
+    
+            if (tipoProyectoId) {
+                list.select(tipoProyectoId); // Selecciona el ítem si hay un ID
+            }
+        });
+    }
 
+    
+    loadCapitulos(tipoProyectoId) {
+        capituloService.getCapitulos(usuarioId)
+        .then(rows => {
+            var capitulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
+            var list = $$("listCapitulos"); // Obtener la lista en lugar del combo
+    
+            list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+            list.parse(capitulos); // Cargar los datos en la lista
+        });
+    }
+
+    loadUnidadesObra(grupoArticuloId) {
+        unidadesObraService.getUnidadesObraGrupo(grupoArticuloId)
+        .then(rows => {
+            var capitulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
+            var list = $$("listUnidadesObra"); // Obtener la lista en lugar del combo
+    
+            list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+            list.parse(capitulos); // Cargar los datos en la lista
+        });
+    }
+    
    
     loadAgenteCliente(clienteId) {
         if(clienteId) {
@@ -723,7 +750,7 @@ export default class ExpedientesForm extends JetView {
     }
 
     loadNumero() {
-        expedientesService.getNumServicio()
+        ofertasService.getNumServicio()
         .then(row => {
             $$('numServicio').setValue(row);
         })
@@ -736,6 +763,18 @@ export default class ExpedientesForm extends JetView {
                                 messageApi.errorMessageAjax(err);
                             }
         })
+    }
+
+    loadExpediente(expediente) {
+        let rows = [];
+        rows.push(expediente);
+                var expedientes = generalApi.prepareDataForCombo('expedienteId', 'titulo', rows);
+                var list = $$("cmbExpedientes").getPopup().getList();
+                list.clearAll();
+                list.parse(expedientes);
+                $$("cmbExpedientes").setValue(expediente.expedienteId);
+                $$("cmbExpedientes").refresh();
+                return;
     }
 
     compruebaCobrosCliente(clienteId) {
@@ -766,104 +805,100 @@ export default class ExpedientesForm extends JetView {
         });
     }
 
+    /////
+
     
-    buscaAgentesActivos(query) {  
-        // Modifica la función para pasar la consulta al servicio
-        agentesService.getAgentesActivosQuery(query)
-            .then(rows => {
-                var agentes = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
-                var list = $$("cmbAgentes").getPopup().getList();;
-                var  popup = $$("cmbAgentes").getPopup();
-                list.clearAll();
-                list.parse(agentes);
-                //$$("cmbAgentes").setValue();
-                //$$("cmbAgentes").refresh();
-                popup.show(); 
-            })
-            .catch(error => {
-                console.error("Error al buscar agentes activos:", error);
-            });
-    }
-
-    buscaColaboradoresActivos(query, name, cmbId, colaboradorId) { 
-        let tipoComercial = 0;
-
-        switch (name) {
-            case "comercialId":
-               tipoComercial = 2
-                break;
-            case "jefeGrupoId":
-                tipoComercial = 3
-                break;
-            case "jefeObrasId":
-                tipoComercial = 5
-                break;
-            case "oficinaTecnicaId":
-                tipoComercial = 6
-                break;
-            case "asesorTecnicoId":
-                tipoComercial = 7
-                break;
-            default:
-                console.log("No hacemos nada.");
-        }
-        
-        console.log(name);
-        colaboradoresService.getColaboradoresActivosQuery(query, tipoComercial)
-            .then(rows => {
-                var comerciales = generalApi.prepareDataForCombo("comercialId", 'nombre', rows);
-                var list = $$(cmbId).getList();
-                var  popup = $$(cmbId).getPopup();
-                list.clearAll();
-                list.parse(comerciales);
-                //$$("cmbAgentes").setValue();
-                //$$("cmbAgentes").refresh();
-                if(colaboradorId) { 
-                    //$$('texto').setValue(agenteId)
-                    $$(cmbId).setValue(colaboradorId);
-                    $$(cmbId).refresh();
-                }  else{
-                    popup.show(); 
-                }
-
-                
-            })
-            .catch(error => {
-                console.error("Error al buscar agentes activos:", error);
-            });
-    }
-
-    loadComerciales(comercialId) {
-        colaboradoresService.getColaboradores()
-        .then(rows => {
-            var comerciales = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
-            var list = $$("cmbComerciales").getList();
-            list.clearAll();
-            list.parse(comerciales);
-            if(comercialId) { 
-                //$$('texto').setValue(agenteId)
-                $$("cmbComerciales").setValue(comercialId);
-                $$("cmbComerciales").refresh();
+        buscaColaboradoresActivos(query, name, cmbId, colaboradorId) { 
+            let tipoComercial = 0;
+    
+            switch (name) {
+                case "comercialId":
+                   tipoComercial = 2
+                    break;
+                case "jefeGrupoId":
+                    tipoComercial = 3
+                    break;
+                case "jefeObrasId":
+                    tipoComercial = 5
+                    break;
+                case "oficinaTecnicaId":
+                    tipoComercial = 6
+                    break;
+                case "asesorTecnicoId":
+                    tipoComercial = 7
+                    break;
+                default:
+                    console.log("No hacemos nada.");
             }
-            return;
-        });
-    }
+            
+            console.log(name);
+            colaboradoresService.getColaboradoresActivosQuery(query, tipoComercial)
+                .then(rows => {
+                    var comerciales = generalApi.prepareDataForCombo("comercialId", 'nombre', rows);
+                    var list = $$(cmbId).getList();
+                    var  popup = $$(cmbId).getPopup();
+                    list.clearAll();
+                    list.parse(comerciales);
+                    //$$("cmbAgentes").setValue();
+                    //$$("cmbAgentes").refresh();
+                    if(colaboradorId) { 
+                        //$$('texto').setValue(agenteId)
+                        $$(cmbId).setValue(colaboradorId);
+                        $$(cmbId).refresh();
+                    }  else{
+                        popup.show(); 
+                    }
     
-    buscaClientesActivos(query) {  
-        // Modifica la función para pasar la consulta al servicio
-        clientesService.getClientesActivosQuery(query)
-            .then(rows => {
-                var clientes = generalApi.prepareDataForCombo('clienteId', 'nombre', rows);
-                var list = $$("cmbClientes").getPopup().getList();;
-                var  popup = $$("cmbClientes").getPopup();
-                list.clearAll();
-                list.parse(clientes);
-                //$$("cmbAgentes").setValue();
-                //$$("cmbAgentes").refresh();
-                popup.show(); 
-            })
-            .catch(error => {
-                console.error("Error al buscar clientes activos:", error);
-            });
-    }
+                    
+                })
+                .catch(error => {
+                    console.error("Error al buscar agentes activos:", error);
+                });
+        }
+
+            loadAgenteCliente(clienteId) {
+                if(clienteId) {
+                    cliId = clienteId;
+                    agentesService.getAgenteCliente(clienteId)
+                    .then(rows => {
+                        this.loadAgentes(rows[0].comercialId);
+                        //this.loadClienteData(clienteId)
+                    });
+                }
+            }
+
+            loadAgentes(agenteId) {
+                agentesService.getAgentes()
+                .then(rows => {
+                    var agentes = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
+                    var list = $$("cmbAgentes").getList();
+                    list.clearAll();
+                    list.parse(agentes);
+                    if(agenteId) { 
+                        //$$('texto').setValue(agenteId)
+                        $$("cmbAgentes").setValue(agenteId);
+                        $$("cmbAgentes").refresh();
+                    }
+                    return;
+                });
+            }
+
+            buscaClientesActivos(query) {  
+                // Modifica la función para pasar la consulta al servicio
+                clientesService.getClientesActivosQuery(query)
+                    .then(rows => {
+                        var clientes = generalApi.prepareDataForCombo('clienteId', 'nombre', rows);
+                        var list = $$("cmbClientes").getPopup().getList();;
+                        var  popup = $$("cmbClientes").getPopup();
+                        list.clearAll();
+                        list.parse(clientes);
+                        //$$("cmbAgentes").setValue();
+                        //$$("cmbAgentes").refresh();
+                        popup.show(); 
+                    })
+                    .catch(error => {
+                        console.error("Error al buscar clientes activos:", error);
+                    });
+            }
+    
 }

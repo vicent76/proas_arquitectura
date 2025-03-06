@@ -284,6 +284,7 @@ export default class OfertasForm extends JetView {
             data.importeMantenedor = 0
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
+            data.esCoste = 0;
 
             ofertasService.postOferta(data)
                 .then((result) => {
