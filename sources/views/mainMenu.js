@@ -20,6 +20,7 @@ export default class MainMenu extends JetView {
                     data: [
                         {id: "parametrosForm", icon: "mdi mdi-settings", value: translate("Parametros")},
                         {id: "usuarios", icon: "mdi mdi-account-key", value: translate("Usuarios")},
+                        {id: "tiposProyecto", icon: "mdi mdi-swap-vertical", value: translate("Tipos de proyecto")},
                         {id: "capitulos", icon: "mdi mdi-swap-vertical", value: translate("Capitulos")},
                         {id: "unidadesObra", icon: "mdi mdi-swap-vertical", value: translate("Unidades de obra")}
                     ]

@@ -41,28 +41,7 @@ export const ofertasService = {
         })
 
     },
-    getSiguienteReferencia: (abrev) => {
-        return new webix.promise((success, fail) => {
-            devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/siguiente_referencia/" + abrev + "/" + true;
-                    return webix.ajax()
-                        .timeout(10000)
-                        .headers({
-                            "Content-Type": "application/json"
-                        })
-                        .get(url);
-                })
-                .then(function (result) {
-                    success(result.json());
-                })
-                .catch(function (inXhr) {
-                    fail(inXhr);
-                });
-        })
-
-    },
-
+ 
     getLineasOferta: (ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()

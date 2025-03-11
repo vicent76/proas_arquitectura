@@ -85,10 +85,10 @@ export default class OfertasCosteForm extends JetView {
                                                 view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
                                                 label: "Fecha de Solicitud", labelPosition: "top", required: true
                                             },
-                                            {
+                                          /*   {
                                                 view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
                                                 label: "Tipo proyecto", labelPosition: "top", options:{}
-                                            },
+                                            }, */
                                             {
                                                 view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
                                                 label: "Expediente", labelPosition: "top", options:{}
@@ -430,7 +430,7 @@ export default class OfertasCosteForm extends JetView {
         }
         ofertasService.getOferta(ofertaId)
             .then((oferta) => {
-                $$("cmbTiposProyecto").blockEvent();
+                //$$("cmbTiposProyecto").blockEvent();
                 delete oferta.empresa;
                 delete oferta.cliente;
                 delete oferta.tipo;
@@ -458,7 +458,7 @@ export default class OfertasCosteForm extends JetView {
                 this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
 
-                $$("cmbTiposProyecto").unblockEvent();
+                //$$("cmbTiposProyecto").unblockEvent();
                 
             })
             .catch((err) => {
@@ -468,10 +468,10 @@ export default class OfertasCosteForm extends JetView {
 
     cargarEventos() {   
 
-        $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
+       /*  $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
            if(newv == "" || !newv) return;
-           this.cambioTipoProyecto(newv)
-        });
+           //this.cambioTipoProyecto(newv)
+        }); */
     }
 
     cancel() {

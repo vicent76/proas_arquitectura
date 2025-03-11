@@ -110,10 +110,10 @@ export default class ExpedientesForm extends JetView {
                                                 view: "datepicker", id: "fecha", name: "fecha",  maxWidth: 150,
                                                 label: "Fecha", labelPosition: "top", required: true
                                             },
-                                           /*  {
+                                            {
                                                 view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
                                                 label: "Tipo proyecto", labelPosition: "top", options:{}
-                                            } */
+                                            },
                                         ]
                                     },
                                     {
@@ -142,6 +142,14 @@ export default class ExpedientesForm extends JetView {
                                                 view: "text", id: "contacto", name: "contacto",
                                                 label: "Contacto", labelPosition: "top"
                                             },
+                                            {
+                                                view: "text", type: "numeric",  id: 'importeObra', name: 'importeObra',
+                                                label: "Importe de la obra", labelPosition: "top", value: 0 ,
+                                                format: {
+                                                    edit : function(v){ return webix.Number.format(v, webix.i18n); },
+                                                    parse : function(v){ return webix.Number.parse(v, webix.i18n); }
+                                                  }
+                                            }
                                         ]
                                     },
                                     {
@@ -217,7 +225,7 @@ export default class ExpedientesForm extends JetView {
                                                 }
                                             },
                                            
-                                            {
+                                         /*    {
                                                 view: "combo", id: "cmbJefeObras", name: "jefeObrasId", 
                                                 label: "Jefe de obras", labelPosition: "top", minWidth: 130,
                                                 options:{},
@@ -234,8 +242,8 @@ export default class ExpedientesForm extends JetView {
                                                         }
                                                     }.bind(this)
                                                 }
-                                            },
-                                            {
+                                            }, */
+                                           /*  {
                                                 view: "combo", id: "cmbOficinaTecnica", name: "oficinaTecnicaId", 
                                                 label: "Oficina técnica", labelPosition: "top", minWidth: 130,
                                                 options:{},
@@ -252,7 +260,7 @@ export default class ExpedientesForm extends JetView {
                                                         }
                                                     }.bind(this)
                                                 }
-                                            },
+                                            }, */
                                             {
                                                 view: "combo", id: "cmbAsesorTecnico", name: "asesorTecnicoId", 
                                                 label: "Asesor técnico", labelPosition: "top", minWidth: 130,
@@ -365,8 +373,11 @@ export default class ExpedientesForm extends JetView {
     init(view, url) {
         _imprimirWindow = this.ui(OfertasEpisReport);
         this.cargarEventos();
+        languageService.setLanguage(this.app, 'es');
+       
+        
     }
-    
+
        
     urlChange(view, url) {
         if (url[0].params.NEW) {
@@ -378,7 +389,7 @@ export default class ExpedientesForm extends JetView {
         if (url[0].params.expedienteId) {
             expedienteId = url[0].params.expedienteId;
         }
-        this.cargarEventos();
+        //this.cargarEventos();
         this.load(expedienteId);
     }
     load(expedienteId) {
@@ -392,8 +403,8 @@ export default class ExpedientesForm extends JetView {
           
             this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", null);
             this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", null);
-            this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", null);
-            this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", null);
+            //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", null);
+            //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", null);
             this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", null);
             //this.loadMantenedores();
             //this.loadFormasPago();
@@ -407,7 +418,8 @@ export default class ExpedientesForm extends JetView {
         }
         expedientesService.getExpediente(expedienteId)
             .then((expediente) => {
-                //$$("cmbTiposProyecto").blockEvent();
+                $$("cmbTiposProyecto").blockEvent();
+                this.loadTiposProyecto(expediente.tipoProyectoId);  
                 delete expediente.empresa;
                 delete expediente.cliente;
                 delete expediente.estado;
@@ -427,17 +439,10 @@ export default class ExpedientesForm extends JetView {
                 this.loadEstados(expediente.estadoExpedienteId);
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
-                this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
-                this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
+                //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
+                //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
-                
-                //this.loadMantenedores(expediente.mantenedorId);
-                //this.loadTiposProyecto(expediente.tipoProyectoId);  
-                //lineasOferta.loadGrid(expediente.expedienteId, _imprimirWindow);
-                //basesOferta.loadGrid(expediente.expedienteId);
-                //proveedoresOferta.loadGrid(expediente.expedienteId, _imprimirWindow);
-                //this.loadFormasPago(expediente.formaPagoId);
-                //$$("cmbTiposProyecto").unblockEvent();
+                $$("cmbTiposProyecto").unblockEvent();
                 
             })
             .catch((err) => {
@@ -446,13 +451,10 @@ export default class ExpedientesForm extends JetView {
     }
 
     cargarEventos() {
-      
-   
-
-  /*       $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
+        $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
            if(newv == "" || !newv) return;
            this.cambioTipoProyecto(newv)
-        }); */
+        });
     }
 
     cancel() {
@@ -676,7 +678,7 @@ export default class ExpedientesForm extends JetView {
         });
     }
 
-/*     loadTiposProyecto(tipoProyectoId) {
+loadTiposProyecto(tipoProyectoId) {
         tiposProyectoService.getTiposProyecto(usuarioId)
         .then(rows => {
             var tiposProyecto = generalApi.prepareDataForCombo('tipoProyectoId', 'nombre', rows);
@@ -688,7 +690,7 @@ export default class ExpedientesForm extends JetView {
                 $$("cmbTiposProyecto").refresh();
             }
         });
-    } */
+    } 
 
 
    
@@ -848,6 +850,10 @@ export default class ExpedientesForm extends JetView {
             return;
         });
     }
+
+
+ 
+
     
     buscaClientesActivos(query) {  
         // Modifica la función para pasar la consulta al servicio
