@@ -8,7 +8,7 @@ import { generalApi } from "../utilities/general";
 import { agentesService } from "../services/agentes_service";
 import { colaboradoresService } from "../services/colaboradores_service";
 import { expedientesService } from "../services/expedientes_service";
-import { tiposProyectoService } from "../services/tipos_proyesto_service"
+import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
@@ -399,6 +399,7 @@ export default class ExpedientesForm extends JetView {
             this.loadClientes();
             this.loadEstados();
             this.loadTiposVia();
+            this.loadTiposProyecto();  
             //
           
             this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", null);

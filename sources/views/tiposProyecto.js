@@ -1,5 +1,5 @@
 import { JetView } from "webix-jet";
-import { tiposProyectoService } from "../services/tipos_proyesto_service";
+import { tiposProyectoService } from "../services/tipos_proyecto_service";
 import { usuarioService } from "../services/usuario_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
@@ -31,11 +31,11 @@ export default class TiposProyecto extends JetView {
                         let newId = webix.uid(); // Genera un ID único temporal
                         $$("tiposProyectoGrid").add({
                             id: newId,
-                            grupoArticuloId: 0, // Temporal, se asignará al guardar
+                            tipoProyectoId: 0, // Temporal, se asignará al guardar
                             nombre: "",
-                            referencia: "",
-                            departamentoId: 5,
-                            estecnico: 1
+                            abrev: "",
+                            tipoMantenimientoId: 5,
+                            esTecnico: 1
                         }, 0); // Agregar al inicio
                         $$("tiposProyectoGrid").edit(newId); // Editar automáticamente
                     }
@@ -76,7 +76,7 @@ export default class TiposProyecto extends JetView {
             pager: "mypager",
             select: "row",
             columns: [
-                { id: "grupoArticuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number" },
+                { id: "tipoProyectoId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number" },
                 { id: "nombre", fillspace: true, header: [translate("Nombre"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 200 },
                 { id: "abrev", adjust: "header", header: [translate("Abreviatura"), { content: "textFilter" }], sort: "string", editor: "text" },
                 { id: "tipoMantenimientoId", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text", hidden: true},
@@ -108,22 +108,23 @@ export default class TiposProyecto extends JetView {
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
                     var rowId = editor.row;
                     var rowData = this.getItem(rowId);
+                    delete rowData.departamento
 
-                    if ((state.value != state.old) || rowData.grupoArticuloId == 0) {
+                    if ((state.value != state.old) || rowData.tipoProyectoId == 0) {
                         if (!this.validate(rowId)) {
                             messageApi.errorMessage("Valores incorrectos");
                         } else {
                             delete rowData.id; // Asegurar que no se envíe un ID incorrecto
-                            if (rowData.grupoArticuloId == 0) {
-                                tiposProyectoService.postTiposProyecto(rowData)
+                            if (rowData.tipoProyectoId == 0) {
+                                tiposProyectoService.postTipoProyecto(rowData)
                                     .then((result) => {
-                                        rowData.grupoArticuloId = result.grupoArticuloId; // Actualizar con el ID real
+                                        rowData.tipoProyectoId = result.tipoProyectoId; // Actualizar con el ID real
                                         $$("tiposProyectoGrid").updateItem(rowId, rowData);
                                         $$("tiposProyectoGrid").editStop();
                                     })
                                     .catch((err) => handleServerError(err));
                             } else {
-                                tiposProyectoService.putTiposProyecto(rowData)
+                                tiposProyectoService.putTipoProyecto(rowData)
                                     .catch((err) => handleServerError(err));
                             }
                         }
@@ -149,8 +150,8 @@ export default class TiposProyecto extends JetView {
         usuarioService.checkLoggedUser();
         languageService.setLanguage(this.app, 'es');
         var id = null;
-        if (url[0].params.grupoArticuloId) {
-            id = url[0].params.grupoArticuloId;
+        if (url[0].params.tipoProyectoId) {
+            id = url[0].params.tipoProyectoId;
         }
         webix.UIManager.addHotKey("Esc", function () {
             $$('tiposProyectoGrid').remove(-1);
@@ -163,7 +164,7 @@ export default class TiposProyecto extends JetView {
         tiposProyectoService.getTiposProyecto()
             .then((data) => {
                 $$("tiposProyectoGrid").clearAll();
-                $$("tiposProyectoGrid").parse(generalApi.prepareDataForDataTable("grupoArticuloId", data));
+                $$("tiposProyectoGrid").parse(generalApi.prepareDataForDataTable("tipoProyectoId", data));
                 if (id) {
                     $$("tiposProyectoGrid").select(id);
                     $$("tiposProyectoGrid").showItem(id);
@@ -185,7 +186,7 @@ export default class TiposProyecto extends JetView {
             });
     }
     edit(id) {
-        this.show('/top/tiposProyectoForm?grupoArticuloId=' + id);
+        this.show('/top/tiposProyectoForm?tipoProyectoId=' + id);
     }
     delete(id, name) {
         const translate = this.app.getService("locale")._;
@@ -197,7 +198,7 @@ export default class TiposProyecto extends JetView {
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
-                    tiposProyectoService.deleteTiposProyecto(id)
+                    tiposProyectoService.deleteTipoProyecto(id)
                         .then(result => {
                             self.load();
                         })

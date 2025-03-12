@@ -6,7 +6,7 @@ import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { agentesService } from "../services/agentes_service";
 import { ofertasService } from "../services/ofertas_service";
-import { tiposProyectoService } from "../services/tipos_proyesto_service"
+import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
@@ -17,6 +17,7 @@ import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { capituloService } from "../services/capitulo_service";
 import { unidadesObraService } from "../services/unidades_obra_service";
+import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
 
 
 
@@ -28,7 +29,7 @@ var limiteCredito = 0;
 var importeCobro = 0;
 var _imprimirWindow;
 var cliId = null;
-
+var cap = null;
 
 export default class OfertasCosteForm extends JetView {
     config() {
@@ -122,67 +123,7 @@ export default class OfertasCosteForm extends JetView {
                                                     
                                         ]
                                     },
-                                    {
-                                        cols: [
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Tipos de Proyecto", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listTiposProyecto",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                this.$scope.loadCapitulos(id);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Capítulos", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listCapitulos",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                this.$scope.loadUnidadesObra(id);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Partidas", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listUnidadesObra",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                // this.loadUnidadesObra(id);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    },                                    
+                                                                 
                                     
                                     {
                                         cols: [
@@ -271,7 +212,7 @@ export default class OfertasCosteForm extends JetView {
                                                 }
                                             },
                                            
-                                            {
+                                         /*    {
                                                 view: "combo", id: "cmbJefeObras", name: "jefeObrasId", 
                                                 label: "Jefe de obras", labelPosition: "top", minWidth: 130,
                                                 options:{},
@@ -288,8 +229,8 @@ export default class OfertasCosteForm extends JetView {
                                                         }
                                                     }.bind(this)
                                                 }
-                                            },
-                                            {
+                                            }, */
+                                            /* {
                                                 view: "combo", id: "cmbOficinaTecnica", name: "oficinaTecnicaId", 
                                                 label: "Oficina técnica", labelPosition: "top", minWidth: 130,
                                                 options:{},
@@ -306,7 +247,7 @@ export default class OfertasCosteForm extends JetView {
                                                         }
                                                     }.bind(this)
                                                 }
-                                            },
+                                            }, */
                                             {
                                                 view: "combo", id: "cmbAsesorTecnico", name: "asesorTecnicoId", 
                                                 label: "Asesor técnico", labelPosition: "top", minWidth: 130,
@@ -347,6 +288,70 @@ export default class OfertasCosteForm extends JetView {
                                             },
                                         ]
                                     },
+                                    {
+                                        cols: [
+                                            {
+                                                rows: [
+                                                    { view: "label", label: "Tipos de Proyecto", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listTiposProyecto",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                this.$scope.loadCapitulos(id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                rows: [
+                                                    { view: "label", label: "Capítulos", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listCapitulos",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                cap = id;
+                                                                this.$scope.loadUnidadesObra(id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                rows: [
+                                                    { view: "label", label: "Partidas", align: "left" },
+                                                    {
+                                                        view: "list",
+                                                        id: "listUnidadesObra",
+                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
+                                                        select: true, // Permite seleccionar elementos
+                                                        autoheight: false,
+                                                        height: 200,
+                                                        scroll: "y",
+                                                        on: {
+                                                            onItemClick: function (id) {
+                                                                var cliId = $$('cmbClientes').getValue();
+                                                                
+                                                                LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id);
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },      
                                     _lineasOferta,
                                     { minWidth : 100},
                                     _basesOferta
@@ -407,15 +412,15 @@ export default class OfertasCosteForm extends JetView {
                 this.loadAgentes(expediente.agenteId);
                 this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
                 this.loadFormasPago();
-                this.loadTiposProyecto();  
+                this.loadTiposProyecto(expediente.tipoProyectoId);  
                 this.loadExpediente(expediente);
                 $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
                 this.$$("referencia").setValue(expediente.referencia);
 
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
-                this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
-                this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
+                //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
+                //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
 
                 //this.loadMantenedores();
@@ -454,8 +459,8 @@ export default class OfertasCosteForm extends JetView {
 
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", oferta.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", oferta.jefeGrupoId)
-                this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
-                this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
+                //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
+                //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
 
                 //$$("cmbTiposProyecto").unblockEvent();
@@ -691,6 +696,7 @@ export default class OfertasCosteForm extends JetView {
     
             if (tipoProyectoId) {
                 list.select(tipoProyectoId); // Selecciona el ítem si hay un ID
+                this.loadCapitulos(tipoProyectoId);
             }
         });
     }

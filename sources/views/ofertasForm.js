@@ -6,7 +6,7 @@ import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { agentesService } from "../services/agentes_service";
 import { ofertasService } from "../services/ofertas_service";
-import { tiposProyectoService } from "../services/tipos_proyesto_service"
+import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";

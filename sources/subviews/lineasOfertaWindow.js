@@ -440,23 +440,24 @@ export const LineasOfertaWindow = {
 
         return
     },
-    loadWindow: (ofertaid, ofertaLineaid, cliid) => {
+    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId) => {
         var tipo;
         tarifaProveedorId = null;
         contaError = 0;
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
+        
         $$('lineasOfertaWindow').show();
         if (ofertaLineaId) {
             LineasOfertaWindow.bloqueaEventos();
         } else {
-            LineasOfertaWindow.limpiaWindow();
+            LineasOfertaWindow.limpiaWindow(grupoArticuloId, articuloId);
         }
 
     },
 
-    limpiaWindow: () => {
+    limpiaWindow: (grupoArticuloId, articuloId) => {
         $$('porcentaje').setValue(0);
         $$('porcentajeProveedor').setValue(0);
         $$('importeCliente').setValue(0);
@@ -474,7 +475,11 @@ export const LineasOfertaWindow = {
         $$('totalLineaProveedorIva').setValue(0);
         $$('descripcion').setValue('');
         LineasOfertaWindow.loadProveedores(null);
-        LineasOfertaWindow.loadGruposArticulo(null, null);
+        if(grupoArticuloId && articuloId) {
+            LineasOfertaWindow.loadGruposArticulo(grupoArticuloId, articuloId);
+        } else {
+            LineasOfertaWindow.loadGruposArticulo(null, null);
+        }
         LineasOfertaWindow.loadUnidades(null);
         LineasOfertaWindow.loadTiposIvaCliente(null);
         LineasOfertaWindow.loadTiposIvaProveedor(null);

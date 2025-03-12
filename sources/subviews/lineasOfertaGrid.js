@@ -122,7 +122,7 @@ export const lineasOferta = {
                     try{
 
                     }catch(e) {
-                        LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId, proId, );
+                        LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId, proId );
                     }
                    
                 }
