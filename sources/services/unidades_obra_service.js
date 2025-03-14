@@ -4,7 +4,7 @@ export const unidadesObraService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + `/api/articulos/usuario/departamento/${usuarioId}/${departamentoId}`;
+                    var url = conf.urlApi + `/api/articulos/usuario/departamento/tecnico/${usuarioId}/${departamentoId}`;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

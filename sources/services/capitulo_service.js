@@ -2,11 +2,11 @@ import { cookieApi } from "../utilities/cookies";
 import { devConfig } from "../config/config";
 export const capituloService = {
 
-    getCapitulos: () => {
+    getCapitulos: (tipoProyectoId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo";
+                    var url = conf.urlApi + "/api/grupo_articulo/departamento/son/tecnicos/" + 5;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -22,11 +22,11 @@ export const capituloService = {
                 });
         });
     },
-    getCapitulo: (grupoArticuloId) => {
+    getCapitulosPorGrupo: (grupoArticuloId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig().
                 then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/" + grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo/departamento/son/tecnicos/"  + 5 + "/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

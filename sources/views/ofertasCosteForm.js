@@ -11,7 +11,6 @@ import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
-import { proveedoresOferta } from "../subviews/proveedoresOfertaGrid";
 import { basesOferta } from "../subviews/basesOfertaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
@@ -35,7 +34,6 @@ export default class OfertasCosteForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOferta.getGrid(this.app);
-        const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
         const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
@@ -363,20 +361,6 @@ export default class OfertasCosteForm extends JetView {
                         ],
                         scroll:true
                     }
-                },
-                {
-                    header:  "Lineas proveedores",
-                    body: {
-                    //solapa ofertas
-                    view: "layout",
-                    id: "proveedoresGrid",
-                    multiview: true,
-                    rows: [    
-                        _proveedoresOferta,
-                        { minheight: 500},
-                    ]
-                    }
-                    
                 }
     ]
         }
@@ -425,8 +409,7 @@ export default class OfertasCosteForm extends JetView {
 
                 //this.loadMantenedores();
                 lineasOferta.loadGrid(null, null);
-                basesOferta.loadGrid(null);
-                proveedoresOferta.loadGrid(null, null);    
+                basesOferta.loadGrid(null); 
             })
             .catch((err) => {
                 messageApi.errorMessageAjax(err);
@@ -444,7 +427,6 @@ export default class OfertasCosteForm extends JetView {
                 delete oferta.formaPago
                 oferta.fechaOferta = new Date(oferta.fechaOferta);
                 $$("frmOfertas").setValues(oferta);
-                //this.loadTiposProfesional(oferta.tipoProfesionalId);
                 this.loadAgentes(oferta.agenteId);
                 this.loadEmpresas(oferta.empresaId);
                 this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
@@ -452,7 +434,6 @@ export default class OfertasCosteForm extends JetView {
                 this.loadTiposProyecto(oferta.tipoProyectoId);  
                 lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
                 basesOferta.loadGrid(oferta.ofertaId);
-                proveedoresOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
                 this.loadFormasPago(oferta.formaPagoId);
 
                 ////
@@ -472,7 +453,7 @@ export default class OfertasCosteForm extends JetView {
     }
 
     cargarEventos() {   
-
+  
        /*  $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
            if(newv == "" || !newv) return;
            //this.cambioTipoProyecto(newv)
@@ -480,7 +461,7 @@ export default class OfertasCosteForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/ofertas');
+        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
     }
     accept() {
         if (!$$("frmOfertas").validate()) {
@@ -488,6 +469,7 @@ export default class OfertasCosteForm extends JetView {
             return;
         }
         var data = $$("frmOfertas").getValues();
+        
        
         if (ofertaId == 0) {
             data.ofertaId = 0;
@@ -518,6 +500,13 @@ export default class OfertasCosteForm extends JetView {
                             }
                 });
         } else {
+            delete data.direccion;
+            delete data.codpostal;
+            delete data.poblacion;
+            delete data.provincia;
+            delete data.tipoViaId;
+            delete data.comercialCliente;
+            //
             data.porcentajeBeneficio = 0
             data.importeBeneficio = 0
             data.porcentajeAgente = 0
@@ -525,7 +514,7 @@ export default class OfertasCosteForm extends JetView {
             data.importeMantenedor = 0
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
-                    this.$scope.show('/top/ofertas?ofertaId=' + data.ofertaId);
+                    this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -703,7 +692,7 @@ export default class OfertasCosteForm extends JetView {
 
     
     loadCapitulos(tipoProyectoId) {
-        capituloService.getCapitulos(usuarioId)
+        capituloService.getCapitulosPorGrupo(tipoProyectoId)
         .then(rows => {
             var capitulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
             var list = $$("listCapitulos"); // Obtener la lista en lugar del combo

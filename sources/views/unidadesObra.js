@@ -102,21 +102,13 @@ export default class UnidadesObra extends JetView {
                 { id: "nombre", header: [translate("Unidad de obra"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 250 },
                 { 
                     id: "descripcion", 
-                    header: [translate("Descripcion"), { content: "textFilter" }], 
+                    header: ["Descripción", { content: "textFilter" }], 
                     sort: "string", 
-                    editor: "text",
-                    width: 350,
-                    on: {
-                        onItemClick: function (id, e, node) {
-                            // Verifica si el clic fue en la columna "descripcion"
-                            if (id.column === "descripcion") {
-                                let datatable = this;
-                                let currentValue = datatable.config.fixedRowHeight;
-                                
-                                datatable.define("fixedRowHeight", !currentValue); // Cambia el valor
-                                datatable.refresh(); // Aplica el cambio
-                            }
-                        }
+                    width: 350, 
+                    fillspace: true, 
+                    editor: "popup", // 🔹 Usa un editor emergente
+                    template: function(obj) {
+                        return obj.descripcion.replace(/\n/g, "<br>"); // 🔹 Muestra saltos de línea correctamente
                     }
                 },
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" }, minWidth: 100 }
@@ -187,6 +179,20 @@ export default class UnidadesObra extends JetView {
                     var numReg = $$("unidadesObraGrid").count();
                     $$("CapitulosNReg").config.label = "NREG: " + numReg;
                     $$("CapitulosNReg").refresh();
+                },
+                "onEditorKeyPress": function(code, e) {
+                    let editor = this.getEditor();
+                    if (editor) {
+                        if (code === 13 && !e.shiftKey) { // Enter normal guarda y cierra
+                            let input = editor.getInputNode();
+                            input.value += "\n";
+                            return false; // Evita que Webix cierre el editor
+                        } else if (code === 13 && e.shiftKey) { // Shift+Enter agrega salto de línea
+                            let input = editor.getInputNode();
+                            input.value += "\n";
+                            return false; // Evita que Webix cierre el editor
+                        }
+                    }
                 }
             }
         }
@@ -281,3 +287,12 @@ export default class UnidadesObra extends JetView {
         this.load();
     }    
 }
+
+
+
+webix.editors.$popup = {
+    text:{
+        view:"popup", 
+        body:{view:"textarea", width:550, height:550}
+    }
+};

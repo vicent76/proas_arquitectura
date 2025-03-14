@@ -12,6 +12,7 @@ import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
+import { ofertasCoste } from '../subviews/ofertasCosteGrid'
 
 
 
@@ -23,17 +24,20 @@ var limiteCredito = 0;
 var importeCobro = 0;
 var _imprimirWindow;
 var cliId = null;
+var desdeCoste = null;
 
 
 export default class ExpedientesForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
+        const _ofertasCoste = ofertasCoste.getGrid(this.app);
         //const _lineasOferta = lineasOferta.getGrid(this.app);
         //const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
         //const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
             view: "tabview",
+            id: "tabViewExpediente",
             cells: [
                 {
                     header:  "Datos",
@@ -333,14 +337,7 @@ export default class ExpedientesForm extends JetView {
                     id: "presupuestoCosteGrid",
                     multiview: true,
                     rows: [
-                        {
-                            padding: 10,cols: [
-                                { view: "button", label: "Crear presupuesto coste", type: "form", width: 300, click: () => {
-                                    this.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId);
-                                } }
-                            ]
-                        },
-                        {minHeight: 100}
+                        _ofertasCoste
                     ]
                     }
                     
@@ -361,7 +358,6 @@ export default class ExpedientesForm extends JetView {
                                 } }
                             ]
                         },
-                        {minHeight: 100}
                     ]
                     }
                     
@@ -374,7 +370,6 @@ export default class ExpedientesForm extends JetView {
         _imprimirWindow = this.ui(OfertasEpisReport);
         this.cargarEventos();
         languageService.setLanguage(this.app, 'es');
-       
         
     }
 
@@ -389,10 +384,24 @@ export default class ExpedientesForm extends JetView {
         if (url[0].params.expedienteId) {
             expedienteId = url[0].params.expedienteId;
         }
+        if (url[0].params.desdeCoste) {
+            desdeCoste = url[0].params.desdeCoste;
+        } else {
+            desdeCoste = null;
+        }
         //this.cargarEventos();
         this.load(expedienteId);
     }
     load(expedienteId) {
+        if(desdeCoste) { 
+            const savedTab = localStorage.getItem("activeTab");
+            if (savedTab) {
+                $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
+            }
+        } else {
+            localStorage.removeItem("activeTab")
+        }
+        
         if (expedienteId == 0) {
             this.loadEmpresas();
             this.loadAgentes();
@@ -444,6 +453,8 @@ export default class ExpedientesForm extends JetView {
                 //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
                 $$("cmbTiposProyecto").unblockEvent();
+
+                ofertasCoste.loadGrid(expediente.expedienteId, null)
                 
             })
             .catch((err) => {

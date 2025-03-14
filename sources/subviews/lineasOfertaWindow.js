@@ -8,8 +8,6 @@ import { clientesService } from "../services/clientes_service";
 import { tiposIvaService } from "../services/tipos_iva_service";
 import { unidadesService } from "../services/unidades_service";
 import { ofertasService } from "../services/ofertas_service";
-import { proveedoresService } from "../services/proveedores_service";
-import { tiposProfesionalService } from "../services/tiposProfesional_service";
 import { articulosService } from "../services/articulos_service";
 import { infoTarifasGridWindow } from "../subviews/info_tarifas_grid";
 import { OfertasForm } from "../views/ofertasForm";
@@ -20,12 +18,6 @@ var ofertaId;
 var ofertaLineaId;
 var articulos;
 var cliId;
-var proId;
- ;
-var contaError;
-var tipIvaCli = 0;
-var texto;
-var tarifaProveedorId;
 var antcod = null;
 
 
@@ -152,66 +144,7 @@ export const LineasOfertaWindow = {
                         ]
                     }
                 },
-                {
-                     view:"fieldset", 
-                    label:"PROVEEDOR",
-                    id: "proveedor",
-                    body: {
-                        rows: [
-                            {
-                                cols: [
-                                    {
-                                        view: "combo", id: "cmbProveedores", name: "proveedorId",
-                                        label: "Proveedor (empezar busquedas con @)", labelPosition: "top", width: 350,
-                                        suggest:{
-                                            view:"mentionsuggest",
-                                            id: "proveedoresList",
-                                            data: [] 
-                                        }        
-                                    },
-                                    {
-                                        view: "combo", id: "cmbTiposIvaProveedor", name: "tipoIvaProveedorId",  options: {},
-                                        label: "IVA", labelPosition: "top", minWidth: 80
-                                    },
-                                    {
-                                        view: "text", id: "porcentajeProveedor", name: "porcentajeProveedor",
-                                        label: "Porcentaje Proveedor", labelPosition: "top", minwidth: 80,format: "1.00", hidden: true
-                                    },
-                                    {
-                                        view: "text", id: "importeProveedor", name: "importeProveedor",
-                                        label: "coste/ud", labelPosition: "top", minwidth: 80,format: "1.00"
-                                    },
-                                    {
-                                        view: "text", id: "perdtoProveedor", name: "perdtoProveedor",
-                                        label: "% Descuento", labelPosition: "top", minwidth: 80,format: "1.00"
-                                    },
-                                    
-                                    
-                                ]
-                            },
-                            {
-                                cols: [
-                                    {
-                                        view: "text", id: "precioProveedor", value: 0, name: "precioProveedor", 
-                                        label: "Precio", labelPosition: "top", minWidth: 100, format: "1,00", disabled: true
-                                    },
-                                    {
-                                        view: "text", id: "dtoProveedor", value: 0, name: "dtoProveedor", disabled: true, required: true,
-                                        label: "Importe descuento", labelPosition: "top", minWidth: 100, format: "1.00"
-                                    },
-                                    {
-                                        view: "text", id: "costeLineaProveedor", name: "costeLineaProveedor",
-                                        label: "total coste", labelPosition: "top", minwidth: 80,format: "1,00", disabled: true
-                                    },
-                                    {
-                                        view: "text", id: "totalLineaProveedorIva", name: "totalLineaProveedorIva", hidden: true,
-                                        label: "total con iva", labelPosition: "top", minwidth: 80,format: "1,00", disabled: true
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                },
+              
                 {
                     margin: 5, cols: [
                         { gravity: 5 },
@@ -259,15 +192,12 @@ export const LineasOfertaWindow = {
          $$("cantidad").attachEvent("onFocus", function(current_view, prev_view){
             $$('cantidad').setValue('');
             $$('precioCliente').setValue(0);
-            $$('precioProveedor').setValue(0);
             $$('coste').setValue(0);
         });
 
         $$("cantidad").attachEvent("onBlur", function(a, b){
             var uni = $$('cantidad').getValue();
-            var prePro = $$('importeProveedor').getValue();
             var preCli = $$('importeCliente').getValue();
-            var porPro = $$('porcentajeProveedor').getValue();
         
             if(preCli != "") {
                 preCli = parseFloat(preCli);
@@ -282,65 +212,7 @@ export const LineasOfertaWindow = {
                 } else {
                     $$('coste').setValue(precioCli);
                 }
-            }
-            
-            if(prePro != '') {
-                prePro = parseFloat(prePro);
-                var precioPro = parseFloat(uni * prePro);
-                $$('precioProveedor').setValue(precioPro);
-
-                //calculamos el descuento  del proveedor
-                var dtoPro =  ($$('dtoProveedor').getValue());
-                if(dtoPro != '' || dtoPro > 0) {
-                    dtoPro = parseFloat(dtoPro);
-                    $$('costeLineaProveedor').setValue(precioPro-dtoPro);
-                } else {
-                    $$('costeLineaProveedor').setValue(precioPro);
-                }
-
-                //caculamos el iva del proveedor
-                if(porPro !== null) {
-                    var total = $$('costeLineaProveedor').getValue();
-                    var porIva = porPro / 100;
-                    var totalProIva = total + (total * porIva);
-                    $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
-                 }
-            }
-
-            
-           
-         });
-
-         $$("importeProveedor").attachEvent("onChange", function(newv, oldv){
-            var prePro = parseFloat(newv);
-            var uni = $$('cantidad').getValue();
-            var porPro = $$('porcentajeProveedor').getValue();
-            if(uni != "") {
-                var uni = parseFloat(uni);
-            }
-           
-            if(uni != "") {
-                var precioPro = parseFloat(uni * prePro);
-                $$('precioProveedor').setValue(precioPro);
-            
-                 //calculamos el descuento  del cliente
-                 var dtoPro =  ($$('dtoProveedor').getValue());
-                 if(dtoPro != '' || dtoPro > 0) {
-                    dtoPro = parseFloat(dtoPro);
-                     $$('costeLineaProveedor').setValue(precioPro-dtoPro);
-                 } else {
-                     $$('costeLineaProveedor').setValue(precioPro);
-                 }
-
-                 //caculamos el iva del proveedor
-                if(porPro !== null) {
-                    var total = $$('costeLineaProveedor').getValue();
-                    var porIva = porPro / 100;
-                    var totalProIva = total + (total * porIva);
-                    $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
-                 }
-
-            }
+            }           
          });
 
          $$("importeCliente").attachEvent("onChange", function(newv, oldv){
@@ -374,13 +246,6 @@ export const LineasOfertaWindow = {
              }
          });
 
-         $$("cmbTiposIvaProveedor").attachEvent("onChange", function(newv, oldv){
-            var tipo;
-            if(newv != ""){
-                LineasOfertaWindow.cambioTipoIvaProveedor(newv)
-             }
-         });
-
          $$('perdto').attachEvent("onBlur", function(a, b) {
              //calculo en caso de descuento cliente
              var perdto = $$('perdto').getValue();
@@ -399,51 +264,9 @@ export const LineasOfertaWindow = {
 
          });
 
-
-         //Eventos del proveedor
-
-         $$("proveedoresList").attachEvent("onValueSuggest", function(obj){
-            if(!obj) return;
-            LineasOfertaWindow.recuperaTarifaProveedor(obj.id);
-            LineasOfertaWindow.recuperaIvaProveedor(obj.id);
-            
-         });
-
-
-
-         $$('perdtoProveedor').attachEvent("onBlur", function(a, b) {
-            //calculo en caso de descuento proveedor
-            var perdtoPro = $$('perdtoProveedor').getValue();
-            var precio =  $$('precioProveedor').getValue();
-            var porPro = $$('porcentajeProveedor').getValue();
-            if((perdtoPro > 0 || perdtoPro != '') && (precio > 0 || precio != '')) {
-               perdtoPro = parseFloat(perdtoPro);
-               precio =   parseFloat(precio);
-
-               perdtoPro = perdtoPro / 100;
-               var descuento = parseFloat(precio * perdtoPro);
-               //se calcula el descuento cliente
-               $$('dtoProveedor').setValue(descuento);
-               var resultado = parseFloat(precio-descuento);
-               $$('costeLineaProveedor').setValue(resultado);
-
-               //caculamos el iva del proveedor
-               if(porPro !== null) {
-                var total = $$('costeLineaProveedor').getValue();
-                var porIva = porPro / 100;
-                var totalProIva = total + (total * porIva);
-                $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
-             }
-           }
-
-        });
-
         return
     },
     loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId) => {
-        var tipo;
-        tarifaProveedorId = null;
-        contaError = 0;
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
@@ -459,22 +282,14 @@ export const LineasOfertaWindow = {
 
     limpiaWindow: (grupoArticuloId, articuloId) => {
         $$('porcentaje').setValue(0);
-        $$('porcentajeProveedor').setValue(0);
         $$('importeCliente').setValue(0);
         $$('perdto').setValue(0);
         $$('dto').setValue(0);
         $$('coste').setValue(0);
         $$('precioCliente').setValue(0);
-        $$('importeProveedor').setValue(0);
-        $$('precioProveedor').setValue(0);
         $$('perdto').setValue(0);
         $$('dto').setValue(0);
-        $$('perdtoProveedor').setValue(0);
-        $$('dtoProveedor').setValue(0);
-        $$('costeLineaProveedor').setValue(0);
-        $$('totalLineaProveedorIva').setValue(0);
         $$('descripcion').setValue('');
-        LineasOfertaWindow.loadProveedores(null);
         if(grupoArticuloId && articuloId) {
             LineasOfertaWindow.loadGruposArticulo(grupoArticuloId, articuloId);
         } else {
@@ -482,7 +297,6 @@ export const LineasOfertaWindow = {
         }
         LineasOfertaWindow.loadUnidades(null);
         LineasOfertaWindow.loadTiposIvaCliente(null);
-        LineasOfertaWindow.loadTiposIvaProveedor(null);
         LineasOfertaWindow.nuevaLinea();
     },
 
@@ -518,8 +332,6 @@ export const LineasOfertaWindow = {
 
     bloqueaEventos: () => {
         $$("cmbTiposIvaCliente").blockEvent();
-        $$("cmbTiposIvaProveedor").blockEvent();
-        $$("importeProveedor").blockEvent();
         $$("importeCliente").blockEvent();
         $$("cmbArticulos").blockEvent();
         $$("cmbGrupoArticulo").blockEvent();
@@ -529,10 +341,8 @@ export const LineasOfertaWindow = {
             var datos = data[0]
             $$("LineasOfertafrm").clear();
             $$("LineasOfertafrm").setValues(datos);
-            LineasOfertaWindow.loadProveedores(datos.proveedorId);
             LineasOfertaWindow.loadUnidades(datos.unidadId);
             LineasOfertaWindow.loadTiposIvaCliente(datos.tipoIvaId);
-            LineasOfertaWindow.loadTiposIvaProveedor(datos.tipoIvaProveedorId);
             LineasOfertaWindow.recuperaCapituloId(datos.articuloId);
         })
         .catch((err) => {
@@ -554,8 +364,6 @@ export const LineasOfertaWindow = {
 
     desbloqueaEventos: () => {
         $$("cmbTiposIvaCliente").unblockEvent();
-        $$("cmbTiposIvaProveedor").unblockEvent();
-        $$("importeProveedor").unblockEvent();
         $$("importeCliente").unblockEvent();
         $$("cmbArticulos").unblockEvent();
         $$("cmbGrupoArticulo").unblockEvent();
@@ -571,8 +379,6 @@ export const LineasOfertaWindow = {
     enviaDatos: () => {
                 var data = $$("LineasOfertafrm").getValues();
                 data = LineasOfertaWindow.formateaDatos(data);
-                if(data.proveedorId == "") data.proveedorId = null;
-                if(data.tipoIvaProveedorId == "") data.tipoIvaProveedorId = null;
                 // controlamos si es un alta o una modificación.
                 if (data.ofertaLineaId) {
                     // Es una modificación
@@ -614,7 +420,6 @@ export const LineasOfertaWindow = {
         delete data.grupoArticuloId;
         data.ofertaId = ofertaId;
         data.totalLinea = $$('coste').getValue();
-        data.totalLineaProveedor = $$('costeLineaProveedor').getValue();
         data.porcentajeBeneficio = 0;
         data.porcentajeAgente = 0;
         return data;
@@ -669,8 +474,6 @@ export const LineasOfertaWindow = {
             
             LineasOfertaWindow.refreshLineas(ofertaId);
             LineasOfertaWindow.refreshBases(ofertaId);
-            LineasOfertaWindow.refreshProveedoresOferta(ofertaId);
-        
         } 
     },
 
@@ -719,96 +522,7 @@ export const LineasOfertaWindow = {
     },
 
 
-    refreshProveedoresOferta: (ofertaId) => {
-        ofertasService.getProveedoresOferta(ofertaId)
-        .then(rows => {
-            if(rows.length > 0) {
-                for(var i = 0; i < rows.length; i++) {
-                    if(rows[i].proveedorId == null) {
-                        rows[i].proveedorId =  0;
-                        rows[i].proveedornombre = "Sin proveedor asignado";
-                        rows[i].totalProveedorIva = rows[i].totalLinea;
-                        
-                    }
-                }
-                $$("proveedoresOfertaGrid").clearAll();
-                $$("proveedoresOfertaGrid").parse(generalApi.prepareDataForDataTable("proveedorId", rows));
-                var numReg = $$("proveedoresOfertaGrid").count();
-                $$("poeveedoresNReg").config.label = "NREG: " + numReg;
-                $$("poeveedoresNReg").refresh();
-            }else {
-                $$("proveedoresOfertaGrid").clearAll();
-            }
-        })
-        .catch((err) => {
-            messageApi.errorMessageAjax(err);
-        });
-    },
 
-    loadCodigosArticulos: (codigoReparacion, tipoProfesionalId) => {
-        $$('tarifas').show();
-        var tipo;
-        if(tipoProfesionalId) {
-            tipo = tipoProfesionalId;
-           
-        } else {
-            tipo = $$("cmbTipoProfesionales2").getValue();
-        }
-        proveedoresService.getTarifaProveedorProfesion(tipo, $$("cmbProveedores").getValue())
-            .then(rows => {
-                if(rows.length == 0) {
-                    messageApi.errorMessage("No existe ningúna tarifa asociada a este proveedor.");
-                    $$('tarifas').hide();
-                   
-                }
-
-                if(!tarifaProveedorId && rows.length > 0) {
-                    tarifaProveedorId = rows[0].tarifaProveedorId;
-                    LineasOfertaWindow.loadTiposProfesionales(tipo);
-                }
-
-                //eliminamos campos nulos
-                for(var i= 0; i < rows.length; i++) {
-                    if(!rows[i].codigoReparacion) {
-                        rows.splice(i,1);
-                        i = 0
-                    }
-                }
-                //del resultado de eliminar volvemos a comprobar si campos nulos
-                for(var i= 0; i < rows.length; i++) {
-                    if(!rows[i].codigoReparacion) {
-                        rows.splice(i,1);
-                        i = 0
-                    }
-                }
-
-                //si el IVa es nulo lo ponemos como exento
-                for(var i= 0; i < rows.length; i++) {
-                    if(!rows[i].porceIva) {
-                        rows[i].porceIva = 0
-                    }
-                }
-
-                
-                
-                articulos = rows//guardamos los articulos
-                //procesamos los campos que no son nulos
-                var codigos = generalApi.prepareDataForCombo('codigoReparacion', 'codigoReparacion', rows);
-                var list = $$("cmbCodigo").getPopup().getList();
-                list.clearAll();
-                list.parse(codigos);
-                if (codigoReparacion) {
-                    $$("cmbCodigo").setValue(codigoReparacion);
-                    $$("cmbCodigo").refresh();
-                    LineasOfertaWindow.loadCmbDescripcion(codigoReparacion);  //cargamos el combo de concepto
-                } else {
-                    LineasOfertaWindow.loadCmbDescripcion(null);  //cargamos el combo de concepto
-                    //$$("cmbCodigo").setValue(null);
-                    //$$("cmbDescripcion").setValue(null);
-                }  
-                return;
-            })
-    },
     loadCmbDescripcion(cod) {
         var concepto = $$('descripcion').getValue();
         var codigos = generalApi.prepareDataForCombo('codigoReparacion', 'nombre', articulos);
@@ -847,19 +561,7 @@ export const LineasOfertaWindow = {
             })
     },
 
-    loadTiposIvaProveedor: (tipoIvaProveedorId) => {
-        tiposIvaService.getTiposIva()
-            .then(rows => {
-                var tiposIva = generalApi.prepareDataForCombo('tipoIvaId', 'nombre', rows);
-                var list = $$("cmbTiposIvaProveedor").getPopup().getList();
-                list.clearAll();
-                list.parse(tiposIva);
-                $$("cmbTiposIvaProveedor").setValue(tipoIvaProveedorId);
-                $$("cmbTiposIvaProveedor").refresh();
-                //
-                return;
-            })
-    },
+
 
     loadGruposArticulo: (grupoArticuloId, articuloId) => {
         articulosService.getGruposArticulos()
@@ -922,22 +624,6 @@ export const LineasOfertaWindow = {
             })
     },
 
-    loadProveedores: (proveedorId) => {
-        proveedoresService.getProveedores()
-            .then(rows => {
-                var tiposIva = generalApi.prepareDataForCombo('proveedorId', 'nombre', rows);
-                var list = $$("cmbProveedores").getList();
-                list.clearAll();
-                list.parse(tiposIva);
-                if (proveedorId) {
-                    $$("cmbProveedores").setValue(proveedorId);
-                    $$("cmbProveedores").refresh();
-                    return;
-                }
-                $$("cmbProveedores").setValue(null);
-                $$("cmbProveedores").refresh();
-            });
-    },
 
     cambioArticulo: (articuloId) => {
         articulosService.getArticulo(articuloId)
@@ -965,21 +651,6 @@ export const LineasOfertaWindow = {
             })
     },
 
-    cambioTipoIvaProveedor: (tipoIvaId) => {
-        tiposIvaService.getTipoIva(tipoIvaId)
-            .then(row => {
-               if(row) {
-                   $$('porcentajeProveedor').setValue(row.porcentaje);
-
-                   if(row.porcentaje !== null) {
-                        var total = $$('costeLineaProveedor').getValue();
-                        var porIva = row.porcentaje / 100;
-                        var totalProIva = total + (total * porIva);
-                        $$('totalLineaProveedorIva').setValue(parseFloat(totalProIva));
-                   }
-                }
-            })
-    },
 
     
     recuperaIvaCliente() {
@@ -1003,25 +674,6 @@ export const LineasOfertaWindow = {
         });
     },
 
-    recuperaIvaProveedor(proId) {
-        proveedoresService.getProveedor(proId)
-        .then( rows => {
-            if(rows.tipoIvaId) {
-                this.loadTiposIvaProveedor(rows.tipoIvaId);
-            } else {
-                this.loadTiposIvaProveedor(3);
-            }
-        })
-        .catch( err => {
-            var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-        });
-    },
 
 
     recuperaTarifaCliente() {
@@ -1055,56 +707,5 @@ export const LineasOfertaWindow = {
         })
     },
 
-    recuperaTarifaProveedor(proveedorId) {
-        var articuloId = $$('cmbArticulos').getValue();
-        proveedoresService.getPrecioUnitarioArticulo(proveedorId, articuloId)
-        .then( rows => {
-            if(rows.length > 0) {
-                $$('importeProveedor').setValue(rows[0].precioProveedor)
-                //miramos si hay unidades y actualizamos totales en función del nuevo precio
-                var uni = $$('cantidad').getValue();
-                if(uni != "") {
-                    var prePro = parseFloat($$('precioProveedor').getValue());
-                    var precioPro = parseFloat(uni * prePro);
-                    $$('importeProveedor').setValue(parseFloat(prePro));
-                    $$('precioProveedor').setValue(parseFloat(precioPro));
-                    $$('costeLineaProveedor').setValue(parseFloat(precioPro));
-
-                }
-            }
-            if(rows.length == 0) {
-                $$('precioProveedor').setValue(0);
-            }
-        })
-        .catch( err => {
-            var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-        })
-    },
-
-    loadTiposProfesionales: (tipoProfesionalId) => {
-        tiposProfesionalService.getTiposProfesionalesTarifa(tarifaProveedorId)
-            .then(rows => {
-                var tiposProfesionales = generalApi.prepareDataForCombo('tipoProfesionalId', 'nombre', rows);
-                var list = $$("cmbTipoProfesionales2").getPopup().getList();
-                list.clearAll();
-                list.parse(tiposProfesionales);
-                if (tipoProfesionalId) {
-                    $$("cmbTipoProfesionales2").setValue(tipoProfesionalId);
-                    $$("cmbTipoProfesionales2").refresh();
-                }
-                return;
-            })
-    },
-
-    muestraVentanaTarifas: () => {
-        var tipo =  $$("cmbTipoProfesionales2").getValue();
-        infoTarifasGridWindow.loadWindow(cliId, proId, tipo);
-    }
 
 }
