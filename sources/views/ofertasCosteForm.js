@@ -15,6 +15,7 @@ import { basesOferta } from "../subviews/basesOfertaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { capituloService } from "../services/capitulo_service";
+import { parametrosService } from "../services/parametros_service";
 import { unidadesObraService } from "../services/unidades_obra_service";
 import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
 
@@ -29,6 +30,13 @@ var importeCobro = 0;
 var _imprimirWindow;
 var cliId = null;
 var cap = null;
+var indiceCorrector = 0;
+var limiteImpObra = 0;
+var porcen1 = 0;
+var porcen2 = 0;
+var porcen3 = 0;
+var porcen4 = 0;
+var importeObra = 0;
 
 export default class OfertasCosteForm extends JetView {
     config() {
@@ -341,8 +349,17 @@ export default class OfertasCosteForm extends JetView {
                                                         on: {
                                                             onItemClick: function (id) {
                                                                 var cliId = $$('cmbClientes').getValue();
+                                                                var data = {
+                                                                    indiceCorrector: indiceCorrector,
+                                                                    porcen1: porcen1,
+                                                                    porcen2: porcen2,
+                                                                    porcen3: porcen3,
+                                                                    porcen4: porcen4,
+                                                                    importeObra: importeObra,
+                                                                    limiteImpObra: limiteImpObra
+                                                                }
                                                                 
-                                                                LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id);
+                                                                LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id, data);
                                                             }
                                                         }
                                                     }
@@ -385,71 +402,83 @@ export default class OfertasCosteForm extends JetView {
         if (url[0].params.expedienteId) {
             expedienteId = url[0].params.expedienteId;
         }
+        if (url[0].params.importeObra) {
+            importeObra = parseFloat(url[0].params.importeObra);
+        }
         this.cargarEventos();
         this.load(ofertaId, expedienteId);
     }
     load(ofertaId, expedienteId) {
-        if (ofertaId == 0 && expedienteId > 0) {
-            expedientesService.getExpediente(expedienteId)
-            .then((expediente) => {
-                this.loadEmpresas(expediente.empresaId);
-                this.loadAgentes(expediente.agenteId);
-                this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
-                this.loadFormasPago();
-                this.loadTiposProyecto(expediente.tipoProyectoId);  
-                this.loadExpediente(expediente);
-                $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
-                this.$$("referencia").setValue(expediente.referencia);
-
-                this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
-                this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
-                //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
-                //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
-                this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
-
-                //this.loadMantenedores();
-                lineasOferta.loadGrid(null, null);
-                basesOferta.loadGrid(null); 
-            })
-            .catch((err) => {
-                messageApi.errorMessageAjax(err);
-            }); 
-            return;
-        }
-        ofertasService.getOferta(ofertaId)
-            .then((oferta) => {
-                //$$("cmbTiposProyecto").blockEvent();
-                delete oferta.empresa;
-                delete oferta.cliente;
-                delete oferta.tipo;
-                delete oferta.mantenedor;
-                delete oferta.agente;
-                delete oferta.formaPago
-                oferta.fechaOferta = new Date(oferta.fechaOferta);
-                $$("frmOfertas").setValues(oferta);
-                this.loadAgentes(oferta.agenteId);
-                this.loadEmpresas(oferta.empresaId);
-                this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
-                //this.loadMantenedores(oferta.mantenedorId);
-                this.loadTiposProyecto(oferta.tipoProyectoId);  
-                lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
-                basesOferta.loadGrid(oferta.ofertaId);
-                this.loadFormasPago(oferta.formaPagoId);
-
-                ////
-
-                this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", oferta.comercialId);
-                this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", oferta.jefeGrupoId)
-                //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
-                //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
-                this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
-
-                //$$("cmbTiposProyecto").unblockEvent();
-                
-            })
-            .catch((err) => {
-                messageApi.errorMessageAjax(err);
-            }); 
+        //PRIMERO RECUPERAMOS EL INDICE CORRECTOR
+        parametrosService.getParametros()
+        .then((parametros) => {
+            if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
+            if (ofertaId == 0 && expedienteId > 0) {
+                expedientesService.getExpediente(expedienteId)
+                .then((expediente) => {
+                    this.loadEmpresas(expediente.empresaId);
+                    this.loadAgentes(expediente.agenteId);
+                    this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
+                    this.loadFormasPago();
+                    this.loadTiposProyecto(expediente.tipoProyectoId);  
+                    this.loadExpediente(expediente);
+                    $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
+                    this.$$("referencia").setValue(expediente.referencia);
+    
+                    this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
+                    this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
+                    //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
+                    //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
+                    this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
+    
+                    //this.loadMantenedores();
+                    lineasOferta.loadGrid(null, null);
+                    basesOferta.loadGrid(null); 
+                })
+                .catch((err) => {
+                    messageApi.errorMessageAjax(err);
+                }); 
+                return;
+            }
+            ofertasService.getOferta(ofertaId)
+                .then((oferta) => {
+                    //$$("cmbTiposProyecto").blockEvent();
+                    delete oferta.empresa;
+                    delete oferta.cliente;
+                    delete oferta.tipo;
+                    delete oferta.mantenedor;
+                    delete oferta.agente;
+                    delete oferta.formaPago
+                    oferta.fechaOferta = new Date(oferta.fechaOferta);
+                    $$("frmOfertas").setValues(oferta);
+                    this.loadAgentes(oferta.agenteId);
+                    this.loadEmpresas(oferta.empresaId);
+                    this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
+                    //this.loadMantenedores(oferta.mantenedorId);
+                    this.loadTiposProyecto(oferta.tipoProyectoId);  
+                    lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
+                    basesOferta.loadGrid(oferta.ofertaId);
+                    this.loadFormasPago(oferta.formaPagoId);
+    
+                    ////
+    
+                    this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", oferta.comercialId);
+                    this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", oferta.jefeGrupoId)
+                    //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
+                    //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
+                    this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
+    
+                    //$$("cmbTiposProyecto").unblockEvent();
+                    
+                })
+                .catch((err) => {
+                    messageApi.errorMessageAjax(err);
+                }); 
+        })
+        .catch((err) => {
+            messageApi.errorMessageAjax(err);
+        }); 
+        
     }
 
     cargarEventos() {   
@@ -702,6 +731,20 @@ export default class OfertasCosteForm extends JetView {
         });
     }
 
+    loadCapituloData(grupoArticuloId) {
+        capituloService.getCapitulo(grupoArticuloId)
+        .then(row => {
+           if(row) {
+                let capitulo = row;
+                limiteImpObra = capitulo.limiteImpObra
+                porcen1 = capitulo.porcen1 / 100;
+                porcen2 = capitulo.porcen2 / 100;
+                porcen3 = capitulo.porcen3 / 100;
+                porcen4 = capitulo.porcen4 / 100;
+           }
+        });
+    }
+
     loadUnidadesObra(grupoArticuloId) {
         unidadesObraService.getUnidadesObraGrupo(grupoArticuloId)
         .then(rows => {
@@ -710,6 +753,12 @@ export default class OfertasCosteForm extends JetView {
     
             list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
             list.parse(capitulos); // Cargar los datos en la lista
+            //ahora buscamos los datos de capitulo
+            this.loadCapituloData(grupoArticuloId)
+            .then(rows => {
+                
+            });
+            
         });
     }
     

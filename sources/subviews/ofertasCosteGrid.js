@@ -13,6 +13,7 @@ var ofertaId;
 var numLineas = 0;
 var expedienteId = null;
 var _app = null;
+var importeObra = 0;
 export const ofertasCoste = {
     // Devuelve el grid con los locales afectados
     // se le pasa la app porque es necesaria para conservar el translate.
@@ -26,7 +27,7 @@ export const ofertasCoste = {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
                     tooltip: translate("Nueva oferta de coste (Ctrl+A)"),
                     click: () => {
-                        app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId);
+                        app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
                     }
                 },
                 {
@@ -158,12 +159,14 @@ export const ofertasCoste = {
         
         return _view;
     },
-    loadGrid: (expedienteid, ofertaId) => {
+    loadGrid: (expedienteid, ofertaId, importeobra) => {
         if(expedienteid == 0) {
             expedienteId = null;
+            importeObra = 0
             return;
         }
         ofertaId = ofertaId;
+        importeObra = importeobra;
         numLineas = 0;
         if(expedienteid) {
             expedienteId = expedienteid;
@@ -231,7 +234,7 @@ export const ofertasCoste = {
         const activeTab = $$("tabViewExpediente").getValue();  // Obtener el id de la pestaña activa
         localStorage.setItem("activeTab", activeTab);
 
-        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId);
+        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
     },
 
     formateaCampos(data) {

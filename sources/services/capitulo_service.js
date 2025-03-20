@@ -22,6 +22,26 @@ export const capituloService = {
                 });
         });
     },
+    getCapitulo: (grupoArticuloId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url)
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    },
     getCapitulosPorGrupo: (grupoArticuloId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig().
@@ -47,7 +67,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo_tecnico";
+                    var url = conf.urlApi + "/api/grupo_articulo/tecnicos";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -70,7 +90,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/"+ capitulo.grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo/tecnicos/"+ capitulo.grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -92,7 +112,7 @@ export const capituloService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/grupo_articulo_tecnico/" + grupoArticuloId;
+                    var url = conf.urlApi + "/api/grupo_articulo/" + grupoArticuloId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

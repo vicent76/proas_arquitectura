@@ -454,7 +454,7 @@ export default class ExpedientesForm extends JetView {
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
                 $$("cmbTiposProyecto").unblockEvent();
 
-                ofertasCoste.loadGrid(expediente.expedienteId, null)
+                ofertasCoste.loadGrid(expediente.expedienteId, null, expediente.importeObra)
                 
             })
             .catch((err) => {

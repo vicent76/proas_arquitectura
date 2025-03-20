@@ -1,5 +1,6 @@
 import { JetView } from "webix-jet";
 import { capituloService } from "../services/capitulo_service";
+import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { usuarioService } from "../services/usuario_service";
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
@@ -12,6 +13,8 @@ var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
+var usuarioId;
+var colTiposProyecto = [];
 
 export default class Capitulos extends JetView {
     config() {
@@ -78,7 +81,59 @@ export default class Capitulos extends JetView {
             columns: [
                 { id: "grupoArticuloId", adjust: true, header: [translate("ID"), { content: "numberFilter" }], sort: "number" },
                 { id: "nombre", fillspace: true, header: [translate("Nombre capitulo"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 200 },
-                { id: "referencia", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text" },
+                {
+                    id: "tipoProyectoId",  
+                    header: [translate("Tipo proyecto"),  { content: "selectFilter" }],
+                    sort: "string", 
+                    fillspace: true,
+                    minWidth: 350,
+                    editor: "combo", 
+                    collection: colTiposProyecto,
+                   
+                },
+                { 
+                    id: "limiteImpObra", 
+                    header: [translate("Limite obra"), { content: "numberFilter" }],
+                    width: 100, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.priceFormat   // Formato numérico con moneda
+                },
+                { 
+                    id: "porcen1", 
+                    header: [translate("Porcentaje 1"), { content: "numberFilter" }],
+                    width: 110, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.numberFormat  // Formato numérico con moneda
+                },
+                { 
+                    id: "porcen2", 
+                    header: [translate("Porcentaje 2"), { content: "numberFilter" }],
+                    width: 110, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.numberFormat  // Formato numérico con moneda
+                },
+                { 
+                    id: "porcen3", 
+                    header: [translate("Porcentaje 3"), { content: "numberFilter" }],
+                    width: 110, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.numberFormat  // Formato numérico con moneda
+                },
+                { 
+                    id: "porcen4", 
+                    header: [translate("Porcentaje 4"), { content: "numberFilter" }],
+                    width: 110, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.numberFormat  // Formato numérico con moneda
+                },
+                { 
+                    id: "aplicarFormula", 
+                    header: translate("Aplicar Fórmula"), 
+                    width: 150, 
+                    editor: "checkbox",
+                    template: "{common.checkbox()}",
+                    css: { "text-align": "center" }
+                },
                 { id: "departamentoId", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text", hidden: true},
                 { id: "esTecnico", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text" , hidden: true},
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" } }
@@ -101,6 +156,14 @@ export default class Capitulos extends JetView {
                 "nombre": webix.rules.isNotEmpty,
             },
             on: {
+                 "onBeforeLoad": function() {
+                                    tiposProyectoService.getTiposProyecto(usuarioId)
+                                    .then(rows => {
+                                        colTiposProyecto = generalApi.prepareDataForCombo('tipoProyectoId', 'nombre', rows);
+                                        $$("capitulosGrid").getColumnConfig("tipoProyectoId").collection = colTiposProyecto;
+                                        $$("capitulosGrid").refreshColumns(); // Refrescar opciones
+                                    })
+                },
                 "onAfterEditStart": function (id) {
                     currentIdDatatableView = id.row;
                     currentRowDatatableView = this.data.pull[currentIdDatatableView];
@@ -108,7 +171,18 @@ export default class Capitulos extends JetView {
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
                     var rowId = editor.row;
                     var rowData = this.getItem(rowId);
-
+                    let parsedValue = this.$scope.convertirAEstandar(rowData.limiteImpObra); // Convertir a formato inglés
+                    let porcenValue1 = this.$scope.convertirAEstandar(rowData.porcen1); // Convertir a formato inglés
+                    let porcenValue2 = this.$scope.convertirAEstandar(rowData.porcen2); // Convertir a formato inglés
+                    let porcenValue3 = this.$scope.convertirAEstandar(rowData.porcen3); // Convertir a formato inglés
+                    let porcenValue4 = this.$scope.convertirAEstandar(rowData.porcen4); // Convertir a formato inglés
+                    //
+                    rowData.limiteImpObra = parsedValue;
+                    rowData.porcen1 = porcenValue1;
+                    rowData.porcen2 = porcenValue2;
+                    rowData.porcen3 = porcenValue3;
+                    rowData.porcen4 = porcenValue4;
+                    //
                     if ((state.value != state.old) || rowData.grupoArticuloId == 0) {
                         if (!this.validate(rowId)) {
                             messageApi.errorMessage("Valores incorrectos");
@@ -129,6 +203,25 @@ export default class Capitulos extends JetView {
                         }
                     }
                 },
+                "onCheck": function (rowId, columnId, state) {
+                    if (columnId === "aplicarFormula") {
+                        let rowData = this.getItem(rowId);
+                        console.log("Checkbox cambiado:", state, "Fila actualizada:", rowData);
+                        delete rowData.id; // Asegurar que no se envíe un ID incorrecto
+                        if (rowData.grupoArticuloId == 0) {
+                            capituloService.postCapitulo(rowData)
+                                .then((result) => {
+                                    rowData.grupoArticuloId = result.grupoArticuloId; // Actualizar con el ID real
+                                    $$("capitulosGrid").updateItem(rowId, rowData);
+                                    $$("capitulosGrid").editStop();
+                                })
+                                .catch((err) => handleServerError(err));
+                        } else {
+                            capituloService.putCapitulo(rowData)
+                                .catch((err) => handleServerError(err));
+                        }
+                    }
+                },
                 "onAfterFilter": function () {
                     var numReg = $$("capitulosGrid").count();
                     $$("CapitulosNReg").config.label = "NREG: " + numReg;
@@ -146,7 +239,9 @@ export default class Capitulos extends JetView {
         return _view;
     }
     urlChange(view, url) {
-        usuarioService.checkLoggedUser();
+
+        let usuario = usuarioService.checkLoggedUser();
+        usuarioId = usuario.usuarioId;
         languageService.setLanguage(this.app, 'es');
         var id = null;
         if (url[0].params.grupoArticuloId) {
@@ -214,6 +309,16 @@ export default class Capitulos extends JetView {
             }
         });
     }
+
+    // Convertir de español (1.500,75) a inglés (1500.75) antes de guardar
+    convertirAEstandar(value) {
+        if (typeof value === "string") {
+            // Reemplazar los separadores de miles y decimales al formato inglés
+            return parseFloat(value.replace(",", "."));
+        }
+        return value;
+    }
+
     cleanAndload() {
         $$("capitulosGrid").eachColumn(function (id, col) {
             if (col.id == 'actions') return;

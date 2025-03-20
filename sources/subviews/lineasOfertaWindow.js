@@ -19,6 +19,7 @@ var ofertaLineaId;
 var articulos;
 var cliId;
 var antcod = null;
+var datosCalculo = null
 
 
 export const LineasOfertaWindow = {
@@ -266,11 +267,11 @@ export const LineasOfertaWindow = {
 
         return
     },
-    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId) => {
+    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo) => {
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
-        
+        if(datoscalculo) datosCalculo = datoscalculo
         $$('lineasOfertaWindow').show();
         if (ofertaLineaId) {
             LineasOfertaWindow.bloqueaEventos();
@@ -298,7 +299,31 @@ export const LineasOfertaWindow = {
         LineasOfertaWindow.loadUnidades(null);
         LineasOfertaWindow.loadTiposIvaCliente(null);
         LineasOfertaWindow.nuevaLinea();
+        if(grupoArticuloId && articuloId && datosCalculo) {
+           
+            
+        }
     },
+
+    calcularCosto() {
+        let resultado;
+    
+        if (datosCalculo.importeObra > datosCalculo.limiteImpObra) {
+            resultado = datosCalculo.importeObra * datosCalculo.porcen1;
+        } else {
+            let porcentaje = datosCalculo.importeObra * datosCalculo.porcen2;
+            if (porcentaje < 500) {
+                resultado = 500;
+            } else {
+                resultado =  datosCalculo.porcen3 + ( datosCalculo.limiteImpObra - datosCalculo.importeObra) * datosCalculo.porcen4;
+            }
+        }
+    
+        resultado * datosCalculo.indiceCorrector; // Multiplicado por 1 (B4), que no afecta el resultado
+        $$('importeCliente').setValue(resultado);
+    },
+    
+    
 
     crearTextoDeCapituloAutomatico: (grupoArticuloId) =>  {
         var numeroCapitulo = Math.floor($$('linea').getValue());
@@ -591,6 +616,7 @@ export const LineasOfertaWindow = {
                     $$("cmbArticulos").refresh();
     
                     setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                    setTimeout(LineasOfertaWindow.calcularCosto(), 5000);
                  }
             });
         } else {
@@ -633,7 +659,7 @@ export const LineasOfertaWindow = {
                 $$("cmbUnidades").refresh();
                 $$('descripcion').setValue(row.descripcion);
                 $$('cantidad').setValue(1);
-                LineasOfertaWindow.recuperaTarifaCliente();
+                //LineasOfertaWindow.recuperaTarifaCliente();
                 LineasOfertaWindow.recuperaIvaCliente();
             }
         })
@@ -680,7 +706,7 @@ export const LineasOfertaWindow = {
         clientesService.getPrecioUnitarioArticulo($$('cmbClientes').getValue(), $$('cmbArticulos').getValue())
         .then( rows => {
             if(rows.length > 0) {
-                $$('importeCliente').setValue(rows[0].precioCliente);
+                $$('importeCliente').setValue(rows[0].coste);
 
                 //miramos si hay unidades y actualizamos totales en función del nuevo precio
                 var uni = $$('cantidad').getValue();
