@@ -204,13 +204,13 @@ export const ofertasCoste = {
         const translate = app.getService("locale")._;
         webix.confirm({
             title: translate("AVISO"),
-            text: translate("¿ Está seguro que desea eliminar este anticipo ?"),
+            text: translate("¿ Está seguro que desea eliminar esta oferta ?"),
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
-                    ofertasCosteService.deleteAntproveServicio(id)
+                    ofertasService.deleteOferta(id)
                         .then(result => {
-                            ofertasCoste.loadGrid(ofertaId);
+                            ofertasCoste.loadGrid(expedienteId, null, importeObra);
                         })
                         .catch(err => {
                             var error = err.response;

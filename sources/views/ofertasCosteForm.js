@@ -11,7 +11,7 @@ import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { formasPagoService } from "../services/formas_pago_service";
 import { lineasOferta } from "../subviews/lineasOfertaGrid";
-import { basesOferta } from "../subviews/basesOfertaGrid";
+//import { basesOferta } from "../subviews/basesOfertaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { capituloService } from "../services/capitulo_service";
@@ -37,12 +37,13 @@ var porcen2 = 0;
 var porcen3 = 0;
 var porcen4 = 0;
 var importeObra = 0;
+var tipoProyectoId
 
 export default class OfertasCosteForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOferta.getGrid(this.app);
-        const _basesOferta = basesOferta.getGrid(this.app);
+        //const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
             view: "tabview",
@@ -125,24 +126,13 @@ export default class OfertasCosteForm extends JetView {
                                                     }.bind(this)
                                                 }
                                             },
-                                        
-                                                    
-                                        ]
-                                    },
-                                                                 
-                                    
-                                    {
-                                        cols: [
-                                            {
-                                                view: "combo", id: "cmbFormasPago", name: "formaPagoId", required: true, options: {},
-                                                label: "Forma de pago", labelPosition: "top", minWidth: 250
-                                            },
                                             {
                                                 view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
                                                 label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
                                                  
                                             },
-                                            
+                                        
+                                                    
                                         ]
                                     },
                                     {
@@ -369,7 +359,7 @@ export default class OfertasCosteForm extends JetView {
                                     },      
                                     _lineasOferta,
                                     { minWidth : 100},
-                                    _basesOferta
+                                   /*  _basesOferta */
                                 ]
                             },
                             
@@ -416,10 +406,10 @@ export default class OfertasCosteForm extends JetView {
             if (ofertaId == 0 && expedienteId > 0) {
                 expedientesService.getExpediente(expedienteId)
                 .then((expediente) => {
+                    tipoProyectoId = expediente.tipoProyectoId
                     this.loadEmpresas(expediente.empresaId);
                     this.loadAgentes(expediente.agenteId);
                     this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
-                    this.loadFormasPago();
                     this.loadTiposProyecto(expediente.tipoProyectoId);  
                     this.loadExpediente(expediente);
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
@@ -432,8 +422,8 @@ export default class OfertasCosteForm extends JetView {
                     this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
     
                     //this.loadMantenedores();
-                    lineasOferta.loadGrid(null, null);
-                    basesOferta.loadGrid(null); 
+                    lineasOferta.loadGrid(null, null, importeObra);
+                    //basesOferta.loadGrid(null); 
                 })
                 .catch((err) => {
                     messageApi.errorMessageAjax(err);
@@ -456,9 +446,10 @@ export default class OfertasCosteForm extends JetView {
                     this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
                     //this.loadMantenedores(oferta.mantenedorId);
                     this.loadTiposProyecto(oferta.tipoProyectoId);  
-                    lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow);
-                    basesOferta.loadGrid(oferta.ofertaId);
-                    this.loadFormasPago(oferta.formaPagoId);
+                    lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow, importeObra);
+                    //basesOferta.loadGrid(oferta.ofertaId);
+                   
+                    
     
                     ////
     
@@ -468,7 +459,15 @@ export default class OfertasCosteForm extends JetView {
                     //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
                     this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
     
-                    //$$("cmbTiposProyecto").unblockEvent();
+                    expedientesService.getExpediente(expedienteId)
+                    .then((expediente) => {
+                       
+                        this.loadExpediente(expediente);
+                        
+                    })
+                    .catch((err) => {
+                        messageApi.errorMessageAjax(err);
+                    }); 
                     
                 })
                 .catch((err) => {
@@ -499,8 +498,10 @@ export default class OfertasCosteForm extends JetView {
         }
         var data = $$("frmOfertas").getValues();
         
+        
        
         if (ofertaId == 0) {
+            data.tipoProyectoId = tipoProyectoId;
             data.ofertaId = 0;
             data.tipoOfertaId = 5
             data.coste = 0
@@ -638,17 +639,6 @@ export default class OfertasCosteForm extends JetView {
             });
     }
 
-    loadClienteData(clienteId) {
-        if(clienteId) {
-            clientesService.getCliente(clienteId)
-            .then(rows => {
-                $$('cmbFormasPago').setValue(rows.formaPagoId);
-                $$('cmbFormasPago').refresh()
-            });
-        }
-    }
-
-
    
 
     cambioTipoProyecto(tipoProyectoId) {
@@ -670,21 +660,7 @@ export default class OfertasCosteForm extends JetView {
         })
     }
 
-    
-    loadFormasPago(formaPagoId) {
-        formasPagoService.getFormasPago()
-        .then( rows => {
-            var formaspago = generalApi.prepareDataForCombo('formaPagoId', 'nombre', rows);
-                var list = $$("cmbFormasPago").getPopup().getList();
-                list.clearAll();
-                list.parse(formaspago);
-                $$("cmbFormasPago").setValue(formaPagoId);
-                $$("cmbFormasPago").refresh();
-        })
-        .catch( err => {
-            messageApi.errorMessageAjax(err);
-        })
-    }
+
 
 
 
@@ -769,7 +745,7 @@ export default class OfertasCosteForm extends JetView {
             agentesService.getAgenteCliente(clienteId)
             .then(rows => {
                 this.loadAgentes(rows[0].comercialId);
-                this.loadClienteData(clienteId)
+                //this.loadClienteData(clienteId)
             });
         }
     }
@@ -900,7 +876,7 @@ export default class OfertasCosteForm extends JetView {
                 });
         }
 
-            loadAgenteCliente(clienteId) {
+       /*      loadAgenteCliente(clienteId) {
                 if(clienteId) {
                     cliId = clienteId;
                     agentesService.getAgenteCliente(clienteId)
@@ -909,7 +885,7 @@ export default class OfertasCosteForm extends JetView {
                         //this.loadClienteData(clienteId)
                     });
                 }
-            }
+            } */
 
             loadAgentes(agenteId) {
                 agentesService.getAgentes()

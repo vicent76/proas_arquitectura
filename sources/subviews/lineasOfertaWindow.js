@@ -11,6 +11,9 @@ import { ofertasService } from "../services/ofertas_service";
 import { articulosService } from "../services/articulos_service";
 import { infoTarifasGridWindow } from "../subviews/info_tarifas_grid";
 import { OfertasForm } from "../views/ofertasForm";
+import { unidadesObraService } from "../services/unidades_obra_service";
+import { capituloService } from "../services/capitulo_service";
+import { parametrosService } from "../services/parametros_service";
 
 var _lineasOfertaWindowCreated = false;
 var translate;
@@ -19,7 +22,11 @@ var ofertaLineaId;
 var articulos;
 var cliId;
 var antcod = null;
-var datosCalculo = null
+var datosCalculo = null;
+var enCarga = false;
+var aplicarFormula = false;
+var indiceCorrector = 0;
+var importeObra = 0;
 
 
 export const LineasOfertaWindow = {
@@ -109,8 +116,8 @@ export const LineasOfertaWindow = {
                             {
                                 cols: [
                                     {
-                                        view: "combo", id: "cmbTiposIvaCliente", name: "tipoIvaId", required: true, options: {},
-                                        label: "IVA", labelPosition: "top", width: 180
+                                        view: "combo", id: "cmbTiposIva", name: "tipoIvaId", required: true, options: {},
+                                        label: "IVA", labelPosition: "top", width: 180, hidden: true
                                     },
                                     {
                                         view: "text", id: "porcentaje", name: "porcentaje",
@@ -118,11 +125,19 @@ export const LineasOfertaWindow = {
                                     },
                                     {
                                         view: "text", id: "importeCliente", name: "importe",
-                                        label: "coste/ud", labelPosition: "top", minwidth: 80,format: "1.00"
+                                        label: "coste/ud", labelPosition: "top", minwidth: 80,
+                                        format: {
+                                            edit : function(v){ return webix.Number.format(v, webix.i18n); },
+                                            parse : function(v){ return webix.Number.parse(v, webix.i18n); }
+                                          }
                                     },
                                     {
                                         view: "text", id: "perdto", name: "perdto",
-                                        label: "% Descuento", labelPosition: "top", minwidth: 80,format: "1,00"
+                                        label: "% Descuento", labelPosition: "top", minwidth: 80,
+                                        format: {
+                                            edit : function(v){ return webix.Number.format(v, webix.i18n); },
+                                            parse : function(v){ return webix.Number.parse(v, webix.i18n); }
+                                          }
                                     },           
                                 ]
                             },
@@ -180,8 +195,10 @@ export const LineasOfertaWindow = {
 
         $$("cmbGrupoArticulo").attachEvent("onChange", function(newv, oldv){
             if(newv == '') return;
+            LineasOfertaWindow.loadGruposArticulo(newv, null)
             LineasOfertaWindow.loadArticulos(newv, null);
             LineasOfertaWindow.crearTextoDeCapituloAutomatico(newv);
+            LineasOfertaWindow.loadCapituloData(newv)
          });
 
          $$("cmbArticulos").attachEvent("onChange", function(newv, oldv){
@@ -239,13 +256,6 @@ export const LineasOfertaWindow = {
             }
          });
        
-         
-         $$("cmbTiposIvaCliente").attachEvent("onChange", function(newv, oldv){
-           
-             if(newv != ""){
-                LineasOfertaWindow.cambioTipoIva(newv)
-             }
-         });
 
          $$('perdto').attachEvent("onBlur", function(a, b) {
              //calculo en caso de descuento cliente
@@ -267,17 +277,32 @@ export const LineasOfertaWindow = {
 
         return
     },
-    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo) => {
+    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo, importeobra) => {
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
-        if(datoscalculo) datosCalculo = datoscalculo
+        if(datoscalculo) {
+            datosCalculo = datoscalculo
+        } else {
+             parametrosService.getParametros()
+                    .then((parametros) => {
+                        if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
+                        importeObra = importeobra
+                    })
+                    .catch((err) => {
+                        messageApi.errorMessageAjax(err);
+                    }); 
+        }
         $$('lineasOfertaWindow').show();
         if (ofertaLineaId) {
+            enCarga = true
             LineasOfertaWindow.bloqueaEventos();
         } else {
+            $$("cmbGrupoArticulo").blockEvent();
+            enCarga = false;
             LineasOfertaWindow.limpiaWindow(grupoArticuloId, articuloId);
         }
+        LineasOfertaWindow.loadTiposIva(4);
 
     },
 
@@ -296,13 +321,25 @@ export const LineasOfertaWindow = {
         } else {
             LineasOfertaWindow.loadGruposArticulo(null, null);
         }
-        LineasOfertaWindow.loadUnidades(null);
-        LineasOfertaWindow.loadTiposIvaCliente(null);
+        LineasOfertaWindow.loadUnidades(9);
         LineasOfertaWindow.nuevaLinea();
-        if(grupoArticuloId && articuloId && datosCalculo) {
-           
-            
-        }
+    },
+
+    loadCapituloData(grupoArticuloId) {
+        capituloService.getCapitulo(grupoArticuloId)
+        .then(row => {
+           if(row) {
+                datosCalculo = {
+                    indiceCorrector: indiceCorrector,
+                    porcen1: row.porcen1 / 100,
+                    porcen2: row.porcen2 / 100,
+                    porcen3: row.porcen3 / 100,
+                    porcen4: row.porcen4 / 100,
+                    importeObra: importeObra,
+                    limiteImpObra: row.limiteImpObra
+                }
+           }
+        });
     },
 
     calcularCosto() {
@@ -312,15 +349,17 @@ export const LineasOfertaWindow = {
             resultado = datosCalculo.importeObra * datosCalculo.porcen1;
         } else {
             let porcentaje = datosCalculo.importeObra * datosCalculo.porcen2;
-            if (porcentaje < 500) {
-                resultado = 500;
+            if (porcentaje < datosCalculo.costeArticulo) {
+                resultado = datosCalculo.costeArticulo;
             } else {
-                resultado =  datosCalculo.porcen3 + ( datosCalculo.limiteImpObra - datosCalculo.importeObra) * datosCalculo.porcen4;
+                resultado =  (datosCalculo.importeObra * datosCalculo.porcen3) + ( datosCalculo.limiteImpObra - datosCalculo.importeObra) * datosCalculo.porcen4;
             }
         }
     
-        resultado * datosCalculo.indiceCorrector; // Multiplicado por 1 (B4), que no afecta el resultado
+        resultado * datosCalculo.indiceCorrector;
         $$('importeCliente').setValue(resultado);
+        LineasOfertaWindow.desbloqueaEventos();
+        enCarga = true;
     },
     
     
@@ -356,7 +395,6 @@ export const LineasOfertaWindow = {
     },
 
     bloqueaEventos: () => {
-        $$("cmbTiposIvaCliente").blockEvent();
         $$("importeCliente").blockEvent();
         $$("cmbArticulos").blockEvent();
         $$("cmbGrupoArticulo").blockEvent();
@@ -367,8 +405,7 @@ export const LineasOfertaWindow = {
             $$("LineasOfertafrm").clear();
             $$("LineasOfertafrm").setValues(datos);
             LineasOfertaWindow.loadUnidades(datos.unidadId);
-            LineasOfertaWindow.loadTiposIvaCliente(datos.tipoIvaId);
-            LineasOfertaWindow.recuperaCapituloId(datos.articuloId);
+            LineasOfertaWindow.recuperaCapituloId(datos.articuloId, true);
         })
         .catch((err) => {
             messageApi.errorMessageAjax(err);
@@ -388,7 +425,6 @@ export const LineasOfertaWindow = {
     },
 
     desbloqueaEventos: () => {
-        $$("cmbTiposIvaCliente").unblockEvent();
         $$("importeCliente").unblockEvent();
         $$("cmbArticulos").unblockEvent();
         $$("cmbGrupoArticulo").unblockEvent();
@@ -498,7 +534,7 @@ export const LineasOfertaWindow = {
         if(ofertaId) {
             
             LineasOfertaWindow.refreshLineas(ofertaId);
-            LineasOfertaWindow.refreshBases(ofertaId);
+            //LineasOfertaWindow.refreshBases(ofertaId);
         } 
     },
 
@@ -572,16 +608,16 @@ export const LineasOfertaWindow = {
                     antcod = cod
                 }
     },
-    loadTiposIvaCliente: (tipoIvaClienteId) => {
+    loadTiposIva: (tipoIvaId) => {
         tiposIvaService.getTiposIva()
             .then(rows => {
                 var tiposIva = generalApi.prepareDataForCombo('tipoIvaId', 'nombre', rows);
                 tiposIva.push({id:null, value: ""});
-                var list = $$("cmbTiposIvaCliente").getPopup().getList();
+                var list = $$("cmbTiposIva").getPopup().getList();
                 list.clearAll();
                 list.parse(tiposIva);
-                $$("cmbTiposIvaCliente").setValue(tipoIvaClienteId);
-                $$("cmbTiposIvaCliente").refresh();
+                $$("cmbTiposIva").setValue(tipoIvaId);
+                $$("cmbTiposIva").refresh();
                 return;
             })
     },
@@ -589,18 +625,30 @@ export const LineasOfertaWindow = {
 
 
     loadGruposArticulo: (grupoArticuloId, articuloId) => {
-        articulosService.getGruposArticulos()
+        capituloService.getCapitulos()
             .then(rows => {
                 var gruposArticulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
                 var list = $$("cmbGrupoArticulo").getPopup().getList();
                 list.clearAll();
                 list.parse(gruposArticulos);
-                $$("cmbGrupoArticulo").setValue(grupoArticuloId);
+                // Buscar el objeto que coincida con grupoArticuloId
+            if (grupoArticuloId) {
+                let grupoSeleccionado = rows.find(item => item.grupoArticuloId == grupoArticuloId);
+                
+                if (grupoSeleccionado) {
+                    aplicarFormula = grupoSeleccionado.aplicarFormula
+                    $$("cmbGrupoArticulo").setValue(grupoArticuloId);
+                    $$("cmbGrupoArticulo").refresh();
+                    LineasOfertaWindow.loadArticulos(grupoArticuloId, articuloId);
+                }
+            } else {
+                $$("cmbGrupoArticulo").setValue(null);
                 $$("cmbGrupoArticulo").refresh();
-                LineasOfertaWindow.loadArticulos(grupoArticuloId, articuloId);
-                return;
-            })
-    },
+                LineasOfertaWindow.loadArticulos(null, articuloId);
+            }
+            return;
+        });
+},
 
     loadArticulos: (grupoArticuloId, articuloId) => {
         if(grupoArticuloId) {
@@ -614,9 +662,11 @@ export const LineasOfertaWindow = {
     
                     $$("cmbArticulos").setValue(articuloId);
                     $$("cmbArticulos").refresh();
-    
-                    setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
-                    setTimeout(LineasOfertaWindow.calcularCosto(), 5000);
+                    if(!enCarga) {
+                        LineasOfertaWindow.recuperaCosteArticulo(articuloId);
+                    } else {
+                        LineasOfertaWindow.desbloqueaEventos();
+                    }
                  }
             });
         } else {
@@ -631,7 +681,7 @@ export const LineasOfertaWindow = {
                     $$("cmbArticulos").setValue(articuloId);
                     $$("cmbArticulos").refresh();
     
-                    setTimeout(LineasOfertaWindow.desbloqueaEventos, 1000);
+                    LineasOfertaWindow.desbloqueaEventos()
                  }
             });
         }
@@ -659,8 +709,7 @@ export const LineasOfertaWindow = {
                 $$("cmbUnidades").refresh();
                 $$('descripcion').setValue(row.descripcion);
                 $$('cantidad').setValue(1);
-                //LineasOfertaWindow.recuperaTarifaCliente();
-                LineasOfertaWindow.recuperaIvaCliente();
+                LineasOfertaWindow.recuperaCosteArticulo(articuloId);
             }
         })
         .catch( err => {
@@ -677,49 +726,18 @@ export const LineasOfertaWindow = {
             })
     },
 
-
-    
-    recuperaIvaCliente() {
-        var cliId = $$('cmbClientes').getValue();
-        clientesService.getCliente(cliId)
-        .then( rows => {
-            if(rows.tipoIvaId) {
-                this.loadTiposIvaCliente(rows.tipoIvaId);
-            } else {
-                this.loadTiposIvaCliente(3);
-            }
-        })
-        .catch( err => {
-            var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-        });
-    },
-
-
-
-    recuperaTarifaCliente() {
-        clientesService.getPrecioUnitarioArticulo($$('cmbClientes').getValue(), $$('cmbArticulos').getValue())
-        .then( rows => {
-            if(rows.length > 0) {
-                $$('importeCliente').setValue(rows[0].coste);
-
-                //miramos si hay unidades y actualizamos totales en función del nuevo precio
-                var uni = $$('cantidad').getValue();
-
-                if(uni != "") {
-                    var preCli = parseFloat($$('importeCliente').getValue());
-                    $$('importeCliente').setValue(parseFloat(preCli));
-                    $$('precioCliente').setValue(parseFloat(uni * preCli));
-                    $$('coste').setValue(parseFloat(uni * preCli));
+    recuperaCosteArticulo(articuloId) {
+        if(!articuloId) return;
+        unidadesObraService.getUnidadObra( articuloId )
+        .then( row => {
+            if(row) {
+                if(aplicarFormula) {
+                    datosCalculo.costeArticulo = row.coste;
+                    LineasOfertaWindow.calcularCosto();
+                } else {
+                    $$('importeCliente').setValue(row.coste);
+                    LineasOfertaWindow.desbloqueaEventos();
                 }
-            }
-            if(rows.length == 0) {
-                $$('importeCliente').setValue(0);
             }
         })
         .catch( err => {

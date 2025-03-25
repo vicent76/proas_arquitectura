@@ -16,6 +16,7 @@ var isNewRow = false;
 var ofertaId;
 var numLineas;
 var imprimirWindow;
+var importeObra = 0;
 
 
 export const lineasOferta = {
@@ -50,7 +51,7 @@ export const lineasOferta = {
                         }
                         try {
                             var cliId = $$('cmbClientes').getValue();
-                            LineasOfertaWindow.loadWindow(ofertaId, null, cliId, null);
+                            LineasOfertaWindow.loadWindow(ofertaId, null, cliId, null, null, null, importeObra);
                         }catch (e) {
                             console.log(e)
                         }
@@ -82,7 +83,7 @@ export const lineasOferta = {
             ready:function(){ $$('lineasOfertaGrid').attachEvent("onItemDblClick", function(id, e, node){
                 var curRow = this.data.pull[id.row]
                 var cliId = $$('cmbClientes').getValue();
-                LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId);
+                LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId, null, null, null, importeObra);
             });
         },
             columns: [
@@ -93,16 +94,11 @@ export const lineasOferta = {
                 { id: "descripcion", header: [translate("Concepto"), { content: "textFilter" }], sort: "string", fillspace: true},
                 
                 { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 50  },
+                { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
                 { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
                 { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
                 
-                { id: "proveedorId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
-                { id: "proveedorNombre", header: [translate("Proveedor"), { content: "textFilter" }], sort: "string", fillspace: true},
-                { id: "importeProveedor", header: [translate("€/Ud. Pro."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
-                { id: "dtoProveedor", header: [translate("Descuento pro."), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
-                { id: "costeLineaProveedor", header: [translate("Imp pro."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
-                
+    
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
             ],
             rightSplit: 1,
@@ -116,14 +112,8 @@ export const lineasOferta = {
                 },
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
-                    var proId = $$('proveedorId').getValue();
-                    var cliId = $$('cliId').getValue();
-                    
-                    try{
-
-                    }catch(e) {
-                        LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId, proId );
-                    }
+                    var cliId = $$('cmbClientes').getValue();
+                    LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId );
                    
                 }
             },
@@ -158,7 +148,8 @@ export const lineasOferta = {
         
         return _view;
     },
-    loadGrid: (ofertaid, _imprimirWindow) => {
+    loadGrid: (ofertaid, _imprimirWindow, importeobra) => {
+        importeObra = importeobra
         ofertaId = ofertaid;
          imprimirWindow = _imprimirWindow
         numLineas = 0;

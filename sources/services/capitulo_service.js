@@ -2,7 +2,7 @@ import { cookieApi } from "../utilities/cookies";
 import { devConfig } from "../config/config";
 export const capituloService = {
 
-    getCapitulos: (tipoProyectoId) => {
+    getCapitulos: () => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
