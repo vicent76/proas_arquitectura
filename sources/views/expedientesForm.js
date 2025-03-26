@@ -13,6 +13,7 @@ import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { ofertasCoste } from '../subviews/ofertasCosteGrid'
+import { ofertasVenta } from '../subviews/ofertasVentaGrid'
 
 
 
@@ -31,10 +32,8 @@ export default class ExpedientesForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _ofertasCoste = ofertasCoste.getGrid(this.app);
-        //const _lineasOferta = lineasOferta.getGrid(this.app);
-        //const _proveedoresOferta = proveedoresOferta.getGrid(this.app);
-        //const _basesOferta = basesOferta.getGrid(this.app);
-              
+        const _ofertasVenta = ofertasVenta.getGrid(this.app);
+       
         const _view = {
             view: "tabview",
             id: "tabViewExpediente",
@@ -346,20 +345,13 @@ export default class ExpedientesForm extends JetView {
                     header:  "Ventas",
                     width: 100,
                     body: {
-                    //solapa expedientes
-                    view: "layout",
-                    id: "presupuestoGrid",
-                    multiview: true,
-                    rows: [
-                        {
-                            padding: 10,cols: [
-                                { view: "button", label: "Crear presupuesto ventas", type: "form", width: 300, click: () => {
-                                    this.show('/top/ofertasForm?ofertaId=0&expedienteId=' + expedienteId);
-                                } }
-                            ]
-                        },
-                    ]
-                    }
+                        view: "layout",
+                        id: "presupuestoVentaGrid",
+                        multiview: true,
+                        rows: [
+                            _ofertasVenta
+                        ]
+                        }
                     
                 }
     ]
@@ -445,7 +437,6 @@ export default class ExpedientesForm extends JetView {
                 //this.loadAgentes(expediente.agenteId);
                 this.loadEmpresas(expediente.empresaId);
                 this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
-                this.loadAgenteCliente(expediente.agenteId);
                 this.loadEstados(expediente.estadoExpedienteId);
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
@@ -454,7 +445,8 @@ export default class ExpedientesForm extends JetView {
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
                 $$("cmbTiposProyecto").unblockEvent();
 
-                ofertasCoste.loadGrid(expediente.expedienteId, null, expediente.importeObra)
+                ofertasCoste.loadGrid(expediente.expedienteId, null, expediente.importeObra);
+                ofertasVenta.loadGrid(expediente.expedienteId, null, expediente.importeObra)
                 
             })
             .catch((err) => {

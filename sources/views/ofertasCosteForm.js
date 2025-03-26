@@ -876,17 +876,6 @@ export default class OfertasCosteForm extends JetView {
                 });
         }
 
-       /*      loadAgenteCliente(clienteId) {
-                if(clienteId) {
-                    cliId = clienteId;
-                    agentesService.getAgenteCliente(clienteId)
-                    .then(rows => {
-                        this.loadAgentes(rows[0].comercialId);
-                        //this.loadClienteData(clienteId)
-                    });
-                }
-            } */
-
             loadAgentes(agenteId) {
                 agentesService.getAgentes()
                 .then(rows => {
