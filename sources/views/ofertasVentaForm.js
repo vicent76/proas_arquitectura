@@ -23,14 +23,14 @@ var importeCobro = 0;
 var _imprimirWindow;
 var cliId = null;
 var cap = null;
-var indiceCorrector = 0;
-var limiteImpObra = 0;
-var porcen1 = 0;
-var porcen2 = 0;
-var porcen3 = 0;
-var porcen4 = 0;
 var importeObra = 0;
-var tipoProyectoId
+var tipoProyectoId;
+var agenteId = 0;
+var comercialId = 0;
+var jefeGrupoId = 0;
+var jefeObrasId = 0;
+var oficinaTecnicaId = 0;
+var asesorTecnicoId = 0;
 
 export default class OfertasVentaForm extends JetView {
     config() {
@@ -84,14 +84,32 @@ export default class OfertasVentaForm extends JetView {
                                                 view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
                                                 label: "Fecha de Solicitud", labelPosition: "top", required: true
                                             },
-                                          /*   {
-                                                view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
-                                                label: "Tipo proyecto", labelPosition: "top", options:{}
-                                            }, */
                                             {
                                                 view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
                                                 label: "Expediente", labelPosition: "top", options:{}
-                                            }
+                                            },
+                                            {
+                                                view:"label", label: "Valorado", width:60,on: {
+                                                    onAfterRender: function () {
+                                                        this.getNode().style.marginLeft = "10px";
+                                                    }
+                                                },
+                                            },
+                                            {
+                                                view: "checkbox", id: "valorado", name: "valorado", width: 50
+                                            },
+                                            {
+                                                view:"label", label: "Desglosado", width:80
+                                            },
+                                            {
+                                                view: "checkbox", id: "desglosado", name: "desglosado", width: 50
+                                            },
+                                            {
+                                                view:"label", label: "IVA", width:30
+                                            },
+                                            {
+                                                view: "checkbox", id: "mostrarIva", name: "mostrarIva", width: 50
+                                            },
                                         ]
                                     },
                                     {
@@ -125,7 +143,7 @@ export default class OfertasVentaForm extends JetView {
                                     {
                                         cols: [
                                             {
-                                                view: "combo", id: "cmbPresupuestosCoste", name: "presupuestoCosteId", 
+                                                view: "combo", id: "cmbPresupuestosCoste", name: "ofertaCosteId", 
                                                 label: "Coste", labelPosition: "top", options:{},
                                                 on: {
                                                     "onChange": (newv, oldv) => {
@@ -197,11 +215,8 @@ export default class OfertasVentaForm extends JetView {
         this.cargarEventos();
         this.load(ofertaId, expedienteId);
     }
+
     load(ofertaId, expedienteId) {
-        //PRIMERO RECUPERAMOS EL INDICE CORRECTOR
-        parametrosService.getParametros()
-        .then((parametros) => {
-            if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
             if (ofertaId == 0 && expedienteId > 0) {
                 expedientesService.getExpediente(expedienteId)
                 .then((expediente) => {
@@ -235,7 +250,9 @@ export default class OfertasVentaForm extends JetView {
                     lineasOfertaVenta.loadGrid(oferta.ofertaId, _imprimirWindow, []);
                     this.loadPresupuestosCoste(expedienteId, oferta.ofertaCosteId);
                     this.loadClientes(oferta.clienteId);
-                    //basesOferta.loadGrid(oferta.ofertaId);
+                    $$('valorado').setValue(oferta.valorado);
+                    $$('desglosado').setValue(oferta.desglosado);
+                    $$('mostrarIva').setValue(oferta.mostrarIva);
                     expedientesService.getExpediente(expedienteId)
                     .then((expediente) => {
                        
@@ -250,10 +267,6 @@ export default class OfertasVentaForm extends JetView {
                 .catch((err) => {
                     messageApi.errorMessageAjax(err);
                 }); 
-        })
-        .catch((err) => {
-            messageApi.errorMessageAjax(err);
-        }); 
         
     }
 
@@ -268,16 +281,23 @@ export default class OfertasVentaForm extends JetView {
     cancel() {
         this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
     }
+    
     accept() {
         if (!$$("frmOfertas").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
         }
         var data = $$("frmOfertas").getValues();
-        
-        
-       
+
         if (ofertaId == 0) {
+            var datalineas = $$("lineasOfertaVentaGrid").serialize();
+
+            console.log(datalineas);
+            if(datalineas.length > 0) {
+                data.lineas = this.$scope.limpiaDatalineas(datalineas);
+            }
+         
+    
             data.tipoProyectoId = tipoProyectoId;
             data.ofertaId = 0;
             data.tipoOfertaId = 5
@@ -292,8 +312,15 @@ export default class OfertasVentaForm extends JetView {
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
             data.esCoste = 0
+            //
+            data.agenteId = agenteId;
+            data.comercialId = comercialId;
+            data.jefeGrupoId = jefeGrupoId;
+            data.jefeObrasId = jefeObrasId;
+            data.oficinaTecnicaId = oficinaTecnicaId;
+            data.asesorTecnicoId = asesorTecnicoId;
 
-            ofertasService.postOferta(data)
+            ofertasService.postOfertaVenta(data)
                 .then((result) => {
                     this.$scope.show('/top/ofertasVentaForm?ofertaId=' + result.ofertaId + "&NEW");
                 })
@@ -333,6 +360,48 @@ export default class OfertasVentaForm extends JetView {
                             }
                 });
         }
+    }
+
+    limpiaDatalineas(lineas) {
+        let newL = [];
+        for(let l of lineas) {
+            let lin = {
+                ofertaLineaId: 0,
+                ofertaId: 0,
+                linea: l.linea,
+                unidadId: l.unidadId,
+                articuloId: l.articuloId,
+                tipoIvaId: l.tipoIvaId,
+                porcentaje: l.porcentaje,
+                descripcion: l.descripcion,
+                cantidad: l.cantidad,
+                importe: l.importe,
+                totalLinea: l.totalLinea,
+                coste: l.coste,
+                porcentajeBeneficio: l.porcentajeBeneficio,
+                importeBeneficioLinea: l.importeBeneficioLinea,
+                porcentajeAgente: l.porcentajeAgente,
+                importeAgenteLinea: l.importeAgenteLinea,
+                ventaNetaLinea: l.ventaNetaLinea,
+                capituloLinea: l.capituloLinea,
+                proveedorId: l.proveedorId,
+                importeProveedor: l.importeProveedor,
+                totalLineaProveedor: l.totalLineaProveedor,
+                costeLineaProveedor: l.coste,
+                tipoIvaProveedorId: l.tipoIvaProveedorId,
+                porcentajeProveedor: l.porcentajeProveedor,
+                precio: l.precio,
+                perdto: l.perdto,
+                perdtoProveedor: l.perdtoProveedor,
+                dto: l.dto,
+                precioProveedor: l.precioProveedor,
+                dtoProveedor: l.dtoProveedor,
+                totalLineaProveedorIva: l.totalLineaProveedorIva,
+                esTarifa: l.esTarifa
+            }
+            newL.push(lin);
+        }
+        return newL;
     }
 
     loadEmpresas(empresaId) {
@@ -484,6 +553,7 @@ export default class OfertasVentaForm extends JetView {
     loadLienasCosteData(presupuestoCosteId) {
         ofertasService.getLineasOferta(presupuestoCosteId)
         .then( (rows) => {
+            this.asignaColaboradores(rows[0])
             lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows)
         })
         .catch( (err) => {
@@ -491,7 +561,14 @@ export default class OfertasVentaForm extends JetView {
         })
     }
 
-
+    asignaColaboradores(data) {
+        agenteId = data.agenteId;
+        comercialId =data.comercialId;
+        jefeGrupoId = data.jefeGrupoId;
+        jefeObrasId =data.jefeObrasId;
+        oficinaTecnicaId = data.oficinaTecnicaId;
+        asesorTecnicoId = data.asesorTecnicoId;
+    }
     buscaClientesActivos(query) {  
         // Modifica la función para pasar la consulta al servicio
         clientesService.getClientesActivosQuery(query)

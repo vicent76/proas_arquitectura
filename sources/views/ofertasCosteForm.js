@@ -93,14 +93,32 @@ export default class OfertasCosteForm extends JetView {
                                                 view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
                                                 label: "Fecha de Solicitud", labelPosition: "top", required: true
                                             },
-                                          /*   {
-                                                view: "combo", id: "cmbTiposProyecto", name: "tipoProyectoId",required: true, 
-                                                label: "Tipo proyecto", labelPosition: "top", options:{}
-                                            }, */
                                             {
                                                 view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
                                                 label: "Expediente", labelPosition: "top", options:{}
-                                            }
+                                            },
+                                            {
+                                                view:"label", label: "Valorado", width:60,on: {
+                                                    onAfterRender: function () {
+                                                        this.getNode().style.marginLeft = "10px";
+                                                    }
+                                                },
+                                            },
+                                            {
+                                                view: "checkbox", id: "valorado", name: "valorado", width: 50
+                                            },
+                                            {
+                                                view:"label", label: "Desglosado", width:80
+                                            },
+                                            {
+                                                view: "checkbox", id: "desglosado", name: "desglosado", width: 50
+                                            },
+                                            {
+                                                view:"label", label: "IVA", width:30
+                                            },
+                                            {
+                                                view: "checkbox", id: "mostrarIva", name: "mostrarIva", width: 50
+                                            },
                                         ]
                                     },
                                     {
@@ -447,9 +465,9 @@ export default class OfertasCosteForm extends JetView {
                     //this.loadMantenedores(oferta.mantenedorId);
                     this.loadTiposProyecto(oferta.tipoProyectoId);  
                     lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow, importeObra);
-                    //basesOferta.loadGrid(oferta.ofertaId);
-                   
-                    
+                    $$('valorado').setValue(oferta.valorado);
+                    $$('desglosado').setValue(oferta.desglosado);
+                    $$('mostrarIva').setValue(oferta.mostrarIva);
     
                     ////
     

@@ -483,6 +483,7 @@ export const LineasOfertaWindow = {
         data.totalLinea = $$('coste').getValue();
         data.porcentajeBeneficio = 0;
         data.porcentajeAgente = 0;
+        data.importeProveedor = $$('importeCliente').getValue()
         return data;
     },
 

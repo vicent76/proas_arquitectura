@@ -7,14 +7,7 @@ import { LineasOfertaWindow } from "./lineasOfertaWindow";
 import { proveedoresOferta } from "./proveedoresOfertaGrid";
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
-var currentIdDatatableView;
-var currentRowDatatableView
-var isNewRow = false;
-
-
-
 var ofertaId;
-var numLineas;
 var imprimirWindow;
 
 
@@ -79,12 +72,6 @@ export const lineasOfertaVenta= {
             select: "row",
             autoheight:true,
             footer: false,
-            ready:function(){ $$('lineasOfertaVentaGrid').attachEvent("onItemDblClick", function(id, e, node){
-                var curRow = this.data.pull[id.row]
-                var cliId = $$('cmbClientes').getValue();
-                LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId, null, null, null);
-            });
-        },
             columns: [
                 { id: "ofertaLineaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "ofertaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
@@ -94,10 +81,12 @@ export const lineasOfertaVenta= {
                 { id: "unidades", header: [translate("Uds."), { content: "textFilter" }], sort: "string", width: 40 },
                 
             
+                { id: "importeProveedor", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
                 { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
                 { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "porcentajeBeneficio", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
                 
     
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
@@ -114,9 +103,8 @@ export const lineasOfertaVenta= {
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
                     var cliId = $$('cmbClientes').getValue();
-                    LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId );
-                   
-                }
+                },
+                
             },
             editable: true,
             editaction: "dblclick",
@@ -128,7 +116,22 @@ export const lineasOfertaVenta= {
                     
                 },
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
-                   
+                    if (editor.column == "porcentajeBeneficio") {  
+                        var row = this.getItem(editor.row);
+                        var porcentajeBeneficio = parseFloat(state.value.replace(",", ".")) / 100 || 0;
+                        var coste = parseFloat(row.importeProveedor) || 0;
+                        var cantidad = parseFloat(row.cantidad) || 0;
+                        //var importe = parseFloat(row.importe) || 0;
+ 
+                        var importeBeneficioLinea = porcentajeBeneficio * coste;
+
+                        var importe = importeBeneficioLinea + coste;
+
+                        row.importe = importe;
+                        row.costeLinea = importe * cantidad;
+
+                        this.updateItem(editor.row, row);  // Actualizar fila
+                    }
                 },
                 "onAfterFilter": function () {
                     var numReg = $$("lineasOfertaVentaGrid").count();
@@ -152,14 +155,12 @@ export const lineasOfertaVenta= {
     loadGrid: (ofertaid, _imprimirWindow, lineas) => {
         ofertaId = ofertaid;
         imprimirWindow = _imprimirWindow
-        numLineas = 0;
         var total = 0;
         if(ofertaId && ofertaId != 0) {
             ofertasService.getLineasOferta(ofertaId)
             .then(rows => {
                 if(rows.length > 0) {
-                   /*  numLineas = rows.length;
-                    OfertasFormWindow.estableceNumLineas(numLineas); */
+                  
                     $$("lineasOfertaVentaGrid").clearAll();
                     $$("lineasOfertaVentaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", rows));
                     var numReg = $$("lineasOfertaVentaGrid").count();
@@ -179,8 +180,7 @@ export const lineasOfertaVenta= {
             });
         } else {
                 if(lineas && lineas.length > 0) {
-                   /*  numLineas = rows.length;
-                    OfertasFormWindow.estableceNumLineas(numLineas); */
+                   
                     $$("lineasOfertaVentaGrid").clearAll();
                     $$("lineasOfertaVentaGrid").parse(generalApi.prepareDataForDataTable("ofertaLineaId", lineas));
                     var numReg = $$("lineasOfertaVentaGrid").count();
@@ -216,22 +216,5 @@ export const lineasOfertaVenta= {
                 }
             }
         });
-    },
-    disparaEvento: () => {
-
-    },
-
-    estableceContado: (rows) => {
-        setTimeout( function () {
-            var aCuentaProfesional =  0;
-            if(rows) {
-                for(var i = 0; i < rows.length; i++) {
-                    aCuentaProfesional = aCuentaProfesional + rows[i].aCuentaProveedor;
-                }
-                $$('aCuentaProfesional').setValue(aCuentaProfesional);
-                return;
-            }
-            $$('aCuentaProfesional').setValue(aCuentaProfesional);
-        }, 300);
     }
 }

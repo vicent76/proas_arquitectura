@@ -193,6 +193,29 @@ export const ofertasService = {
 
         });
     },
+
+    postOfertaVenta: (oferta) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/venta/cabecera/lineas/";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, {oferta: oferta});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+
     putOferta: (oferta, ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
