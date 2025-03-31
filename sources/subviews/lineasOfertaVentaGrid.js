@@ -82,11 +82,12 @@ export const lineasOfertaVenta= {
                 
             
                 { id: "importeProveedor", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
+                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
                 { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
                 { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
-                { id: "porcentajeBeneficio", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
+                { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
                 
     
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
@@ -116,19 +117,21 @@ export const lineasOfertaVenta= {
                     
                 },
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
-                    if (editor.column == "porcentajeBeneficio") {  
+                    if (editor.column == "porcentajeBeneficioLinea") {  
                         var row = this.getItem(editor.row);
-                        var porcentajeBeneficio = parseFloat(state.value.replace(",", ".")) / 100 || 0;
+                        var porcentajeBeneficioLinea = parseFloat(state.value.replace(",", ".")) / 100 || 0;
                         var coste = parseFloat(row.importeProveedor) || 0;
                         var cantidad = parseFloat(row.cantidad) || 0;
-                        //var importe = parseFloat(row.importe) || 0;
+                        var dto = parseFloat(row.dto);
  
-                        var importeBeneficioLinea = porcentajeBeneficio * coste;
-
+                        var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
                         var importe = importeBeneficioLinea + coste;
+                        
 
+                        row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
+                        row.importeBeneficioLinea = importeBeneficioLinea;
                         row.importe = importe;
-                        row.costeLinea = importe * cantidad;
+                        row.costeLinea = (importe * cantidad) - dto;
 
                         this.updateItem(editor.row, row);  // Actualizar fila
                     }

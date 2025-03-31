@@ -144,14 +144,29 @@ export default class OfertasVentaForm extends JetView {
                                         cols: [
                                             {
                                                 view: "combo", id: "cmbPresupuestosCoste", name: "ofertaCosteId", 
-                                                label: "Coste", labelPosition: "top", options:{},
+                                                label: "Presupuesto de coste", labelPosition: "top", options:{},
                                                 on: {
                                                     "onChange": (newv, oldv) => {
                                                         var id = newv;
                                                         this.loadLienasCosteData(id);
                                                     }
                                                 }
-                                            }
+                                            },
+                                            {
+                                                view: "text", id: 'increMediciones', name:'increMediciones', width: 180,
+                                                label:  'Incr. mediciones (%)', labelPosition: "top", value: 0 ,format: "1,00"
+                                                 
+                                            },
+                                            {
+                                                view: "text", id: 'porcentajeBeneficio', name:'porcentajeBeneficio', width: 180,
+                                                label:  'Incr. beneficio ind. (%)', labelPosition: "top", value: 0 ,format: "1,00"
+                                                 
+                                            },
+                                            {
+                                                view: "text", id: 'porcentajeAgente', name:'porcentajeAgente', width: 180,
+                                                label:  'Incr. comercial (%)', labelPosition: "top", value: 0 ,format: "1,00"
+                                                 
+                                            },
                                         ]
                                     },
                                     {
@@ -294,7 +309,7 @@ export default class OfertasVentaForm extends JetView {
 
             console.log(datalineas);
             if(datalineas.length > 0) {
-                data.lineas = this.$scope.limpiaDatalineas(datalineas);
+                data.lineas = this.$scope.limpiaDatalineas(datalineas, 'POST');
             }
          
     
@@ -321,19 +336,26 @@ export default class OfertasVentaForm extends JetView {
             data.asesorTecnicoId = asesorTecnicoId;
 
             ofertasService.postOfertaVenta(data)
-                .then((result) => {
-                    this.$scope.show('/top/ofertasVentaForm?ofertaId=' + result.ofertaId + "&NEW");
-                })
-                .catch((err) => {
-                    var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-                });
+            .then((result) => {
+                this.$scope.show('/top/ofertasVentaForm?ofertaId=' + result.ofertaId + "&NEW");
+            })
+            .catch((err) => {
+                var error = err.response;
+                        var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                        if(index != -1) {
+                            messageApi.errorRestriccion()
+                        } else {
+                            messageApi.errorMessageAjax(err);
+                        }
+            });
         } else {
+            var datalineas = $$("lineasOfertaVentaGrid").serialize();
+
+            console.log(datalineas);
+            if(datalineas.length > 0) {
+                data.lineas = this.$scope.limpiaDatalineas(datalineas, 'PUT');
+            }
+         
             delete data.direccion;
             delete data.codpostal;
             delete data.poblacion;
@@ -346,7 +368,7 @@ export default class OfertasVentaForm extends JetView {
             data.porcentajeAgente = 0
             data.importeAgente = 0
             data.importeMantenedor = 0
-            ofertasService.putOferta(data, data.ofertaId)
+            ofertasService.putOfertaVenta(data)
                 .then(() => {
                     this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
                 })
@@ -362,7 +384,7 @@ export default class OfertasVentaForm extends JetView {
         }
     }
 
-    limpiaDatalineas(lineas) {
+    limpiaDatalineas(lineas, command) {
         let newL = [];
         for(let l of lineas) {
             let lin = {
@@ -377,8 +399,8 @@ export default class OfertasVentaForm extends JetView {
                 cantidad: l.cantidad,
                 importe: l.importe,
                 totalLinea: l.totalLinea,
-                coste: l.coste,
-                porcentajeBeneficio: l.porcentajeBeneficio,
+                coste: l.importe,
+                porcentajeBeneficio: l.porcentajeBeneficioLinea,
                 importeBeneficioLinea: l.importeBeneficioLinea,
                 porcentajeAgente: l.porcentajeAgente,
                 importeAgenteLinea: l.importeAgenteLinea,
@@ -387,7 +409,7 @@ export default class OfertasVentaForm extends JetView {
                 proveedorId: l.proveedorId,
                 importeProveedor: l.importeProveedor,
                 totalLineaProveedor: l.totalLineaProveedor,
-                costeLineaProveedor: l.coste,
+                costeLineaProveedor: l.importeProveedor,
                 tipoIvaProveedorId: l.tipoIvaProveedorId,
                 porcentajeProveedor: l.porcentajeProveedor,
                 precio: l.precio,
@@ -398,6 +420,10 @@ export default class OfertasVentaForm extends JetView {
                 dtoProveedor: l.dtoProveedor,
                 totalLineaProveedorIva: l.totalLineaProveedorIva,
                 esTarifa: l.esTarifa
+            }
+            if(command == 'PUT') {
+                lin.ofertaId = l.ofertaId;
+                lin.ofertaLineaId  = l.ofertaLineaId;
             }
             newL.push(lin);
         }
