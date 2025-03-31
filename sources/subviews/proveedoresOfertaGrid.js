@@ -25,7 +25,7 @@ export const proveedoresOferta = {
         var toolbarproveedoresOferta = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
-                { view: "label", label: translate("Lineas de la oferta") }
+                { view: "label", label: translate("PARTIDAS") }
             ]
         };
         var pagerproveedoresOferta = {

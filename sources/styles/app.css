@@ -72,3 +72,20 @@
     
 }
 
+/* Personalización de los botones */
+.custom-counter .webix_inp_counter_prev::before {
+    content: "⬇"; /* Flecha hacia abajo */
+    font-size: 16px;
+    display: block;
+}
+.custom-counter .webix_inp_counter_next::before {
+    content: "⬆"; /* Flecha hacia arriba */
+    font-size: 16px;
+    display: block;
+}
+
+/* Ocultar el texto original (- y +) */
+.custom-counter .webix_inp_counter_prev div,
+.custom-counter .webix_inp_counter_next div {
+    display: none !important;
+}

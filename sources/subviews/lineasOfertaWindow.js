@@ -27,6 +27,7 @@ var enCarga = false;
 var aplicarFormula = false;
 var indiceCorrector = 0;
 var importeObra = 0;
+var cantidad = 0;
 
 
 export const LineasOfertaWindow = {
@@ -85,8 +86,53 @@ export const LineasOfertaWindow = {
                                                 label: "Unidades", labelPosition: "top", width: 120, width: 150
                                             },
                                             {
-                                                view: "text", id: "cantidad", name: "cantidad", required: true,
-                                                label: "Cantidad", labelPosition: "top", width:100
+                                                view: "counter", id: "cantidad", name: "cantidad", required: true, step: 1,
+                                                label: "Cantidad", labelPosition: "top", width:100, css: "custom-counter",
+                                                on: {
+                                                    onChange: function (newValue) {
+                                                        cantidad = newValue;
+                                                        var uni = $$('cantidad').getValue();
+                                                        var preCli = $$('importeCliente').getValue();
+        
+                                                        if(preCli != "") {
+                                                            preCli = parseFloat(preCli);
+                                                            var precioCli = parseFloat(uni * preCli)
+                                                            $$('precioCliente').setValue(parseFloat(precioCli));
+
+                                                            //calculamos el descuento  del cliente
+                                                            var dtoCli =  ($$('dto').getValue());
+                                                            if(dtoCli != '' || dtoCli > 0) {
+                                                                dtoCli = parseFloat(dtoCli);
+                                                                $$('coste').setValue(precioCli-dtoCli);
+                                                            } else {
+                                                                $$('coste').setValue(precioCli);
+                                                            }
+            
+                                                        }           
+                                                        //localStorage.setItem("cantidad", newValue); // Guardar valor en localStorage
+                                                    },
+                                                    onClick: function() {
+                                                        this.setValue(cantidad);
+                                                        var uni = $$('cantidad').getValue();
+                                                        var preCli = $$('importeCliente').getValue();
+        
+                                                        if(preCli != "") {
+                                                            preCli = parseFloat(preCli);
+                                                            var precioCli = parseFloat(uni * preCli)
+                                                            $$('precioCliente').setValue(parseFloat(precioCli));
+
+                                                            //calculamos el descuento  del cliente
+                                                            var dtoCli =  ($$('dto').getValue());
+                                                            if(dtoCli != '' || dtoCli > 0) {
+                                                                dtoCli = parseFloat(dtoCli);
+                                                                $$('coste').setValue(precioCli-dtoCli);
+                                                            } else {
+                                                                $$('coste').setValue(precioCli);
+                                                            }
+            
+                                                        }           
+                                                    }   
+                                                }
                                             },
                                             
                                            
@@ -207,11 +253,11 @@ export const LineasOfertaWindow = {
              }
          });
 
-         $$("cantidad").attachEvent("onFocus", function(current_view, prev_view){
+        /*  $$("cantidad").attachEvent("onFocus", function(current_view, prev_view){
             $$('cantidad').setValue('');
             $$('precioCliente').setValue(0);
             $$('coste').setValue(0);
-        });
+        }); */
 
         $$("cantidad").attachEvent("onBlur", function(a, b){
             var uni = $$('cantidad').getValue();

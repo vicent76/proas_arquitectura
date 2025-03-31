@@ -1,4 +1,4 @@
-//LINEAS DE LA OFERTA
+//PARTIDAS
 
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
@@ -34,7 +34,7 @@ export const lineasOferta = {
         var toolbarlineasOferta = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
-                { view: "label", label: translate("Lineas de la oferta") }
+                { view: "label", label: translate("PARTIDAS") }
             ]
         };
         var pagerlineasOferta = {

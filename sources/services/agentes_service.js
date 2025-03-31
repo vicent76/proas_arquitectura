@@ -123,4 +123,29 @@ export const agentesService = {
                 });
         });
     },
+
+    getComisionAgente: (agenteId, empresaId, departamentoId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/comerciales/comision";
+                    url += "/" + agenteId;
+                    url += "/" + empresaId;
+                    url += "/" + departamentoId;
+                    return webix.ajax()
+                        .timeout(20000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
 }

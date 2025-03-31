@@ -1,4 +1,4 @@
-//LINEAS DE LA OFERTA
+//PARTIDAS
 
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
@@ -26,7 +26,7 @@ export const lineasOfertaVenta= {
         var toolbarlineasOfertaVenta = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
-                { view: "label", label: translate("Lineas de la oferta") }
+                { view: "label", label: translate("PARTIDAS") }
             ]
         };
         var pagerlineasOfertaVenta = {
@@ -87,10 +87,13 @@ export const lineasOfertaVenta= {
                 { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
                 { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
                 { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "importeAgenteLinea", header: [translate("Imp Agente."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "totalLinea", header: [translate("Total."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                
                 { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
                 
     
-                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
+                //{ id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
             ],
             rightSplit: 1,
             onClick: {
@@ -123,18 +126,59 @@ export const lineasOfertaVenta= {
                         var coste = parseFloat(row.importeProveedor) || 0;
                         var cantidad = parseFloat(row.cantidad) || 0;
                         var dto = parseFloat(row.dto);
+                        var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
+                        coste = coste - dto;
  
                         var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
                         var importe = importeBeneficioLinea + coste;
+
+                        var totalLinea = importe / ((100 - porcentajeAgente) / 100);
+                        var importeAgenteLinea = totalLinea - importe;
                         
 
+                        row.totalLinea = totalLinea;
+                        row.importeAgenteLinea = importeAgenteLinea;
                         row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
                         row.importeBeneficioLinea = importeBeneficioLinea;
                         row.importe = importe;
-                        row.costeLinea = (importe * cantidad) - dto;
+                        row.costeLinea = (importe * cantidad);
 
                         this.updateItem(editor.row, row);  // Actualizar fila
                     }
+                },
+                "OnAfterLoad": function ( ) {
+                  setTimeout( () => {
+                    var porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
+                    var datatable = $$("lineasOfertaVentaGrid");
+            
+                    datatable.eachRow(function (rowId) {
+                        var row = datatable.getItem(rowId);
+                       
+                        var coste = parseFloat(row.importeProveedor) || 0;
+                        var cantidad = parseFloat(row.cantidad) || 0;
+                        var dto = parseFloat(row.dto);
+                        var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
+                        coste = coste - dto;
+            
+                        var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
+                        var importe = importeBeneficioLinea + coste;
+            
+                        var totalLinea = importe / ((100 - porcentajeAgente) / 100);
+                        var importeAgenteLinea = totalLinea - importe;
+                        
+            
+                        row.totalLinea = totalLinea;
+                        row.importeAgenteLinea = importeAgenteLinea;
+                        row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
+                        row.importeBeneficioLinea = importeBeneficioLinea;
+                        row.importe = importe;
+                        row.costeLinea = (importe * cantidad);
+            
+                        datatable.updateItem(rowId, row);
+                    });
+                  }, 100)
+                    
+                    
                 },
                 "onAfterFilter": function () {
                     var numReg = $$("lineasOfertaVentaGrid").count();

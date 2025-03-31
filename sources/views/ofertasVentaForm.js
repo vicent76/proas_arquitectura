@@ -11,6 +11,7 @@ import { lineasOfertaVenta } from "../subviews/lineasOfertaVentaGrid";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { parametrosService } from "../services/parametros_service";
+import { agentesService } from "../services/agentes_service";
 
 
 
@@ -159,12 +160,22 @@ export default class OfertasVentaForm extends JetView {
                                             },
                                             {
                                                 view: "text", id: 'porcentajeBeneficio', name:'porcentajeBeneficio', width: 180,
-                                                label:  'Incr. beneficio ind. (%)', labelPosition: "top", value: 0 ,format: "1,00"
+                                                label:  'Incr. beneficio ind. (%)', labelPosition: "top", value: 0 ,format: "1,00",
+                                                on:{
+                                                    "onTimedKeyPress": () => {
+                                                        this.calculaBI()
+                                                    }
+                                                }
                                                  
                                             },
                                             {
                                                 view: "text", id: 'porcentajeAgente', name:'porcentajeAgente', width: 180,
-                                                label:  'Incr. comercial (%)', labelPosition: "top", value: 0 ,format: "1,00"
+                                                label:  'Incr. comercial (%)', labelPosition: "top", value: 0 ,format: "1,00",
+                                                on:{
+                                                    "onTimedKeyPress": () => {
+                                                        this.calculaBI()
+                                                    }
+                                                }
                                                  
                                             },
                                         ]
@@ -285,6 +296,37 @@ export default class OfertasVentaForm extends JetView {
         
     }
 
+    calculaBI() {
+        var porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
+        var datatable = $$("lineasOfertaVentaGrid");
+
+        datatable.eachRow(function (rowId) {
+            var row = datatable.getItem(rowId);
+           
+            var coste = parseFloat(row.importeProveedor) || 0;
+            var cantidad = parseFloat(row.cantidad) || 0;
+            var dto = parseFloat(row.dto);
+            var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
+            coste = coste - dto;
+
+            var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
+            var importe = importeBeneficioLinea + coste;
+
+            var totalLinea = importe / ((100 - porcentajeAgente) / 100);
+            var importeAgenteLinea = totalLinea - importe;
+            
+
+            row.totalLinea = totalLinea;
+            row.importeAgenteLinea = importeAgenteLinea;
+            row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
+            row.importeBeneficioLinea = importeBeneficioLinea;
+            row.importe = importe;
+            row.costeLinea = (importe * cantidad);
+
+            datatable.updateItem(rowId, row);
+        });
+    }
+
     cargarEventos() {   
   
        /*  $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
@@ -304,6 +346,7 @@ export default class OfertasVentaForm extends JetView {
         }
         var data = $$("frmOfertas").getValues();
 
+        delete data.increMediciones;
         if (ofertaId == 0) {
             var datalineas = $$("lineasOfertaVentaGrid").serialize();
 
@@ -312,17 +355,11 @@ export default class OfertasVentaForm extends JetView {
                 data.lineas = this.$scope.limpiaDatalineas(datalineas, 'POST');
             }
          
+            
     
             data.tipoProyectoId = tipoProyectoId;
             data.ofertaId = 0;
             data.tipoOfertaId = 5
-            data.coste = 0
-            data.porcentajeBeneficio = 0
-            data.importeBeneficio = 0
-            data.ventaNeta = 0
-            data.porcentajeAgente = 0
-            data.importeAgente = 0
-            data.importeCliente = 0
             data.importeMantenedor = 0
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
@@ -363,10 +400,6 @@ export default class OfertasVentaForm extends JetView {
             delete data.tipoViaId;
             delete data.comercialCliente;
             //
-            data.porcentajeBeneficio = 0
-            data.importeBeneficio = 0
-            data.porcentajeAgente = 0
-            data.importeAgente = 0
             data.importeMantenedor = 0
             ofertasService.putOfertaVenta(data)
                 .then(() => {
@@ -572,7 +605,7 @@ export default class OfertasVentaForm extends JetView {
 
         })
         .catch( (err) => {
-
+            messageApi.errorMessageAjax(err);
         });
     }
 
@@ -580,10 +613,12 @@ export default class OfertasVentaForm extends JetView {
         ofertasService.getLineasOferta(presupuestoCosteId)
         .then( (rows) => {
             this.asignaColaboradores(rows[0])
+            this.obtenerPorcentajeDelAgente(rows[0].agenteId, rows[0].empresaId, rows[0].tipoOfertaId);
+            this.obtenerPorcentajeBeneficio();
             lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows)
         })
         .catch( (err) => {
-
+            messageApi.errorMessageAjax(err);
         })
     }
 
@@ -595,6 +630,36 @@ export default class OfertasVentaForm extends JetView {
         oficinaTecnicaId = data.oficinaTecnicaId;
         asesorTecnicoId = data.asesorTecnicoId;
     }
+
+    obtenerPorcentajeDelAgente(agenteId, empresaId, departamentoId) {
+        agentesService.getComisionAgente(agenteId, empresaId, departamentoId)
+        .then( (row) => {
+            if(!row) {
+                $$('porcentajeAgente').setValue(0);
+            } else {
+                $$('porcentajeAgente').setValue(row);
+            }
+        })
+        .catch( (err) => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+
+
+    obtenerPorcentajeBeneficio(agenteId, empresaId, departamentoId) {
+        parametrosService.getParametros()
+        .then( (parametros) => {
+            if(!parametros) {
+                $$('porcentajeBeneficio').setValue(0);
+            } else {
+                $$('porcentajeBeneficio').setValue(parametros[0].margenMantenimiento);
+            }
+        })
+        .catch( (err) => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+
     buscaClientesActivos(query) {  
         // Modifica la función para pasar la consulta al servicio
         clientesService.getClientesActivosQuery(query)
