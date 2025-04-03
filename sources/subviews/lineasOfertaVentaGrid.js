@@ -81,13 +81,16 @@ export const lineasOfertaVenta= {
                 { id: "unidades", header: [translate("Uds."), { content: "textFilter" }], sort: "string", width: 40 },
                 
             
-                { id: "importeProveedor", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
+                { id: "importe", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
                 { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
-                { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
-                { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "precio", header: [translate("Precio"), { content: "textFilter" }], sort: "string", width: 80  },
+                { id: "coste", header: [translate("Coste"), { content: "textFilter" }], sort: "string", width: 80, hidden:true  },
+                //{ id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
+                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
+                { id: "ventaNetaLinea", header: [translate("venta neta"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, hidden: true},
+               
                 { id: "importeAgenteLinea", header: [translate("Imp Agente."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                
                 { id: "totalLinea", header: [translate("Total."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
                 
                 { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
@@ -122,26 +125,35 @@ export const lineasOfertaVenta= {
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
                     if (editor.column == "porcentajeBeneficioLinea") {  
                         var row = this.getItem(editor.row);
+                        var antTotalLinea = row.totalLinea; // guardamnos el importe antes de cambiarlo
+                        var totaAlCliente =   $$('importeCli').getValue(); //recuperamos el total al cliente
+                        totaAlCliente = totaAlCliente - antTotalLinea; //restamos el valor que se va a modificar
                         var porcentajeBeneficioLinea = parseFloat(state.value.replace(",", ".")) / 100 || 0;
-                        var coste = parseFloat(row.importeProveedor) || 0;
+                        var precio = parseFloat(row.costeLinea) || 0;
                         var cantidad = parseFloat(row.cantidad) || 0;
-                        var dto = parseFloat(row.dto);
+                       
                         var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
-                        coste = coste - dto;
+                      
  
-                        var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
-                        var importe = importeBeneficioLinea + coste;
+                        var importeBeneficioLinea = porcentajeBeneficioLinea * precio;
+                        var importe = precio / cantidad;
+                        var ventaNeta =  precio + importeBeneficioLinea;
 
-                        var totalLinea = importe / ((100 - porcentajeAgente) / 100);
-                        var importeAgenteLinea = totalLinea - importe;
+                        var totalLinea = ventaNeta / ((100 - porcentajeAgente) / 100);
+                        var importeAgenteLinea = totalLinea - (precio + importeBeneficioLinea);
                         
 
+                        totaAlCliente = totaAlCliente + totalLinea; //sumamos el nuevo valor modificado
+                        $$('importeCli').setValue(totaAlCliente);// actualizamos el precio
+                        
                         row.totalLinea = totalLinea;
                         row.importeAgenteLinea = importeAgenteLinea;
                         row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
                         row.importeBeneficioLinea = importeBeneficioLinea;
                         row.importe = importe;
-                        row.costeLinea = (importe * cantidad);
+                        row.precio = precio;
+                        row.coste = precio;
+                        row.ventaNetaLinea = ventaNeta;
 
                         this.updateItem(editor.row, row);  // Actualizar fila
                     }
@@ -150,32 +162,38 @@ export const lineasOfertaVenta= {
                   setTimeout( () => {
                     var porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
                     var datatable = $$("lineasOfertaVentaGrid");
-            
+                    var totaAlCliente = 0;
                     datatable.eachRow(function (rowId) {
                         var row = datatable.getItem(rowId);
                        
-                        var coste = parseFloat(row.importeProveedor) || 0;
+                        var precio = parseFloat(row.costeLinea) || 0;
                         var cantidad = parseFloat(row.cantidad) || 0;
-                        var dto = parseFloat(row.dto);
+                      
                         var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
-                        coste = coste - dto;
-            
-                        var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
-                        var importe = importeBeneficioLinea + coste;
-            
-                        var totalLinea = importe / ((100 - porcentajeAgente) / 100);
-                        var importeAgenteLinea = totalLinea - importe;
+                      
+ 
+                        var importeBeneficioLinea = porcentajeBeneficioLinea * precio;
+                        var importe = precio / cantidad;
+                        var ventaNeta =  precio + importeBeneficioLinea;
+
+                        var totalLinea = ventaNeta / ((100 - porcentajeAgente) / 100);
+                        var importeAgenteLinea = totalLinea - (precio + importeBeneficioLinea);
                         
-            
+
+                        totaAlCliente = totaAlCliente + totalLinea;
                         row.totalLinea = totalLinea;
                         row.importeAgenteLinea = importeAgenteLinea;
                         row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
                         row.importeBeneficioLinea = importeBeneficioLinea;
                         row.importe = importe;
-                        row.costeLinea = (importe * cantidad);
+                        row.precio = precio;
+                        row.coste = precio;
+                        row.ventaNetaLinea = ventaNeta;
+                        
             
                         datatable.updateItem(rowId, row);
                     });
+                    $$('importeCli').setValue(totaAlCliente);
                   }, 100)
                     
                     

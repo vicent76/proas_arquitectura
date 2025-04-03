@@ -431,7 +431,8 @@ export default class OfertasCosteForm extends JetView {
                     this.loadTiposProyecto(expediente.tipoProyectoId);  
                     this.loadExpediente(expediente);
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
-                    this.$$("referencia").setValue(expediente.referencia);
+                    var f = new Date(expediente.fecha).getFullYear()
+                    $$("referencia").setValue(expediente.referencia + '_PC_' + f)
     
                     this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                     this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
@@ -560,6 +561,10 @@ export default class OfertasCosteForm extends JetView {
             data.porcentajeAgente = 0
             data.importeAgente = 0
             data.importeMantenedor = 0
+            data.total = data.importeCliente;
+            data.totalConIva = data.importeCliente;
+            data.coste = data.importeCliente;
+
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
                     this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');

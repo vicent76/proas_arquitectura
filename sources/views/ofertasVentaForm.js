@@ -13,7 +13,7 @@ import { expedientesService } from "../services/expedientes_service";
 import { parametrosService } from "../services/parametros_service";
 import { agentesService } from "../services/agentes_service";
 
-
+var isLoading = false; // Variable de control
 
 var ofertaId = 0;
 var expedienteId = 0;
@@ -32,6 +32,11 @@ var jefeGrupoId = 0;
 var jefeObrasId = 0;
 var oficinaTecnicaId = 0;
 var asesorTecnicoId = 0;
+//
+var coste = 0;
+var importeBeneficio = 0;
+var ventaNeta = 0;
+var importeAgente = 0
 
 export default class OfertasVentaForm extends JetView {
     config() {
@@ -148,6 +153,7 @@ export default class OfertasVentaForm extends JetView {
                                                 label: "Presupuesto de coste", labelPosition: "top", options:{},
                                                 on: {
                                                     "onChange": (newv, oldv) => {
+                                                        if (isLoading) return; 
                                                         var id = newv;
                                                         this.loadLienasCosteData(id);
                                                     }
@@ -261,6 +267,7 @@ export default class OfertasVentaForm extends JetView {
                 }); 
                 return;
             }
+            isLoading = true; // Se activa el flag antes de cargar datos
             ofertasService.getOferta(ofertaId)
                 .then((oferta) => {
                     //$$("cmbTiposProyecto").blockEvent();
@@ -283,6 +290,7 @@ export default class OfertasVentaForm extends JetView {
                     .then((expediente) => {
                        
                         this.loadExpediente(expediente);
+                        isLoading = false; 
                         
                     })
                     .catch((err) => {
@@ -300,31 +308,38 @@ export default class OfertasVentaForm extends JetView {
         var porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
         var datatable = $$("lineasOfertaVentaGrid");
 
+        var totaAlCliente = 0;
         datatable.eachRow(function (rowId) {
             var row = datatable.getItem(rowId);
            
-            var coste = parseFloat(row.importeProveedor) || 0;
+            var precio = parseFloat(row.costeLinea) || 0;
             var cantidad = parseFloat(row.cantidad) || 0;
-            var dto = parseFloat(row.dto);
+          
             var porcentajeAgente = parseFloat($$('porcentajeAgente').getValue());
-            coste = coste - dto;
+          
 
-            var importeBeneficioLinea = porcentajeBeneficioLinea * coste;
-            var importe = importeBeneficioLinea + coste;
+            var importeBeneficioLinea = porcentajeBeneficioLinea * precio;
+            var importe = precio / cantidad;
+            var ventaNeta =  precio + importeBeneficioLinea;
 
-            var totalLinea = importe / ((100 - porcentajeAgente) / 100);
-            var importeAgenteLinea = totalLinea - importe;
+            var totalLinea = ventaNeta / ((100 - porcentajeAgente) / 100);
+            var importeAgenteLinea = totalLinea - (precio + importeBeneficioLinea);
             
 
+            totaAlCliente = totaAlCliente + totalLinea;
             row.totalLinea = totalLinea;
             row.importeAgenteLinea = importeAgenteLinea;
             row.porcentajeBeneficioLinea = porcentajeBeneficioLinea * 100;
             row.importeBeneficioLinea = importeBeneficioLinea;
             row.importe = importe;
-            row.costeLinea = (importe * cantidad);
+            row.precio = precio;
+            row.coste = precio;
+            row.ventaNetaLinea = ventaNeta;
+            
 
             datatable.updateItem(rowId, row);
         });
+        $$('importeCli').setValue(totaAlCliente);
     }
 
     cargarEventos() {   
@@ -363,6 +378,10 @@ export default class OfertasVentaForm extends JetView {
             data.importeMantenedor = 0
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
+            data.coste = coste;
+            data.importeBeneficio = importeBeneficio;
+            data.ventaNeta = ventaNeta
+            data.importeAgente = importeAgente;
             data.esCoste = 0
             //
             data.agenteId = agenteId;
@@ -419,6 +438,10 @@ export default class OfertasVentaForm extends JetView {
 
     limpiaDatalineas(lineas, command) {
         let newL = [];
+        coste = 0;
+        importeBeneficio = 0;
+        ventaNeta = 0;
+        importeAgente = 0;
         for(let l of lineas) {
             let lin = {
                 ofertaLineaId: 0,
@@ -432,7 +455,7 @@ export default class OfertasVentaForm extends JetView {
                 cantidad: l.cantidad,
                 importe: l.importe,
                 totalLinea: l.totalLinea,
-                coste: l.importe,
+                coste: l.coste,
                 porcentajeBeneficio: l.porcentajeBeneficioLinea,
                 importeBeneficioLinea: l.importeBeneficioLinea,
                 porcentajeAgente: l.porcentajeAgente,
@@ -454,6 +477,10 @@ export default class OfertasVentaForm extends JetView {
                 totalLineaProveedorIva: l.totalLineaProveedorIva,
                 esTarifa: l.esTarifa
             }
+            coste = coste + l.coste;
+            importeBeneficio = importeBeneficio + l.importeBeneficioLinea
+            ventaNeta = ventaNeta + l.ventaNetaLinea;
+            importeAgente = importeAgente + l.importeAgenteLinea
             if(command == 'PUT') {
                 lin.ofertaId = l.ofertaId;
                 lin.ofertaLineaId  = l.ofertaLineaId;
