@@ -639,6 +639,11 @@ export default class OfertasVentaForm extends JetView {
     loadLienasCosteData(presupuestoCosteId) {
         ofertasService.getLineasOferta(presupuestoCosteId)
         .then( (rows) => {
+            if(rows.length == 0) {
+                messageApi.errorMessage("El presupuesto de coste seleccionado no tiene partidas.");
+                lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows)
+                return;
+            }
             this.asignaColaboradores(rows[0])
             this.obtenerPorcentajeDelAgente(rows[0].agenteId, rows[0].empresaId, rows[0].tipoOfertaId);
             this.obtenerPorcentajeBeneficio();

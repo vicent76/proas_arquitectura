@@ -1,6 +1,6 @@
 import { devConfig } from "../config/config";
 export const empresasService = {
-    getEmpresas: () => {
+    getEmpresas:  () => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {

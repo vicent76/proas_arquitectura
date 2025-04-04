@@ -19,6 +19,7 @@ import { parametrosService } from "../services/parametros_service";
 import { unidadesObraService } from "../services/unidades_obra_service";
 import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
 
+var isLoading = false; // Variable de control
 
 
 var ofertaId = 0;
@@ -46,348 +47,343 @@ export default class OfertasCosteForm extends JetView {
         //const _basesOferta = basesOferta.getGrid(this.app);
               
         const _view = {
-            view: "tabview",
-            cells: [
+            //solapa ofertas
+            view: "layout",
+            id: "ofertasCosteForm",
+            multiview: true,
+            rows: [
                 {
-                    header:  "Oferta",
-                    body: {
-                        //solapa ofertas
-                        view: "layout",
-                        id: "ofertasCosteForm",
-                        multiview: true,
-                        rows: [
-                            {
-                                view: "toolbar", padding: 3, elements: [
-                                    { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
-                                    { view: "label", label: "Oferta de coste" }
-                                ]
-                            },
-                            {
-                                view: "form",
-                                scroll:"y",
-                                id: "frmOfertas",
-                                maxWidth: 2500,
-                                autoheight:true,
-                                elements: [
-                                    {
-                                        view: "toolbar", padding: 3, css: {"background-color": "#F4F5F9"}, elements: [
-                                            { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
-                                            { view: "label", label: "Datos" }
-                                        ]
+                    view: "toolbar", padding: 3, elements: [
+                        { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                        { view: "label", label: "Oferta de coste" }
+                    ]
+                },
+                {
+                    view: "form",
+                    scroll:"y",
+                    id: "frmOfertas",
+                    maxWidth: 2500,
+                    autoheight:true,
+                    elements: [
+                        {
+                            view: "toolbar", padding: 3, css: {"background-color": "#F4F5F9"}, elements: [
+                                { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                                { view: "label", label: "Datos" }
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    view: "text", id: "ofertaId", name: "ofertaId", hidden: true,
+                                    label: "ID", labelPosition: "top", width: 50, disabled: true
+                                },
+                                {
+                                    view: "text", id: "referencia", name: "referencia", required: true,
+                                    label: "Referencia", labelPosition: "top", width:250
+                                },
+                                {
+                                    view: "combo", id: "cmbEmpresas", name: "empresaId", required: true, options: {},
+                                    label: "Empresa", labelPosition: "top", width: 250
+                                },
+                                {
+                                    view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
+                                    label: "Fecha de Solicitud", labelPosition: "top", required: true
+                                },
+                                {
+                                    view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
+                                    label: "Expediente", labelPosition: "top", options:{}
+                                },
+                                {
+                                    view:"label", label: "Valorado", width:60,on: {
+                                        onAfterRender: function () {
+                                            this.getNode().style.marginLeft = "10px";
+                                        }
                                     },
-                                    {
-                                        cols: [
-                                            {
-                                                view: "text", id: "ofertaId", name: "ofertaId", hidden: true,
-                                                label: "ID", labelPosition: "top", width: 50, disabled: true
-                                            },
-                                            {
-                                                view: "text", id: "referencia", name: "referencia", required: true,
-                                                label: "Referencia", labelPosition: "top", width:250
-                                            },
-                                            {
-                                                view: "combo", id: "cmbEmpresas", name: "empresaId", required: true, options: {},
-                                                label: "Empresa", labelPosition: "top", width: 250
-                                            },
-                                            {
-                                                view: "datepicker", id: "fechaOferta", name: "fechaOferta",  width: 150,
-                                                label: "Fecha de Solicitud", labelPosition: "top", required: true
-                                            },
-                                            {
-                                                view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true, 
-                                                label: "Expediente", labelPosition: "top", options:{}
-                                            },
-                                            {
-                                                view:"label", label: "Valorado", width:60,on: {
-                                                    onAfterRender: function () {
-                                                        this.getNode().style.marginLeft = "10px";
-                                                    }
-                                                },
-                                            },
-                                            {
-                                                view: "checkbox", id: "valorado", name: "valorado", width: 50
-                                            },
-                                            {
-                                                view:"label", label: "Desglosado", width:80
-                                            },
-                                            {
-                                                view: "checkbox", id: "desglosado", name: "desglosado", width: 50
-                                            },
-                                            {
-                                                view:"label", label: "IVA", width:30
-                                            },
-                                            {
-                                                view: "checkbox", id: "mostrarIva", name: "mostrarIva", width: 50
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        cols: [
-                                              {
-                                                view: "combo", id: "cmbClientes", name: "clienteId", required: true, minWidth:300,
-                                                label: "Cliente", labelPosition: "top",
-                                                options:{},
-                                                on: {
-                                                    "onChange": (newv, oldv) => {
-                                                        var id = newv;
-                                                        this.loadAgenteCliente(id);
-                                                    },
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbClientes').getText(); // Obtiene el valor actual del campo de texto
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaClientesActivos(input);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaClientesActivos(input);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            },
-                                            {
-                                                view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
-                                                label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
-                                                 
-                                            },
-                                        
-                                                    
-                                        ]
-                                    },
-                                    {
-                                        view: "toolbar", padding: 3, css: {"background-color": "#F4F5F9"}, elements: [
-                                            { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
-                                            { view: "label", label: "Colaboradores" }
-                                        ]
-                                    },
-                                    {
-                                        cols: [
-                                            {
-                                                view: "combo", id: "cmbAgentes", name: "agenteId",required: true, 
-                                                label: "Agente", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    "onChange": (newv, oldv) => {
-                                                        var id = newv;
-                                                            if(cliId) {
-                                                                this.loadClientesAgente(cliId, id, null);
-                                                                //this.loadProId(cliId, id);
-                                                            }else {
-                                                                this.loadClientesAgente(null, id, null);
-                                                                //this.loadProId(null, id);
-                                                           
-                                                            }
-                                                    },
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbAgentes').getText(); // Obtiene el valor actual del campo de texto
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaAgentesActivos(input);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaAgentesActivos(input);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            },
-                                            {
-                                                view: "combo", id: "cmbComerciales", name: "comercialId", 
-                                                label: "Comercial", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbComerciales').getText(); // Obtiene el valor actual del campo de texto
-                                                        let name = $$("cmbComerciales").config.name;
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            },
-                                            {
-                                                view: "combo", id: "cmbJefeGrupo", name: "jefeGrupoId", 
-                                                label: "Jefe de grupo", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbJefeGrupo').getText(); // Obtiene el valor actual del campo de texto
-                                                        let name = $$("cmbJefeGrupo").config.name;
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            },
-                                           
-                                         /*    {
-                                                view: "combo", id: "cmbJefeObras", name: "jefeObrasId", 
-                                                label: "Jefe de obras", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbJefeObras').getText(); // Obtiene el valor actual del campo de texto
-                                                        let name = $$("cmbJefeObras").config.name;
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            }, */
-                                            /* {
-                                                view: "combo", id: "cmbOficinaTecnica", name: "oficinaTecnicaId", 
-                                                label: "Oficina técnica", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbOficinaTecnica').getText(); // Obtiene el valor actual del campo de texto
-                                                        let name = $$("cmbOficinaTecnica").config.name;
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            }, */
-                                            {
-                                                view: "combo", id: "cmbAsesorTecnico", name: "asesorTecnicoId", 
-                                                label: "Asesor técnico", labelPosition: "top", minWidth: 130,
-                                                options:{},
-                                                on: {
-                                                    onTimedKeyPress: function() {
-                                                        var input = $$('cmbAsesorTecnico').getText(); // Obtiene el valor actual del campo de texto
-                                                        let name = $$("cmbAsesorTecnico").config.name;
-                                                        if (input.length >= 3) {
-                                                            // Llama a la función para buscar coincidencias en la base de datos
-                                                            this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
-                                                        }
-                                                        if(input === "*") {
-                                                            this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
-                                                        }
-                                                    }.bind(this)
-                                                }
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        cols: [
-                                           
-                                            {
-                                                view: "textarea", id: "observaciones", name: "observaciones",
-                                                label: "Observaciones", labelPosition: "top", height: 140
-                    
-                                            },
-                                            {
-                                                rows: [
-                                                    {
-                                                        padding: 50,cols: [
-                                                            { view: "button", label: "Cancelar", click: this.cancel, hotkey: "esc" },
-                                                            { view: "button", label: "Aceptar", click: this.accept, type: "form" }
-                                                        ]
-                                                    }
-                                                ]
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        cols: [
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Tipos de Proyecto", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listTiposProyecto",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                this.$scope.loadCapitulos(id);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Capítulos", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listCapitulos",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                cap = id;
-                                                                this.$scope.loadUnidadesObra(id);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                rows: [
-                                                    { view: "label", label: "Partidas", align: "left" },
-                                                    {
-                                                        view: "list",
-                                                        id: "listUnidadesObra",
-                                                        template: "#value#", // Muestra el campo 'nombre' de los datos
-                                                        select: true, // Permite seleccionar elementos
-                                                        autoheight: false,
-                                                        height: 200,
-                                                        scroll: "y",
-                                                        on: {
-                                                            onItemClick: function (id) {
-                                                                var cliId = $$('cmbClientes').getValue();
-                                                                var data = {
-                                                                    indiceCorrector: indiceCorrector,
-                                                                    porcen1: porcen1,
-                                                                    porcen2: porcen2,
-                                                                    porcen3: porcen3,
-                                                                    porcen4: porcen4,
-                                                                    importeObra: importeObra,
-                                                                    limiteImpObra: limiteImpObra
-                                                                }
-                                                                
-                                                                LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id, data);
-                                                            }
-                                                        }
-                                                    }
-                                                ]
+                                },
+                                {
+                                    view: "checkbox", id: "valorado", name: "valorado", width: 50
+                                },
+                                {
+                                    view:"label", label: "Desglosado", width:80
+                                },
+                                {
+                                    view: "checkbox", id: "desglosado", name: "desglosado", width: 50
+                                },
+                                {
+                                    view:"label", label: "IVA", width:30
+                                },
+                                {
+                                    view: "checkbox", id: "mostrarIva", name: "mostrarIva", width: 50
+                                },
+                            ]
+                        },
+                        {
+                            cols: [
+                                  {
+                                    view: "combo", id: "cmbClientes", name: "clienteId", required: true, minWidth:300,
+                                    label: "Cliente", labelPosition: "top",
+                                    options:{},
+                                    on: {
+                                        "onChange": (newv, oldv) => {
+                                            if (isLoading) return; 
+                                            var id = newv;
+                                            this.loadAgenteCliente(id);
+                                        },
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbClientes').getText(); // Obtiene el valor actual del campo de texto
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaClientesActivos(input);
                                             }
-                                        ]
-                                    },      
-                                    _lineasOferta,
-                                    { minWidth : 100},
-                                   /*  _basesOferta */
-                                ]
-                            },
+                                            if(input === "*") {
+                                                this.buscaClientesActivos(input);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
+                                    label: "Importe cliente", labelPosition: "top", value: 0 ,format: "1,00"
+                                     
+                                },
                             
-                           
-                           
-                        ],
-                        scroll:true
-                    }
-                }
-    ]
+                                        
+                            ]
+                        },
+                        {
+                            view: "toolbar", padding: 3, css: {"background-color": "#F4F5F9"}, elements: [
+                                { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                                { view: "label", label: "Colaboradores" }
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    view: "combo", id: "cmbAgentes", name: "agenteId",required: true, 
+                                    label: "Agente", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        "onChange": (newv, oldv) => {
+                                            if (isLoading) return; 
+                                            var id = newv;
+                                            this.loadClientesAgente(null, id, null);
+                                                /* if(cliId) {
+                                                    this.loadClientesAgente(cliId, id, null);
+                                                    //this.loadProId(cliId, id);
+                                                }else {
+                                                    this.loadClientesAgente(null, id, null);
+                                                    //this.loadProId(null, id);
+                                               
+                                                } */
+                                        },
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbAgentes').getText(); // Obtiene el valor actual del campo de texto
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaAgentesActivos(input);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaAgentesActivos(input);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "combo", id: "cmbComerciales", name: "comercialId", 
+                                    label: "Comercial", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbComerciales').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbComerciales").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "combo", id: "cmbJefeGrupo", name: "jefeGrupoId", 
+                                    label: "Jefe de grupo", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbJefeGrupo').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbJefeGrupo").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                               
+                             /*    {
+                                    view: "combo", id: "cmbJefeObras", name: "jefeObrasId", 
+                                    label: "Jefe de obras", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbJefeObras').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbJefeObras").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                }, */
+                                /* {
+                                    view: "combo", id: "cmbOficinaTecnica", name: "oficinaTecnicaId", 
+                                    label: "Oficina técnica", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbOficinaTecnica').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbOficinaTecnica").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                }, */
+                                {
+                                    view: "combo", id: "cmbAsesorTecnico", name: "asesorTecnicoId", 
+                                    label: "Asesor técnico", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbAsesorTecnico').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbAsesorTecnico").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                            ]
+                        },
+                        {
+                            cols: [
+                               
+                                {
+                                    view: "textarea", id: "observaciones", name: "observaciones",
+                                    label: "Observaciones", labelPosition: "top", height: 140
+        
+                                },
+                                {
+                                    rows: [
+                                        {
+                                            padding: 50,cols: [
+                                                { view: "button", label: "Cancelar", click: this.cancel, hotkey: "esc" },
+                                                { view: "button", label: "Aceptar", click: this.accept, type: "form" }
+                                            ]
+                                        }
+                                    ]
+                                },
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    rows: [
+                                        { view: "label", label: "Tipos de Proyecto", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listTiposProyecto",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    this.$scope.loadCapitulos(id);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    rows: [
+                                        { view: "label", label: "Capítulos", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listCapitulos",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    cap = id;
+                                                    this.$scope.loadUnidadesObra(id);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    rows: [
+                                        { view: "label", label: "Partidas", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listUnidadesObra",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    var cliId = $$('cmbClientes').getValue();
+                                                    var data = {
+                                                        indiceCorrector: indiceCorrector,
+                                                        porcen1: porcen1,
+                                                        porcen2: porcen2,
+                                                        porcen3: porcen3,
+                                                        porcen4: porcen4,
+                                                        importeObra: importeObra,
+                                                        limiteImpObra: limiteImpObra
+                                                    }
+                                                    
+                                                    LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id, data);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },      
+                        _lineasOferta,
+                        { minWidth : 100},
+                       /*  _basesOferta */
+                    ]
+                },
+                
+               
+               
+            ],
+            scroll:true
         }
         return _view;
     }
@@ -417,6 +413,7 @@ export default class OfertasCosteForm extends JetView {
         this.load(ofertaId, expedienteId);
     }
     load(ofertaId, expedienteId) {
+        isLoading = true; // Se activa el flag antes de cargar datos
         //PRIMERO RECUPERAMOS EL INDICE CORRECTOR
         parametrosService.getParametros()
         .then((parametros) => {
@@ -431,18 +428,21 @@ export default class OfertasCosteForm extends JetView {
                     this.loadTiposProyecto(expediente.tipoProyectoId);  
                     this.loadExpediente(expediente);
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
-                    var f = new Date(expediente.fecha).getFullYear()
-                    $$("referencia").setValue(expediente.referencia + '_PC_' + f)
-    
+        
+        
                     this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                     this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
                     //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
                     //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                     this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
+
+                    var f = new Date(expediente.fecha).getFullYear()
+                    this.getReferencia(expediente.referencia + '_PC_' + f);
     
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
                     //basesOferta.loadGrid(null); 
+                    
                 })
                 .catch((err) => {
                     messageApi.errorMessageAjax(err);
@@ -599,7 +599,7 @@ export default class OfertasCosteForm extends JetView {
             });
     }
 
-    loadAgentes(agenteId, clienteId) {
+    loadAgentes(agenteId) {
         agentesService.getAgentes()
         .then(rows => {
             
@@ -625,11 +625,11 @@ export default class OfertasCosteForm extends JetView {
                 list.clearAll();
                 list.parse(clientes);
                 if (clienteId) {
-                    cliId = clienteId; 
+                    //cliId = clienteId; 
                     $$("cmbClientes").setValue(clienteId);
                     $$("cmbClientes").refresh();
                 }else {
-                    cliId = null;
+                    //cliId = null;
                     $$("cmbClientes").setValue(null);
                     $$("cmbClientes").refresh();
                 }
@@ -683,6 +683,17 @@ export default class OfertasCosteForm extends JetView {
         })
     }
 
+    getReferencia(abrev) {
+        expedientesService.getSiguienteReferencia(abrev)
+                .then( row => {
+                    var nuevaReferencia = row;
+                    this.$$('referencia').setValue(nuevaReferencia);
+                    isLoading = false;
+                })
+                .catch( err => {
+                    messageApi.errorMessageAjax(err);
+                });
+    }
 
 
 
@@ -764,7 +775,7 @@ export default class OfertasCosteForm extends JetView {
    
     loadAgenteCliente(clienteId) {
         if(clienteId) {
-            cliId = clienteId;
+            //cliId = clienteId;
             agentesService.getAgenteCliente(clienteId)
             .then(rows => {
                 this.loadAgentes(rows[0].comercialId);

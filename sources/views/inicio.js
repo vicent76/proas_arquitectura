@@ -6,10 +6,10 @@ import { languageService} from "../locales/language_service";
 export default class Inicio extends JetView {
     config() {
 		const translate = this.app.getService("locale")._;
-        return {
-                    view:"iframe", id:"frame-body", src:""
-
-                }
+        return   {
+            view: "label", height: 750,
+            label: "<img src='assets/img/arquitectura.jpg' width='100%' />"
+        }
     }
     init() {
         usuarioService.checkLoggedUser();

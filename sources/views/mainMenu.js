@@ -18,7 +18,7 @@ export default class MainMenu extends JetView {
                 {
                     id: "administracion",icon: "mdi mdi-laptop-chromebook",  value: translate("Administración"), open: false,
                     data: [
-                        {id: "parametrosForm", icon: "mdi mdi-settings", value: translate("Parametros")},
+                        //{id: "parametrosForm", icon: "mdi mdi-settings", value: translate("Parametros")},
                         {id: "usuarios", icon: "mdi mdi-account-key", value: translate("Usuarios")},
                         {id: "tiposProyecto", icon: "mdi mdi-swap-vertical", value: translate("Tipos de proyecto")},
                         {id: "capitulos", icon: "mdi mdi-swap-vertical", value: translate("Capitulos")},
@@ -29,7 +29,7 @@ export default class MainMenu extends JetView {
                     id: "gestion", icon: "mdi mdi-book",  value: translate("Gestión"), open: true,
                     data: [
                         {id: "expedientes", icon: "mdi mdi-currency-eur", value: translate("Expedientes")},
-                        {id: "ofertas", icon: "mdi mdi-currency-eur", value: translate("Ofertas")},
+                        //{id: "ofertas", icon: "mdi mdi-currency-eur", value: translate("Ofertas")},
                         
                     ]
                 },
