@@ -81,6 +81,12 @@ export default class Expedientes extends JetView {
                         pager: "mypager1",
                         select: "row",
                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridSolicitud").getIndexById(item.id)%2
@@ -161,7 +167,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridEstudio").getIndexById(item.id)%2
@@ -242,7 +254,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridEnviado").getIndexById(item.id)%2
@@ -323,7 +341,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridAdjudicado").getIndexById(item.id)%2
@@ -404,7 +428,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridIniciado").getIndexById(item.id)%2
@@ -485,7 +515,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridFinalizado").getIndexById(item.id)%2
@@ -566,7 +602,13 @@ export default class Expedientes extends JetView {
                         scroll: "x,y",
                         pager: "mypager1",
                         select: "row",
-                        footer: true,
+                         footer: true,
+                        ready:function(){ 
+                            this.attachEvent("onItemDblClick", function(id, e, node){
+                                var curRow = this.data.pull[id.row]
+                                this.$scope.edit(curRow.expedienteId)
+                            });
+                        },
                         scheme:{
                             $change:function(item){
                                     var odd = $$("expedientesGridDenegado").getIndexById(item.id)%2

@@ -44,6 +44,8 @@ export default class UnidadesObra extends JetView {
                             nombre: "",
                             grupoArticuloId: 0, // Temporal, se asignará al guardar
                             descripcion: "",
+                            esTecnico: 1,
+                            departamentoId: 5
                         }, 0); // Agregar al inicio
                         $$("unidadesObraGrid").edit(newId); // Editar automáticamente
                     }

@@ -39,9 +39,11 @@ var porcen3 = 0;
 var porcen4 = 0;
 var importeObra = 0;
 var tipoProyectoId
+var _app;
 
 export default class OfertasCosteForm extends JetView {
     config() {
+        _app = this.app;
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOferta.getGrid(this.app);
         //const _basesOferta = basesOferta.getGrid(this.app);
@@ -442,6 +444,8 @@ export default class OfertasCosteForm extends JetView {
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
                     //basesOferta.loadGrid(null); 
+                    setTimeout(this.accept, 1000)
+                    
                     
                 })
                 .catch((err) => {
@@ -537,7 +541,7 @@ export default class OfertasCosteForm extends JetView {
 
             ofertasService.postOferta(data)
                 .then((result) => {
-                    this.$scope.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + "&NEW");
+                    _app.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + "&NEW");
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -592,7 +596,7 @@ export default class OfertasCosteForm extends JetView {
                     $$("cmbEmpresas").setValue(empresaId);
                     $$("cmbEmpresas").refresh();
                 }else {
-                    $$("cmbEmpresas").setValue(2);
+                    $$("cmbEmpresas").setValue(10);
                     $$("cmbEmpresas").refresh();
                 }
                 return;

@@ -84,10 +84,13 @@ export const ofertasCoste = {
                     return "<input disabled class='webix_table_checkbox' type='checkbox' "+checked+">";
                 }
              },
-            ready:function(){ $$('ofertasCosteGrid').attachEvent("onItemDblClick", function(id, e, node){
-                var curRow = this.data.pull[id.row]
-                var cliId = $$('clienteId').getValue();
-            });},
+            ready:function(){ 
+                this.attachEvent("onItemDblClick", function(id, e, node){
+                    var curRow = this.data.pull[id.row];
+                    var ofertaId = curRow.ofertaId;
+                    ofertasCoste.edit(ofertaId)
+                });
+            },
             columns: [
                 { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "header" },

@@ -332,7 +332,7 @@ export default class OfertasForm extends JetView {
                     $$("cmbEmpresas").setValue(empresaId);
                     $$("cmbEmpresas").refresh();
                 }else {
-                    $$("cmbEmpresas").setValue(2);
+                    $$("cmbEmpresas").setValue(10);
                     $$("cmbEmpresas").refresh();
                 }
                 return;

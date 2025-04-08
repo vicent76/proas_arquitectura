@@ -470,7 +470,8 @@ export default class ExpedientesForm extends JetView {
             return;
         }
         var data = $$("frmExpedientes").getValues();
-       
+       if(data.jefeGrupoId == '') data.jefeGrupoId = null;
+       if(data.asesorTecnicoId == '') data.asesorTecnicoId = null;
         if (expedienteId == 0) {
             data.expedienteId = 0;
             expedientesService.postExpediente(data)
@@ -515,7 +516,7 @@ export default class ExpedientesForm extends JetView {
                     $$("cmbEmpresas").setValue(empresaId);
                     $$("cmbEmpresas").refresh();
                 }else {
-                    $$("cmbEmpresas").setValue(2);
+                    $$("cmbEmpresas").setValue(10);
                     $$("cmbEmpresas").refresh();
                 }
                 return;
@@ -829,7 +830,8 @@ loadTiposProyecto(tipoProyectoId) {
                     $$(cmbId).setValue(colaboradorId);
                     $$(cmbId).refresh();
                 }  else{
-                    popup.show(); 
+                    $$(cmbId).setValue(null);
+                    $$(cmbId).refresh();
                 }
 
                 

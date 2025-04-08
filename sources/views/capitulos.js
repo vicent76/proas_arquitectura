@@ -36,7 +36,7 @@ export default class Capitulos extends JetView {
                             id: newId,
                             grupoArticuloId: 0, // Temporal, se asignará al guardar
                             nombre: "",
-                            referencia: "",
+                            tipoProyectoId: "",
                             departamentoId: 5,
                             estecnico: 1
                         }, 0); // Agregar al inicio
@@ -134,8 +134,8 @@ export default class Capitulos extends JetView {
                     template: "{common.checkbox()}",
                     css: { "text-align": "center" }
                 },
-                { id: "departamentoId", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text", hidden: true},
-                { id: "esTecnico", adjust: "header", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", editor: "text" , hidden: true},
+                { id: "departamentoId", adjust: "header", header: [translate("departamentoId"), { content: "textFilter" }], sort: "string", editor: "text", hidden: true},
+                { id: "esTecnico", adjust: "header", header: [translate("es tecnico"), { content: "textFilter" }], sort: "string", editor: "text" , hidden: true},
                 { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: deleteButton, css: { "text-align": "center" } }
             ],
             rightSplit:1,
