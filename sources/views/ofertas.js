@@ -188,7 +188,7 @@ export default class Ofertas extends JetView {
 
     formateaCampos(data) {
         data.forEach(e => {
-            e.empresa = e.empresa.substr(0,3);
+            e.empresa = e.empresa.substr(0,4);
             e.fechaOferta = new Date(e.fechaOferta);
         });
         return data;

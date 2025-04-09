@@ -89,18 +89,19 @@ export const lineasOferta = {
             columns: [
                 { id: "ofertaLineaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "ofertaId", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
-                { id: "linea", header: [translate("Linea"), { content: "textFilter" }], sort: "string", width: 80  },
+                { id: "linea", header: [translate("Linea"), { content: "textFilter" }], sort: "string", width: 60  },
                 { id: "unidades", header: [translate("Uds."), { content: "textFilter" }], sort: "string", width: 40 },
                 { id: "descripcion", header: [translate("Concepto"), { content: "textFilter" }], sort: "string", fillspace: true},
                 
-                { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
-                { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
-                { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "importe", header: [translate("€/Ud. Cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, css: { "text-align": "right" }},
+                { id: "cantidad", header: [translate("Cant."), { content: "textFilter" }], sort: "string", width: 50, css: { "text-align": "right" }  },
+                { id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat, css: { "text-align": "right" } },
+                { id: "costeLinea", header: [translate("Imp cli."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, css: { "text-align": "right" } },
                 
     
-                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
+                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate }
             ],
+
             rightSplit: 1,
             onClick: {
                 "onDelete": function (event, id, node) {

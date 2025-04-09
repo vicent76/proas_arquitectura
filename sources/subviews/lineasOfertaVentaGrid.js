@@ -81,19 +81,19 @@ export const lineasOfertaVenta= {
                 { id: "unidades", header: [translate("Uds."), { content: "textFilter" }], sort: "string", width: 40 },
                 
             
-                { id: "importe", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "cantidad", header: [translate("Cantidad"), { content: "textFilter" }], sort: "string", width: 80  },
-                { id: "precio", header: [translate("Precio"), { content: "textFilter" }], sort: "string", width: 80  },
-                { id: "coste", header: [translate("Coste"), { content: "textFilter" }], sort: "string", width: 80, hidden:true  },
+                { id: "importe", header: [translate("Coste/Ud."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat,  css: { "text-align": "right"}},
+                { id: "cantidad", header: [translate("Cant."), { content: "textFilter" }], sort: "string", width: 50,  css: { "text-align": "right"}  },
+                { id: "precio", header: [translate("Precio"), { content: "textFilter" }], sort: "string", width: 80,  css: { "text-align": "right"}  },
+                { id: "coste", header: [translate("Coste"), { content: "textFilter" }], sort: "string", width: 80, hidden:true,  css: { "text-align": "right"}  },
                 //{ id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
-                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat},
-                { id: "ventaNetaLinea", header: [translate("venta neta"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, hidden: true},
+                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat,  css: { "text-align": "right"}},
+                { id: "ventaNetaLinea", header: [translate("venta neta"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, hidden: true,  css: { "text-align": "right"}},
                
-                { id: "importeAgenteLinea", header: [translate("Imp Agente."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "importeAgenteLinea", header: [translate("Imp. Agente."), { content: "textFilter" }], sort: "string", width: 110,format:webix.i18n.numberFormat,  css: { "text-align": "right"} },
                 
-                { id: "totalLinea", header: [translate("Total."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat },
+                { id: "totalLinea", header: [translate("Total."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat,  css: { "text-align": "right"} },
                 
-                { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat   },
+                { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat,  css: { "text-align": "right"}   },
                 
     
                 //{ id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },

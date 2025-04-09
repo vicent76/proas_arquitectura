@@ -24,9 +24,9 @@ var usuario;
 var limiteCredito = 0;
 var importeCobro = 0;
 var _imprimirWindow;
-var cliId = null;
 var desdeCoste = null;
-
+var isLoading = false; // Variable de control
+var formaPagoId = null;
 
 export default class ExpedientesForm extends JetView {
     config() {
@@ -90,6 +90,7 @@ export default class ExpedientesForm extends JetView {
                                                 options:{},
                                                 on: {
                                                     "onChange": (newv, oldv) => {
+                                                        if(isLoading) return;
                                                         var id = newv;
                                                         this.loadAgenteCliente(id);
                                                     },
@@ -169,15 +170,9 @@ export default class ExpedientesForm extends JetView {
                                                 options:{},
                                                 on: {
                                                     "onChange": (newv, oldv) => {
+                                                        if(isLoading) return;
                                                         var id = newv;
-                                                            if(cliId) {
-                                                                this.loadClientesAgente(cliId, id, null);
-                                                                //this.loadProId(cliId, id);
-                                                            }else {
-                                                                this.loadClientesAgente(null, id, null);
-                                                                //this.loadProId(null, id);
-                                                           
-                                                            }
+                                                        this.loadClientesAgente(null, id, null);
                                                     },
                                                     onTimedKeyPress: function() {
                                                         var input = $$('cmbAgentes').getText(); // Obtiene el valor actual del campo de texto
@@ -384,6 +379,7 @@ export default class ExpedientesForm extends JetView {
         //this.cargarEventos();
         this.load(expedienteId);
     }
+
     load(expedienteId) {
         if(desdeCoste) { 
             const savedTab = localStorage.getItem("activeTab");
@@ -418,6 +414,7 @@ export default class ExpedientesForm extends JetView {
             
             return;
         }
+        isLoading = true; // Se activa el flag antes de cargar datos
         expedientesService.getExpediente(expedienteId)
             .then((expediente) => {
                 $$("cmbTiposProyecto").blockEvent();
@@ -432,12 +429,15 @@ export default class ExpedientesForm extends JetView {
                 delete expediente.oficinatecnica;
                 delete expediente.asesorTecnico;
                 expediente.fecha = new Date(expediente.fecha);
+                formaPagoId = expediente.formaPagoId;
                 $$("frmExpedientes").setValues(expediente);
                 //this.loadTiposProfesional(expediente.tipoProfesionalId);
                 //this.loadAgentes(expediente.agenteId);
                 this.loadEmpresas(expediente.empresaId);
                 this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
                 this.loadEstados(expediente.estadoExpedienteId);
+                this.loadTiposVia(expediente.tipoViaId);
+                this.loadAgentes(expediente.agenteId)
                 this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
                 this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
                 //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
@@ -472,6 +472,7 @@ export default class ExpedientesForm extends JetView {
         var data = $$("frmExpedientes").getValues();
        if(data.jefeGrupoId == '') data.jefeGrupoId = null;
        if(data.asesorTecnicoId == '') data.asesorTecnicoId = null;
+       data.formaPagoId = formaPagoId;
         if (expedienteId == 0) {
             data.expedienteId = 0;
             expedientesService.postExpediente(data)
@@ -580,14 +581,13 @@ export default class ExpedientesForm extends JetView {
                 list.clearAll();
                 list.parse(clientes);
                 if (clienteId) {
-                    cliId = clienteId; 
                     $$("cmbClientes").setValue(clienteId);
                     $$("cmbClientes").refresh();
                 }else {
-                    cliId = null;
                     $$("cmbClientes").setValue(null);
                     $$("cmbClientes").refresh();
                 }
+                isLoading = false;
                 return;
             });
         }
@@ -620,13 +620,14 @@ export default class ExpedientesForm extends JetView {
     loadClienteData(clienteId) {
         if(clienteId) {
             clientesService.getCliente(clienteId)
-            .then(rows => {
-                this.loadTiposVia(rows.tipoViaId2);
-                $$('direccion').setValue(rows.direccion2);
-                $$('poblacion').setValue(rows.poblacion2);
-                $$('provincia').setValue(rows.provincia2);
-                $$('codPostal').setValue(rows.codPostal2);
-                //$$('cmbFormasPago').refresh()
+            .then(row => {
+                this.loadTiposVia(row.tipoViaId2);
+                $$('direccion').setValue(row.direccion2);
+                $$('poblacion').setValue(row.poblacion2);
+                $$('provincia').setValue(row.provincia2);
+                $$('codPostal').setValue(row.codPostal2);
+                this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", row.colaboradorId);
+                formaPagoId = row.formaPagoId;
             });
         }
     }
@@ -701,11 +702,10 @@ loadTiposProyecto(tipoProyectoId) {
    
     loadAgenteCliente(clienteId) {
         if(clienteId) {
-            cliId = clienteId;
             agentesService.getAgenteCliente(clienteId)
             .then(rows => {
                 this.loadAgentes(rows[0].comercialId);
-                this.loadClienteData(clienteId)
+                this.loadClienteData(clienteId);
             });
         }
     }

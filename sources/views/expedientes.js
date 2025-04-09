@@ -715,7 +715,7 @@ export default class Expedientes extends JetView {
 
     formateaCampos(data) {
         data.forEach(e => {
-            e.empresa = e.empresa.substr(0,3);
+            e.empresa = e.empresa.substr(0,4);
             e.fecha = new Date(e.fecha);
         });
         return data;

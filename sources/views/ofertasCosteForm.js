@@ -40,6 +40,7 @@ var porcen4 = 0;
 var importeObra = 0;
 var tipoProyectoId
 var _app;
+var formaPagoId = null;
 
 export default class OfertasCosteForm extends JetView {
     config() {
@@ -430,6 +431,7 @@ export default class OfertasCosteForm extends JetView {
                     this.loadTiposProyecto(expediente.tipoProyectoId);  
                     this.loadExpediente(expediente);
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
+                    formaPagoId = expediente.formaPagoId;
         
         
                     this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
@@ -462,6 +464,7 @@ export default class OfertasCosteForm extends JetView {
                     delete oferta.mantenedor;
                     delete oferta.agente;
                     delete oferta.formaPago
+                    formaPagoId = oferta.formaPagoId
                     oferta.fechaOferta = new Date(oferta.fechaOferta);
                     $$("frmOfertas").setValues(oferta);
                     this.loadAgentes(oferta.agenteId);
@@ -520,6 +523,7 @@ export default class OfertasCosteForm extends JetView {
             return;
         }
         var data = $$("frmOfertas").getValues();
+        data.formaPagoId = formaPagoId;
         
         
        
@@ -538,6 +542,7 @@ export default class OfertasCosteForm extends JetView {
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
             data.esCoste = 1
+          
 
             ofertasService.postOferta(data)
                 .then((result) => {
