@@ -169,6 +169,7 @@ export default class OfertasCosteForm extends JetView {
                                         "onChange": (newv, oldv) => {
                                             if (isLoading) return; 
                                             var id = newv;
+                                            if(!oldv || oldv === '') return;
                                             this.loadClientesAgente(null, id, null);
                                                 /* if(cliId) {
                                                     this.loadClientesAgente(cliId, id, null);
@@ -292,16 +293,29 @@ export default class OfertasCosteForm extends JetView {
                                     label: "Observaciones", labelPosition: "top", height: 140
         
                                 },
-                                {
+                                {   width: 600,
                                     rows: [
+                                        { gravity: 1 },
                                         {
-                                            padding: 50,cols: [
-                                                { view: "button", label: "Cancelar", click: this.cancel, hotkey: "esc" },
-                                                { view: "button", label: "Aceptar", click: this.accept, type: "form" }
+                                            paddingX: 50,
+                                            align: "center",
+                                            cols: [
+                                                { view: "button", label: "Cancelar", css: "webix_danger", click: this.cancel },
+                                                { view: "button", label: "Guardar", click: () => this.accept(true), css: "webix_primary", type: "form" }
                                             ]
-                                        }
+                                        },
+                                        {
+                                            paddingX: 50,
+                                            align: "center",
+                                            cols: [
+                                                { view: "button", label: "Guardar sin salir", click: () => this.accept(false), type: "form" }
+                                            ]
+                                        },
+                                        { gravity: 1 }
                                     ]
-                                },
+                                }
+                                
+                                
                             ]
                         },
                         {
@@ -398,7 +412,11 @@ export default class OfertasCosteForm extends JetView {
        
     urlChange(view, url) {
         if (url[0].params.NEW) {
-            messageApi.normalMessage('Oferta correctamente, puede crear ahora las  lineas asociadas.')
+            messageApi.normalMessage('Oferta creada correctamente, puede crear ahora las  lineas asociadas.')
+        }
+
+        if (url[0].params.MOD) {
+            messageApi.normalMessage('Oferta guardada correctamente.')
         }
         usuario = usuarioService.checkLoggedUser();
         usuarioId = usuario.usuarioId;
@@ -416,7 +434,6 @@ export default class OfertasCosteForm extends JetView {
         this.load(ofertaId, expedienteId);
     }
     load(ofertaId, expedienteId) {
-        isLoading = true; // Se activa el flag antes de cargar datos
         //PRIMERO RECUPERAMOS EL INDICE CORRECTOR
         parametrosService.getParametros()
         .then((parametros) => {
@@ -446,7 +463,7 @@ export default class OfertasCosteForm extends JetView {
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
                     //basesOferta.loadGrid(null); 
-                    setTimeout(this.accept, 1000)
+                    setTimeout(this.accept, 2000)
                     
                     
                 })
@@ -457,6 +474,7 @@ export default class OfertasCosteForm extends JetView {
             }
             ofertasService.getOferta(ofertaId)
                 .then((oferta) => {
+                    isLoading = true; // Se activa el flag antes de cargar datos
                     //$$("cmbTiposProyecto").blockEvent();
                     delete oferta.empresa;
                     delete oferta.cliente;
@@ -489,6 +507,7 @@ export default class OfertasCosteForm extends JetView {
                     .then((expediente) => {
                        
                         this.loadExpediente(expediente);
+                        isLoading = false;
                         
                     })
                     .catch((err) => {
@@ -517,13 +536,15 @@ export default class OfertasCosteForm extends JetView {
     cancel() {
         this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
     }
-    accept() {
+    accept(opcion) {
         if (!$$("frmOfertas").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
         }
         var data = $$("frmOfertas").getValues();
         data.formaPagoId = formaPagoId;
+        if(data.jefeGrupoId == '') data.jefeGrupoId = null;
+        if(data.asesorTecnicoId == '') data.asesorTecnicoId = null;
         
         
        
@@ -576,7 +597,11 @@ export default class OfertasCosteForm extends JetView {
 
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
-                    this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
+                    if(opcion) {
+                        this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
+                    } else {
+                        _app.show('/top/ofertasCosteForm?ofertaId=' + data.ofertaId + "&MOD");
+                    }
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -909,7 +934,8 @@ export default class OfertasCosteForm extends JetView {
                         $$(cmbId).setValue(colaboradorId);
                         $$(cmbId).refresh();
                     }  else{
-                        popup.show(); 
+                        $$(cmbId).setValue(null);
+                        $$(cmbId).refresh();
                     }
     
                     

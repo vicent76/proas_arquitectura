@@ -200,16 +200,14 @@ export default class OfertasVentaForm extends JetView {
                                                   {
                                                     cols: [
                                                       {
-                                                        view: "label",
-                                                        label: "Sistema de pago <i class='fa fa-lg fa-book'></i>",
-                                                        width: 200
+                                                        width: 250,
                                                       },
                                                       {
                                                         view: "richselect",
                                                         id: "cmbTextosPredeterminados",
                                                         name: "textoPredeterminadoId",
                                                         options:{},
-                                                        width: 200,
+                                                        width: 240,
                                                         on: {
                                                           onChange: function (newId) {
                                                            
@@ -220,6 +218,9 @@ export default class OfertasVentaForm extends JetView {
                                                             this.$scope.cambioTextosPredeterminados(currentText, newId);
                                                           }
                                                         }
+                                                      },
+                                                      {
+                                                        width: 10,
                                                       }
                                                     ]
                                                   },
@@ -227,16 +228,19 @@ export default class OfertasVentaForm extends JetView {
                                                     view: "textarea",
                                                     id: "sistemaPago",
                                                     name: "sistemaPago",
-                                                    height: 140
+                                                    label: "Sistema de pago <i class='fa fa-lg fa-book'></i>",
+                                                    labelPosition: "top",
+                                                    height: 155
                                                   }
                                                 ]
                                               },
+                                               // Columna: Observaciones
                                               {
                                                 rows: [
                                                     {
                                                         cols: [
                                                           {
-                                                            width: 400
+                                                            width: 500
                                                           },
                                                          
                                                         ]
@@ -247,22 +251,31 @@ export default class OfertasVentaForm extends JetView {
                                                         name: "observaciones",
                                                         label: "Observaciones",
                                                         labelPosition: "top",
-                                                        height: 140
+                                                        height: 155
                                                       },
                                                 ]
                                               },
-                                              // Columna: Observaciones
-                                             
-                                          
                                               // Columna: Conceptos excluidos
                                               {
-                                                view: "textarea",
-                                                id: "conceptosExcluidos",
-                                                name: "conceptosExcluidos",
-                                                label: "Conceptos excluidos",
-                                                labelPosition: "top",
-                                                height: 140
-                                              },
+                                                rows: [
+                                                    {
+                                                        cols: [
+                                                          {
+                                                            width: 500
+                                                          },
+                                                         
+                                                        ]
+                                                      },
+                                                    {
+                                                        view: "textarea",
+                                                        id: "conceptosExcluidos",
+                                                        name: "conceptosExcluidos",
+                                                        label: "Observaciones",
+                                                        labelPosition: "top",
+                                                        height: 155
+                                                      },
+                                                ]
+                                              }, 
                                               {
                                                 type: "clean",
                                                 rows: [

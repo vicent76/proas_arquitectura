@@ -27,13 +27,13 @@ var _imprimirWindow;
 var desdeCoste = null;
 var isLoading = false; // Variable de control
 var formaPagoId = null;
-
+let self;
 export default class ExpedientesForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _ofertasCoste = ofertasCoste.getGrid(this.app);
         const _ofertasVenta = ofertasVenta.getGrid(this.app);
-       
+        self = this;
         const _view = {
             view: "tabview",
             id: "tabViewExpediente",
@@ -172,6 +172,7 @@ export default class ExpedientesForm extends JetView {
                                                     "onChange": (newv, oldv) => {
                                                         if(isLoading) return;
                                                         var id = newv;
+                                                        if(!oldv || oldv === '') return;
                                                         this.loadClientesAgente(null, id, null);
                                                     },
                                                     onTimedKeyPress: function() {
@@ -302,16 +303,29 @@ export default class ExpedientesForm extends JetView {
                                                 label: "Observaciones", labelPosition: "top", height: 140
                     
                                             },
-                                            {
+                                            {   width: 600,
                                                 rows: [
+                                                    { gravity: 1 },
                                                     {
-                                                        padding: 50,cols: [
-                                                            { view: "button", label: "Cancelar", click: this.cancel, hotkey: "esc" },
-                                                            { view: "button", label: "Aceptar", click: this.accept, type: "form" }
+                                                        paddingX: 50,
+                                                        align: "center",
+                                                        cols: [
+                                                            { view: "button", label: "Cancelar", css: "webix_danger", click: this.cancel },
+                                                            { view: "button", label: "Guardar", click: () => this.accept(true), css: "webix_primary", type: "form" }
                                                         ]
-                                                    }
+                                                    },
+                                                    {
+                                                        paddingX: 50,
+                                                        align: "center",
+                                                        cols: [
+                                                            { view: "button", label: "Guardar sin salir", click: () => this.accept(false), type: "form" }
+                                                        ]
+                                                    },
+                                                    { gravity: 1 }
                                                 ]
-                                            },
+                                            }
+                                            
+                                            
                                         ]
                                     },
                                 ]
@@ -363,7 +377,10 @@ export default class ExpedientesForm extends JetView {
        
     urlChange(view, url) {
         if (url[0].params.NEW) {
-            messageApi.normalMessage('Expediente correctamente, puede crear ahora las  lineas asociadas.')
+            messageApi.normalMessage('Expediente creado correctamente.');
+        }
+        if (url[0].params.MOD) {
+            messageApi.normalMessage('Expediente modificado correctamente.');
         }
         usuario = usuarioService.checkLoggedUser();
         usuarioId = usuario.usuarioId;
@@ -464,7 +481,7 @@ export default class ExpedientesForm extends JetView {
     cancel() {
         this.$scope.show('/top/expedientes');
     }
-    accept() {
+    accept(opcion) {
         if (!$$("frmExpedientes").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
@@ -477,7 +494,7 @@ export default class ExpedientesForm extends JetView {
             data.expedienteId = 0;
             expedientesService.postExpediente(data)
                 .then((result) => {
-                    this.$scope.show('/top/expedientesForm?expedienteId=' + result.expedienteId + "&NEW");
+                    this.show('/top/expedientesForm?expedienteId=' + result.expedienteId + "&NEW");
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -492,7 +509,12 @@ export default class ExpedientesForm extends JetView {
             
             expedientesService.putExpediente(data, data.expedienteId)
                 .then(() => {
-                    this.$scope.show('/top/expedientes?expedienteId=' + data.expedienteId);
+                    if(opcion) {
+                        this.show('/top/expedientes?expedienteId=' + data.expedienteId);
+                    } else {
+                        this.show('/top/expedientesForm?expedienteId=' + data.expedienteId + "&MOD");
+                    }
+                   
                 })
                 .catch((err) => {
                     var error = err.response;
