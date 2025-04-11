@@ -14,7 +14,9 @@ var numLineas = 0;
 var expedienteId = null;
 var _app = null;
 var importeObra = 0;
-export const ofertasCoste = {
+var selectOfertaId = null;
+
+export const ofertasCosteGrid = {
     // Devuelve el grid con los locales afectados
     // se le pasa la app porque es necesaria para conservar el translate.
     getGrid: (app) => {
@@ -27,6 +29,10 @@ export const ofertasCoste = {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
                     tooltip: translate("Nueva oferta de coste (Ctrl+A)"),
                     click: () => {
+                        if(expedienteId == 0 || !expedienteId) {
+                            messageApi.errorMessage("Expediente no creado.");
+                            return;
+                        }
                         app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
                     }
                 },
@@ -88,7 +94,7 @@ export const ofertasCoste = {
                 this.attachEvent("onItemDblClick", function(id, e, node){
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasCoste.edit(ofertaId)
+                    ofertasCosteGrid.edit(ofertaId)
                 });
             },
             columns: [
@@ -114,12 +120,12 @@ export const ofertasCoste = {
             onClick: {
                 "onDelete": function (event, id, node) {
                     var id = id.row;
-                    ofertasCoste.delete(id, app);
+                    ofertasCosteGrid.delete(id, app);
                 },
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasCoste.edit(ofertaId)
+                    ofertasCosteGrid.edit(ofertaId)
                 }
             },
             editable: true,
@@ -164,7 +170,10 @@ export const ofertasCoste = {
         
         return _view;
     },
-    loadGrid: (expedienteid, ofertaId, importeobra) => {
+
+    loadGrid: (expedienteid, ofertaId, importeobra, selectofertaid) => {
+        selectOfertaId = selectofertaid
+       
         if(expedienteid == 0) {
             expedienteId = null;
             importeObra = 0
@@ -178,10 +187,15 @@ export const ofertasCoste = {
             ofertasService.getOfertasExpediente(expedienteId, 1)
             .then(rows => {
                 if(rows.length > 0) {
-                    rows = ofertasCoste.formateaCampos(rows);
+                    rows = ofertasCosteGrid.formateaCampos(rows);
                     numLineas = rows.length;
                     $$("ofertasCosteGrid").clearAll();
                     $$("ofertasCosteGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
+                    if(selectOfertaId) {
+                        var id = parseInt(selectOfertaId);
+                        $$("ofertasCosteGrid").select(id);
+                        $$("ofertasCosteGrid").showItem(id);
+                    }
                     var numReg = $$("ofertasCosteGrid").count();
                     $$("ofertasCosteNReg").config.label = "NREG: " + numReg;
                     $$("ofertasCosteNReg").refresh();
@@ -215,7 +229,7 @@ export const ofertasCoste = {
                 if (action === true) {
                     ofertasService.deleteOferta(id)
                         .then(result => {
-                            ofertasCoste.loadGrid(expedienteId, null, importeObra);
+                            ofertasCosteGrid.loadGrid(expedienteId, null, importeObra);
                         })
                         .catch(err => {
                             var error = err.response;

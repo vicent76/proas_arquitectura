@@ -10,11 +10,13 @@ var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
 var ofertaId;
+var selectOfertaId = null;
 var numLineas = 0;
 var expedienteId = null;
 var _app = null;
 var importeObra = 0;
-export const ofertasVenta = {
+
+export const ofertasVentaGrid = {
     // Devuelve el grid con los locales afectados
     // se le pasa la app porque es necesaria para conservar el translate.
     getGrid: (app) => {
@@ -27,6 +29,10 @@ export const ofertasVenta = {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
                     tooltip: translate("Nueva oferta de venta (Ctrl+A)"),
                     click: () => {
+                        if(expedienteId == 0 || !expedienteId) {
+                            messageApi.errorMessage("Expediente no creado.");
+                            return;
+                        }
                         app.show('/top/ofertasVentaForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
                     }
                 },
@@ -88,7 +94,7 @@ export const ofertasVenta = {
                 this.attachEvent("onItemDblClick", function(id, e, node){
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasVenta.edit(ofertaId)
+                    ofertasVentaGrid.edit(ofertaId)
                 });
             },
             columns: [
@@ -114,12 +120,12 @@ export const ofertasVenta = {
             onClick: {
                 "onDelete": function (event, id, node) {
                     var id = id.row;
-                    ofertasVenta.delete(id, app);
+                    ofertasVentaGrid.delete(id, app);
                 },
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasVenta.edit(ofertaId)
+                    ofertasVentaGrid.edit(ofertaId)
                 }
             },
             editable: true,
@@ -164,7 +170,12 @@ export const ofertasVenta = {
         
         return _view;
     },
-    loadGrid: (expedienteid, ofertaId, importeobra) => {
+    loadGrid: (expedienteid, ofertaId, importeobra, selectofertaid) => {
+        selectOfertaId = selectofertaid
+        if(expedienteid == 0) {
+            messageApi.errorMessage("Expediente no creado.");
+            return;
+        }
         if(expedienteid == 0) {
             expedienteId = null;
             importeObra = 0
@@ -178,10 +189,15 @@ export const ofertasVenta = {
             ofertasService.getOfertasExpediente(expedienteId, 0)
             .then(rows => {
                 if(rows.length > 0) {
-                    rows = ofertasVenta.formateaCampos(rows);
+                    rows = ofertasVentaGrid.formateaCampos(rows);
                     numLineas = rows.length;
                     $$("ofertasVentaGrid").clearAll();
                     $$("ofertasVentaGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
+                    if(selectOfertaId) {
+                        var id = parseInt(selectOfertaId);
+                        $$("ofertasVentaGrid").select(id);
+                        $$("ofertasVentaGrid").showItem(id);
+                    }
                     var numReg = $$("ofertasVentaGrid").count();
                     $$("ofertasVentaNReg").config.label = "NREG: " + numReg;
                     $$("ofertasVentaNReg").refresh();
@@ -215,7 +231,7 @@ export const ofertasVenta = {
                 if (action === true) {
                     ofertasService.deleteOferta(id)
                         .then(result => {
-                            ofertasVenta.loadGrid(expedienteId, null, importeObra);
+                            ofertasVentaGrid.loadGrid(expedienteId, null, importeObra);
                         })
                         .catch(err => {
                             var error = err.response;

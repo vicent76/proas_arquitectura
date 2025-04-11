@@ -598,7 +598,7 @@ export default class OfertasCosteForm extends JetView {
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
                     if(opcion) {
-                        this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
+                        this.show('/top/expedientesForm?expedienteId='+ expedienteId + '&ofertaCosteId=' + data.ofertaId +  '&desdeCoste=true');
                     } else {
                         _app.show('/top/ofertasCosteForm?ofertaId=' + data.ofertaId + "&MOD");
                     }

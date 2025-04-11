@@ -12,8 +12,8 @@ import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
-import { ofertasCoste } from '../subviews/ofertasCosteGrid'
-import { ofertasVenta } from '../subviews/ofertasVentaGrid'
+import { ofertasCosteGrid } from '../subviews/ofertasCosteGrid'
+import { ofertasVentaGrid } from '../subviews/ofertasVentaGrid'
 
 
 
@@ -25,14 +25,19 @@ var limiteCredito = 0;
 var importeCobro = 0;
 var _imprimirWindow;
 var desdeCoste = null;
+var desdeVenta = null;
 var isLoading = false; // Variable de control
 var formaPagoId = null;
 let self;
+var expediente = {};
+var selectOfertaVentaId = null;
+var selectOfertaCosteId = null;
+
 export default class ExpedientesForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
-        const _ofertasCoste = ofertasCoste.getGrid(this.app);
-        const _ofertasVenta = ofertasVenta.getGrid(this.app);
+        const _ofertasCoste = ofertasCosteGrid.getGrid(this.app);
+        const _ofertasVenta = ofertasVentaGrid.getGrid(this.app);
         self = this;
         const _view = {
             view: "tabview",
@@ -376,6 +381,8 @@ export default class ExpedientesForm extends JetView {
 
        
     urlChange(view, url) {
+        selectOfertaVentaId = null;
+        selectOfertaCosteId = null;
         if (url[0].params.NEW) {
             messageApi.normalMessage('Expediente creado correctamente.');
         }
@@ -393,17 +400,33 @@ export default class ExpedientesForm extends JetView {
         } else {
             desdeCoste = null;
         }
+        if (url[0].params.desdeVenta) {
+            desdeVenta = url[0].params.desdeVenta;
+        } else {
+            desdeVenta = null;
+        }
+        if (url[0].params.ofertaVentaId) {
+            selectOfertaVentaId =  url[0].params.ofertaVentaId;
+        }
+        if (url[0].params.ofertaCosteId) {
+            selectOfertaCosteId =  url[0].params.ofertaCosteId;
+        }
         //this.cargarEventos();
         this.load(expedienteId);
     }
 
     load(expedienteId) {
+        const savedTab = localStorage.getItem("activeTab");
         if(desdeCoste) { 
-            const savedTab = localStorage.getItem("activeTab");
             if (savedTab) {
                 $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
             }
-        } else {
+        } else if(desdeVenta) {
+            if (savedTab) {
+                $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
+            }
+        }
+        else {
             localStorage.removeItem("activeTab")
         }
         
@@ -433,7 +456,8 @@ export default class ExpedientesForm extends JetView {
         }
         isLoading = true; // Se activa el flag antes de cargar datos
         expedientesService.getExpediente(expedienteId)
-            .then((expediente) => {
+            .then((ex) => {
+                expediente = ex
                 $$("cmbTiposProyecto").blockEvent();
                 this.loadTiposProyecto(expediente.tipoProyectoId);  
                 delete expediente.empresa;
@@ -462,8 +486,8 @@ export default class ExpedientesForm extends JetView {
                 this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
                 $$("cmbTiposProyecto").unblockEvent();
 
-                ofertasCoste.loadGrid(expediente.expedienteId, null, expediente.importeObra);
-                ofertasVenta.loadGrid(expediente.expedienteId, null, expediente.importeObra)
+                ofertasCosteGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaCosteId);
+                ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId)
                 
             })
             .catch((err) => {

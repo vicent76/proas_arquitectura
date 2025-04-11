@@ -63,9 +63,9 @@ export default class OfertasVentaForm extends JetView {
                             },
                             {
                                 view: "form",
-                                scroll:"y",
+                                scroll:"xy",
                                 id: "frmOfertas",
-                                maxWidth: 2500,
+                                minWidth: 500,
                                 autoheight:true,
                                 elements: [
                                     {
@@ -200,14 +200,14 @@ export default class OfertasVentaForm extends JetView {
                                                   {
                                                     cols: [
                                                       {
-                                                        width: 250,
+                                                        maxWidth: 240,
                                                       },
                                                       {
                                                         view: "richselect",
                                                         id: "cmbTextosPredeterminados",
                                                         name: "textoPredeterminadoId",
                                                         options:{},
-                                                        width: 240,
+                                                        maxWidth: 230,
                                                         on: {
                                                           onChange: function (newId) {
                                                            
@@ -220,7 +220,7 @@ export default class OfertasVentaForm extends JetView {
                                                         }
                                                       },
                                                       {
-                                                        width: 10,
+                                                        maxWidth: 10,
                                                       }
                                                     ]
                                                   },
@@ -240,7 +240,7 @@ export default class OfertasVentaForm extends JetView {
                                                     {
                                                         cols: [
                                                           {
-                                                            width: 500
+                                                            maxWidth: 490
                                                           },
                                                          
                                                         ]
@@ -261,7 +261,7 @@ export default class OfertasVentaForm extends JetView {
                                                     {
                                                         cols: [
                                                           {
-                                                            width: 500
+                                                            maxWidth: 490
                                                           },
                                                          
                                                         ]
@@ -291,20 +291,30 @@ export default class OfertasVentaForm extends JetView {
                                                             label: "Cancelar",
                                                             click: this.cancel,
                                                             hotkey: "esc",
-                                                            width: 120
+                                                            css: "webix_danger",
+                                                            width: 80
+                                                          },
+                                                          {
+                                                            view: "button",
+                                                            label: "Guardar",
+                                                            click: () => this.accept(true),
+                                                            css: "webix_primary",
+                                                            type: "form",
+                                                            width: 80
                                                           }
                                                         ]
                                                       },
+                                                      
                                                       {
                                                         paddingX: 30,
                                                         align: "center",
                                                         cols: [
                                                           {
                                                             view: "button",
-                                                            label: "Aceptar",
-                                                            click: this.accept,
+                                                            label: "Guardar sin salir",
+                                                            click: () => this.accept(false),
                                                             type: "form",
-                                                            width: 120
+                                                            width: 160
                                                           }
                                                         ]
                                                       }
@@ -344,7 +354,10 @@ export default class OfertasVentaForm extends JetView {
        
     urlChange(view, url) {
         if (url[0].params.NEW) {
-            messageApi.normalMessage('Oferta correctamente, puede crear ahora las  lineas asociadas.')
+            messageApi.normalMessage('Oferta guardada correctamente.')
+        }
+        if (url[0].params.MOD) {
+            messageApi.normalMessage('Oferta guardada correctamente.')
         }
         usuario = usuarioService.checkLoggedUser();
         usuarioId = usuario.usuarioId;
@@ -472,7 +485,7 @@ export default class OfertasVentaForm extends JetView {
         this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
     }
     
-    accept() {
+    accept(opcion) {
         if (!$$("frmOfertas").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;
@@ -487,7 +500,7 @@ export default class OfertasVentaForm extends JetView {
 
             console.log(datalineas);
             if(datalineas.length > 0) {
-                data.lineas = this.$scope.limpiaDatalineas(datalineas, 'POST');
+                data.lineas = this.limpiaDatalineas(datalineas, 'POST');
             }
          
             
@@ -513,7 +526,7 @@ export default class OfertasVentaForm extends JetView {
 
             ofertasService.postOfertaVenta(data)
             .then((result) => {
-                this.$scope.show('/top/ofertasVentaForm?ofertaId=' + result.ofertaId + "&NEW");
+                this.show('/top/ofertasVentaForm?ofertaId=' + result.ofertaId + "&NEW");
             })
             .catch((err) => {
                 var error = err.response;
@@ -529,7 +542,7 @@ export default class OfertasVentaForm extends JetView {
 
             console.log(datalineas);
             if(datalineas.length > 0) {
-                data.lineas = this.$scope.limpiaDatalineas(datalineas, 'PUT');
+                data.lineas = this.limpiaDatalineas(datalineas, 'PUT');
             }
          
             delete data.direccion;
@@ -542,7 +555,11 @@ export default class OfertasVentaForm extends JetView {
             data.importeMantenedor = 0
             ofertasService.putOfertaVenta(data)
                 .then(() => {
-                    this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
+                    if(opcion) {
+                        this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaVentaId=' + data.ofertaId +  '&desdeVenta=true');
+                    } else {
+                        this.show('/top/ofertasVentaForm?ofertaId=' + data.ofertaId + "&MOD");
+                    }
                 })
                 .catch((err) => {
                     var error = err.response;
