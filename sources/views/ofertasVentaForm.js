@@ -234,6 +234,46 @@ export default class OfertasVentaForm extends JetView {
                                                   }
                                                 ]
                                               },
+                                               // Columna: Conceptos excluidos
+                                               {
+                                                rows: [
+                                                    {
+                                                        cols: [
+                                                          {
+                                                            maxWidth: 240
+                                                          },
+                                                          {
+                                                            view: "richselect",
+                                                            id: "cmbConceptosExcluidos",
+                                                            name: "textoPredeterminadoId",
+                                                            options:{},
+                                                            maxWidth: 230,
+                                                            on: {
+                                                              onChange: function (newId) {
+                                                               
+                                                                let currentText = $$("conceptosExcluidos").getValue();
+                                                                if (currentText) {
+                                                                  currentText += "\n";
+                                                                }
+                                                                this.$scope.cambioTextosPredeterminadosExcluidos(currentText, newId);
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            maxWidth: 10,
+                                                          }
+                                                        ]
+                                                      },
+                                                    {
+                                                        view: "textarea",
+                                                        id: "conceptosExcluidos",
+                                                        name: "conceptosExcluidos",
+                                                        label: "Conceptos excluidos",
+                                                        labelPosition: "top",
+                                                        height: 155
+                                                      },
+                                                ]
+                                              }, 
                                                // Columna: Observaciones
                                               {
                                                 rows: [
@@ -255,27 +295,7 @@ export default class OfertasVentaForm extends JetView {
                                                       },
                                                 ]
                                               },
-                                              // Columna: Conceptos excluidos
-                                              {
-                                                rows: [
-                                                    {
-                                                        cols: [
-                                                          {
-                                                            maxWidth: 490
-                                                          },
-                                                         
-                                                        ]
-                                                      },
-                                                    {
-                                                        view: "textarea",
-                                                        id: "conceptosExcluidos",
-                                                        name: "conceptosExcluidos",
-                                                        label: "Observaciones",
-                                                        labelPosition: "top",
-                                                        height: 155
-                                                      },
-                                                ]
-                                              }, 
+                                             
                                               {
                                                 type: "clean",
                                                 rows: [
@@ -386,6 +406,7 @@ export default class OfertasVentaForm extends JetView {
                     this.loadClientes(expediente.clienteId);
                     this.loadFormasPago(expediente.formaPagoId);
                     this.loadTextosPredeterminados();
+                    this.loadConceptosExcluidos(expediente.empresaId)
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
                     this.$$("referencia").setValue(expediente.referencia);
                     lineasOfertaVenta.loadGrid(null, null, []);
@@ -417,6 +438,7 @@ export default class OfertasVentaForm extends JetView {
                     $$('desglosado').setValue(oferta.desglosado);
                     $$('mostrarIva').setValue(oferta.mostrarIva);
                     this.loadTextosPredeterminados();
+                    this.loadConceptosExcluidos(oferta.empresaId)
                     expedientesService.getExpediente(expedienteId)
                     .then((expediente) => {
                        
@@ -711,6 +733,21 @@ export default class OfertasVentaForm extends JetView {
         })
     }
 
+    loadConceptosExcluidos(empresaId) {
+        textosPredeterminadosService.getTextosExcluidos(2, empresaId, 5)
+        .then( (rows) => {
+            var textos = generalApi.prepareDataForCombo('textoPredeterminadoId', 'abrev', rows);
+            var list = $$("cmbConceptosExcluidos").getPopup().getList();
+            list.clearAll();
+            list.parse(textos);
+            $$("cmbConceptosExcluidos").setValue(null);
+            $$("cmbConceptosExcluidos").refresh();
+        })
+        .catch( (err) => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+
     cambioTextosPredeterminados(currentText, id) {
         if (!id) {
             return;
@@ -718,6 +755,19 @@ export default class OfertasVentaForm extends JetView {
         textosPredeterminadosService.getTexto(id)
         .then( (row) => {
             $$("sistemaPago").setValue(currentText + row.texto);
+        })
+        .catch( (err) => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+
+    cambioTextosPredeterminadosExcluidos(currentText, id) {
+        if (!id) {
+            return;
+        }
+        textosPredeterminadosService.getTexto(id)
+        .then( (row) => {
+            $$("conceptosExcluidos").setValue(currentText + row.texto);
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
@@ -826,7 +876,8 @@ export default class OfertasVentaForm extends JetView {
             this.asignaColaboradores(rows[0])
             this.obtenerPorcentajeDelAgente(rows[0].agenteId, rows[0].empresaId, rows[0].tipoOfertaId);
             this.obtenerPorcentajeBeneficio();
-            lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows)
+            lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows);
+            this.loadDatos(rows[0]);
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
@@ -885,6 +936,12 @@ export default class OfertasVentaForm extends JetView {
             .catch(error => {
                 console.error("Error al buscar clientes activos:", error);
             });
+    }
+
+    loadDatos(data) {
+        $$('valorado').setValue(data.valorado);
+        $$('desglosado').setValue(data.desglosado);
+        $$('mostrarIva').setValue(data.mostrarIva);
     }
     
 }

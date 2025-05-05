@@ -462,6 +462,7 @@ export default class OfertasCosteForm extends JetView {
     
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
+                    $$('valorado').setValue(1);
                     //basesOferta.loadGrid(null); 
                     setTimeout(this.accept, 2000)
                     
