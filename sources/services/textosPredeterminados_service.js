@@ -1,10 +1,10 @@
 import { devConfig } from "../config/config";
 export const textosPredeterminadosService = { 
-    getTextos: () => {
+    getTextosTiposPago: (tipotextoId, empresaId, departamentoId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi +  "/api/textos_predeterminados";
+                    var url = conf.urlApi +  "/api/textos_predeterminados/conceptos-excluidos/" + empresaId + "/" + departamentoId + "/" + tipotextoId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -45,6 +45,28 @@ export const textosPredeterminadosService = {
     },
 
     getTextosExcluidos: (tipotextoId, empresaId, departamentoId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi +  "/api/textos_predeterminados/conceptos-excluidos/" + empresaId + "/" + departamentoId + "/" + tipotextoId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+
+    getTitulos: (tipotextoId, empresaId, departamentoId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {

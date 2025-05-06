@@ -42,7 +42,7 @@ export default class OfertasEpisReport extends JetView {
             fail(inXhr);
         });
     }
-    showWindow(ofertaId,proveedorId,file) {
+    showWindow(ofertaId,file) {
         $$('ofertasEpisReport').show();
         // Create the report viewer with default options
         var options = new Stimulsoft.Viewer.StiViewerOptions();
@@ -74,7 +74,6 @@ export default class OfertasEpisReport extends JetView {
         }
         var sql = report.dataSources.items[pos].sqlCommand;
         sql = sql + " WHERE o.ofertaId = " + ofertaId
-        if(proveedorId) sql += " AND p.proveedorId = " + proveedorId
         report.dataSources.items[pos].sqlCommand = sql;
        
         viewer.report = report;

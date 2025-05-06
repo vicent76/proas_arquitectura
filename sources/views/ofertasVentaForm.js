@@ -192,161 +192,209 @@ export default class OfertasVentaForm extends JetView {
                                             },
                                         ]
                                     },
-                                        {
-                                            cols: [
-                                              // Columna: Sistema de pago (con richselect arriba del textarea)
+                                    {
+                                        cols: [
+                                         
+                                           // Columna: Conceptos excluidos
+                                           {
+                                            rows: [
+                                              {
+                                                cols: [
+                                                  {
+                                                    view: "richselect",
+                                                    id: "cmbTitulos",
+                                                    name: "tituloId",
+                                                    label: "Título",
+                                                    width: 400,       // Controla el ancho total del campo
+                                                    gravity: 1,
+                                                    options: {},
+                                                    on: {
+                                                      onChange: function (newId) {
+                                                        this.$scope.cambioTextosPredeterminadosTitulos(newId);
+                                                      }
+                                                    }
+                                                  },
+                                                  {} // Espacio vacío para completar la fila
+                                                ]
+                                              },
+                                              {
+                                                view: "textarea",
+                                                id: "tituloTexto",
+                                                name: "tituloTexto",
+                                                required: true,
+                                                height: 155,
+                                                labelWidth: 150
+                                              }
+                                            ]
+                                          }
+                                          
+                                        ]
+                                      },
+                                      {
+                                        cols: [
+                                          // Columna 1: Sistema de pago
+                                          {
+                                            gravity: 1,
+                                            rows: [
+                                              {
+                                                cols: [
+                                                  {
+                                                    view: "richselect",
+                                                    id: "cmbSistemaPago",
+                                                    name: "sistemaPagoId",
+                                                    label: "Sistema de pago",
+                                                    labelWidth: 150, // Ajusta el ancho del label para evitar cortes
+                                                    options: {},
+                                                    gravity: 1, // Ocupa la mitad del espacio
+                                                    width: 400,       // Controla el ancho total del campo
+                                                    on: {
+                                                      onChange: function (newId) {
+                                                        this.$scope.cambioTextosPredeterminados(newId);
+                                                      }
+                                                    }
+                                                  },
+                                                  {} // espacio vacío para completar la fila
+                                                ]
+                                              },
+                                              {
+                                                view: "textarea",
+                                                id: "sistemaPago",
+                                                name: "sistemaPago",
+                                                height: 155,
+                                                labelWidth: 150, // Asegura que el label sea del mismo tamaño que el de richselect
+                                              }
+                                            ]
+                                          },
+                                      
+                                          // Columna 2: Conceptos excluidos
+                                          {
+                                            gravity: 1,
+                                            rows: [
+                                              {
+                                                cols: [
+                                                  {
+                                                    view: "richselect",
+                                                    id: "cmbConceptosExcluidos",
+                                                    name: "conceptoExcluidoId",
+                                                    label: "Conceptos excluidos",
+                                                    labelWidth: 150, // Igual al de la columna anterior
+                                                    width: 400,       // Controla el ancho total del campo
+                                                    options: {},
+                                                    gravity: 1,
+                                                    on: {
+                                                      onChange: function (newId) {
+                                                        this.$scope.cambioTextosPredeterminadosExcluidos(newId);
+                                                      }
+                                                    }
+                                                  },
+                                                  {} // espacio vacío
+                                                ]
+                                              },
+                                              {
+                                                view: "textarea",
+                                                id: "conceptosExcluidos",
+                                                name: "conceptosExcluidos",
+                                                height: 155,
+                                                labelWidth: 150, // Iguala el ancho del label
+                                              }
+                                            ]
+                                          },
+                                      
+                                          // Columna 3: Observaciones (ajustado)
+                                          {
+                                            gravity: 1,
+                                            rows: [
+                                              {}, // Espacio arriba para alinear con otros elementos
                                               {
                                                 rows: [
+                                                    {
+                                                        template: "Observaciones",
+                                                        type: "clean",     // Elimina bordes y padding extra
+                                                        css: { "font-weight": "500", "padding-left": "6px" },
+                                                        height: 20
+                                                      },
                                                   {
-                                                    cols: [
-                                                      {
-                                                        maxWidth: 240,
-                                                      },
-                                                      {
-                                                        view: "richselect",
-                                                        id: "cmbTextosPredeterminados",
-                                                        name: "textoPredeterminadoId",
-                                                        options:{},
-                                                        maxWidth: 230,
-                                                        on: {
-                                                          onChange: function (newId) {
-                                                           
-                                                            let currentText = $$("sistemaPago").getValue();
-                                                            if (currentText) {
-                                                              currentText += "\n";
-                                                            }
-                                                            this.$scope.cambioTextosPredeterminados(currentText, newId);
-                                                          }
-                                                        }
-                                                      },
-                                                      {
-                                                        maxWidth: 10,
-                                                      }
-                                                    ]
+                                                    height: 5 // Espacio entre la label y el textarea
                                                   },
                                                   {
                                                     view: "textarea",
-                                                    id: "sistemaPago",
-                                                    name: "sistemaPago",
-                                                    label: "Sistema de pago <i class='fa fa-lg fa-book'></i>",
-                                                    labelPosition: "top",
-                                                    height: 155
+                                                    id: "observaciones",
+                                                    name: "observaciones",
+                                                    height: 155,
+                                                    gravity: 1
                                                   }
                                                 ]
-                                              },
-                                               // Columna: Conceptos excluidos
-                                               {
-                                                rows: [
-                                                    {
-                                                        cols: [
-                                                          {
-                                                            maxWidth: 240
-                                                          },
-                                                          {
-                                                            view: "richselect",
-                                                            id: "cmbConceptosExcluidos",
-                                                            name: "textoPredeterminadoId",
-                                                            options:{},
-                                                            maxWidth: 230,
-                                                            on: {
-                                                              onChange: function (newId) {
-                                                               
-                                                                let currentText = $$("conceptosExcluidos").getValue();
-                                                                if (currentText) {
-                                                                  currentText += "\n";
-                                                                }
-                                                                this.$scope.cambioTextosPredeterminadosExcluidos(currentText, newId);
-                                                              }
-                                                            }
-                                                          },
-                                                          {
-                                                            maxWidth: 10,
-                                                          }
-                                                        ]
-                                                      },
-                                                    {
-                                                        view: "textarea",
-                                                        id: "conceptosExcluidos",
-                                                        name: "conceptosExcluidos",
-                                                        label: "Conceptos excluidos",
-                                                        labelPosition: "top",
-                                                        height: 155
-                                                      },
-                                                ]
-                                              }, 
-                                               // Columna: Observaciones
+                                              }
+                                            ]
+                                          },
+                                          
+                                      
+                                          // Columna 4: Botones
+                                          {
+                                            gravity: 1,
+                                            rows: [
                                               {
-                                                rows: [
-                                                    {
-                                                        cols: [
-                                                          {
-                                                            maxWidth: 490
-                                                          },
-                                                         
-                                                        ]
-                                                      },
-                                                    {
-                                                        view: "textarea",
-                                                        id: "observaciones",
-                                                        name: "observaciones",
-                                                        label: "Observaciones",
-                                                        labelPosition: "top",
-                                                        height: 155
-                                                      },
-                                                ]
+                                                template: "", height: 38 // espacio para alinear con los demás elementos
                                               },
-                                             
                                               {
-                                                type: "clean",
+                                                padding: 10,
                                                 rows: [
-                                                  {}, // espacio arriba
                                                   {
-                                                    rows: [
+                                                    align: "center",
+                                                    cols: [
                                                       {
-                                                        paddingX: 30,
-                                                        align: "center",
-                                                        cols: [
-                                                          {
-                                                            view: "button",
-                                                            label: "Cancelar",
-                                                            click: this.cancel,
-                                                            hotkey: "esc",
-                                                            css: "webix_danger",
-                                                            width: 80
-                                                          },
-                                                          {
-                                                            view: "button",
-                                                            label: "Guardar",
-                                                            click: () => this.accept(true),
-                                                            css: "webix_primary",
-                                                            type: "form",
-                                                            width: 80
-                                                          }
-                                                        ]
+                                                        view: "button",
+                                                        label: "Cancelar",
+                                                        click: this.cancel,
+                                                        hotkey: "esc",
+                                                        css: "webix_danger",
+                                                        width: 80
                                                       },
-                                                      
                                                       {
-                                                        paddingX: 30,
-                                                        align: "center",
-                                                        cols: [
-                                                          {
-                                                            view: "button",
-                                                            label: "Guardar sin salir",
-                                                            click: () => this.accept(false),
-                                                            type: "form",
-                                                            width: 160
-                                                          }
-                                                        ]
+                                                        view: "button",
+                                                        label: "Guardar",
+                                                        click: () => this.accept(true),
+                                                        css: "webix_primary",
+                                                        type: "form",
+                                                        width: 80
                                                       }
                                                     ]
                                                   },
-                                                  {} // espacio abajo
+                                                  {
+                                                    align: "center",
+                                                    cols: [
+                                                      {
+                                                        view: "button",
+                                                        label: "Guardar sin salir",
+                                                        click: () => this.accept(false),
+                                                        type: "form",
+                                                        width: 160
+                                                      }
+                                                    ]
+                                                  },
+                                                  {
+                                                    align: "center",
+                                                    cols: [
+                                                      {
+                                                        view: "button",
+                                                        label: "Imprimir oferta",
+                                                        id: "btnImprimir",
+                                                        type: "form",
+                                                        width: 160
+                                                      }
+                                                    ]
+                                                  }
                                                 ]
                                               }
-                                              
-                                              
                                             ]
-                                          },
+                                          }
+                                        ]
+                                      },
+                                      
+                                     
+                                      
+                                      
+                                      
                                           // Botones debajo de todo
                                          
                                           
@@ -367,7 +415,33 @@ export default class OfertasVentaForm extends JetView {
         return _view;
     }
     init(view, url) {
-        _imprimirWindow = this.ui(OfertasEpisReport);
+       this.imprimirWindow = this.ui(OfertasEpisReport);
+        $$('btnImprimir').attachEvent("onItemClick", function(id, e, node){
+            var empresaId = $$('cmbEmpresas').getValue();
+                    empresasService.getEmpresa(empresaId)
+                    .then((data)=> {
+                        if(!data.infOfertas) { 
+                            messageApi.errorMessage('Esta empresa no tiene plantilla de oferta asociada');
+                            return
+                        } else {
+                            var rep = data.infOfertas;
+                            //var rep = 'oferta_general'
+                            var file = "/stireport/reports/"+ rep +".mrt";
+                            this.$scope.imprimirWindow.showWindow(ofertaId, file);
+                            
+                        }
+                    })
+                    .catch((err) => {
+                        var error = err.response;
+                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                            if(index != -1) {
+                                messageApi.errorRestriccion()
+                            } else {
+                                messageApi.errorMessageAjax(err);
+                            }
+                    })
+                       
+        });
         this.cargarEventos();
     }
     
@@ -405,8 +479,9 @@ export default class OfertasVentaForm extends JetView {
                     this.loadPresupuestosCoste(expedienteId, null);
                     this.loadClientes(expediente.clienteId);
                     this.loadFormasPago(expediente.formaPagoId);
-                    this.loadTextosPredeterminados();
-                    this.loadConceptosExcluidos(expediente.empresaId)
+                    this.loadSistemaPago(expediente.empresaId, null);
+                    this.loadConceptosExcluidos(expediente.empresaId, null);
+                    this.loadTitulos(expediente.empresaId, null);
                     $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
                     this.$$("referencia").setValue(expediente.referencia);
                     lineasOfertaVenta.loadGrid(null, null, []);
@@ -437,8 +512,9 @@ export default class OfertasVentaForm extends JetView {
                     $$('valorado').setValue(oferta.valorado);
                     $$('desglosado').setValue(oferta.desglosado);
                     $$('mostrarIva').setValue(oferta.mostrarIva);
-                    this.loadTextosPredeterminados();
-                    this.loadConceptosExcluidos(oferta.empresaId)
+                    this.loadSistemaPago(oferta.empresaId, oferta.sistemaPagoId);
+                    this.loadConceptosExcluidos(oferta.empresaId, oferta.conceptoExcluidoId);
+                    this.loadTitulos(oferta.empresaId, oferta.tituloId);
                     expedientesService.getExpediente(expedienteId)
                     .then((expediente) => {
                        
@@ -718,28 +794,38 @@ export default class OfertasVentaForm extends JetView {
         })
     } 
 
-    loadTextosPredeterminados() {
-        textosPredeterminadosService.getTextos()
+    loadSistemaPago(empresaId, sistemaPagoId) {
+        textosPredeterminadosService.getTextosTiposPago(1, empresaId, 5)
         .then( (rows) => {
             var textos = generalApi.prepareDataForCombo('textoPredeterminadoId', 'abrev', rows);
-            var list = $$("cmbTextosPredeterminados").getPopup().getList();
+            var list = $$("cmbSistemaPago").getPopup().getList();
             list.clearAll();
             list.parse(textos);
-            $$("cmbTextosPredeterminados").setValue(null);
-            $$("cmbTextosPredeterminados").refresh();
+            if(sistemaPagoId) {
+                $$("cmbSistemaPago").setValue(sistemaPagoId);
+                $$("cmbSistemaPago").refresh();
+                return
+            }
+            $$("cmbSistemaPago").setValue(null);
+            $$("cmbSistemaPago").refresh();
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
         })
     }
 
-    loadConceptosExcluidos(empresaId) {
+    loadConceptosExcluidos(empresaId, conceptoExcluidoId) {
         textosPredeterminadosService.getTextosExcluidos(2, empresaId, 5)
         .then( (rows) => {
             var textos = generalApi.prepareDataForCombo('textoPredeterminadoId', 'abrev', rows);
             var list = $$("cmbConceptosExcluidos").getPopup().getList();
             list.clearAll();
             list.parse(textos);
+            if(conceptoExcluidoId) {
+                $$("cmbConceptosExcluidos").setValue(conceptoExcluidoId);
+                $$("cmbConceptosExcluidos").refresh();
+                return
+            }
             $$("cmbConceptosExcluidos").setValue(null);
             $$("cmbConceptosExcluidos").refresh();
         })
@@ -748,26 +834,26 @@ export default class OfertasVentaForm extends JetView {
         })
     }
 
-    cambioTextosPredeterminados(currentText, id) {
+    cambioTextosPredeterminados(id) {
         if (!id) {
             return;
         }
         textosPredeterminadosService.getTexto(id)
         .then( (row) => {
-            $$("sistemaPago").setValue(currentText + row.texto);
+            $$("sistemaPago").setValue(row.texto);
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
         })
     }
 
-    cambioTextosPredeterminadosExcluidos(currentText, id) {
+    cambioTextosPredeterminadosExcluidos(id) {
         if (!id) {
             return;
         }
         textosPredeterminadosService.getTexto(id)
         .then( (row) => {
-            $$("conceptosExcluidos").setValue(currentText + row.texto);
+            $$("conceptosExcluidos").setValue(row.texto);
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
@@ -943,5 +1029,40 @@ export default class OfertasVentaForm extends JetView {
         $$('desglosado').setValue(data.desglosado);
         $$('mostrarIva').setValue(data.mostrarIva);
     }
+
+     
+    loadTitulos(empresaId, tituloId) {
+        textosPredeterminadosService.getTitulos(3, empresaId, 5)
+        .then( (rows) => {
+            var textos = generalApi.prepareDataForCombo('textoPredeterminadoId', 'abrev', rows);
+            var list = $$("cmbTitulos").getPopup().getList();
+            list.clearAll();
+            list.parse(textos);
+            if(tituloId) {
+                $$("cmbTitulos").setValue(tituloId);
+                $$("cmbTitulos").refresh();
+                return
+            }
+            $$("cmbTitulos").setValue(null);
+            $$("cmbTitulos").refresh();
+        })
+        .catch( (err) => {
+            messageApi.errorMessageAjax(err);
+        })
+    }
+
+        cambioTextosPredeterminadosTitulos(id) {
+            if (!id) {
+                return;
+            }
+            textosPredeterminadosService.getTexto(id)
+            .then( (row) => {
+                var compose = "PRESUPUESTO REF. " + $$('cmbPresupuestosCoste').getText() + " " + row.texto
+                $$("tituloTexto").setValue(compose);
+            })
+            .catch( (err) => {
+                messageApi.errorMessageAjax(err);
+            })
+        }
     
 }

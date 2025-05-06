@@ -24,9 +24,9 @@ export const lineasOfertaVenta= {
         }
   
         var toolbarlineasOfertaVenta = {
-            view: "toolbar", padding: 3, elements: [
+            view: "toolbar", padding: 3,  css: {"background-color": "#F4F5F9"}, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
-                { view: "label", label: translate("PARTIDAS") }
+                { view: "label", label: translate("Partidas") }
             ]
         };
         var pagerlineasOfertaVenta = {
