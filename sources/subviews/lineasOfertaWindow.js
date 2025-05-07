@@ -324,6 +324,7 @@ export const LineasOfertaWindow = {
         return
     },
     loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo, importeobra) => {
+        $$('LineasOfertafrm').clear();
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
@@ -367,8 +368,10 @@ export const LineasOfertaWindow = {
         } else {
             LineasOfertaWindow.loadGruposArticulo(null, null);
         }
-        LineasOfertaWindow.loadUnidades(9);
-        LineasOfertaWindow.nuevaLinea();
+       
+            LineasOfertaWindow.loadUnidades(9);
+            LineasOfertaWindow.nuevaLinea(grupoArticuloId);
+        
     },
 
     loadCapituloData(grupoArticuloId) {
@@ -427,12 +430,16 @@ export const LineasOfertaWindow = {
         });
     },
 
-    nuevaLinea: () => {
+    nuevaLinea: (grupoArticuloId) => {
         //limpiaDataLinea();
         ofertasService.getSiguienteLinea(ofertaId)
         .then( row => {
             if(row) {
                 $$('linea').setValue(row);
+                if(grupoArticuloId) {
+                    LineasOfertaWindow.crearTextoDeCapituloAutomatico(grupoArticuloId);
+                    LineasOfertaWindow.loadCapituloData(grupoArticuloId)
+                }
             }
         })
         .catch( err => {
@@ -530,6 +537,7 @@ export const LineasOfertaWindow = {
         data.porcentajeBeneficio = 0;
         data.porcentajeAgente = 0;
         data.importeProveedor = $$('importeCliente').getValue()
+        if(!ofertaLineaId) data.ofertaLineaId = 0;
         return data;
     },
 

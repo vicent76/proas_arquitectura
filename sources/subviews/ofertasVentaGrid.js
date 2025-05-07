@@ -99,7 +99,7 @@ export const ofertasVentaGrid = {
             },
             columns: [
                 { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
-                { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "header" },
+                { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "data" },
                 {
                     id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
                     adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
