@@ -1,10 +1,10 @@
 {
   "ReportVersion": "2021.3.6.0",
-  "ReportGuid": "9d50d46abfb5424b93aafae290568fb0",
+  "ReportGuid": "5643329cdd8948f6838e8966a8f1014e",
   "ReportName": "OfertaGeneral",
   "ReportAlias": "OfertaGeneral",
   "ReportCreated": "/Date(1492633073000+0200)/",
-  "ReportChanged": "/Date(1746611111130+0200)/",
+  "ReportChanged": "/Date(1746611412901+0200)/",
   "EngineVersion": "EngineV2",
   "CalculationMode": "Interpretation",
   "Script": "using System;\r\nusing System.Drawing;\r\nusing System.Windows.Forms;\r\nusing System.Data;\r\nusing Stimulsoft.Controls;\r\nusing Stimulsoft.Base.Drawing;\r\nusing Stimulsoft.Report;\r\nusing Stimulsoft.Report.Dialogs;\r\nusing Stimulsoft.Report.Components;\r\n\r\nnamespace Reports\r\n{\r\n    public class OfertaGeneral : Stimulsoft.Report.StiReport\r\n    {\r\n        public OfertaGeneral()        {\r\n            this.InitializeComponent();\r\n        }\r\n\r\n        #region StiReport Designer generated code - do not modify\r\n\t\t#endregion StiReport Designer generated code - do not modify\r\n    }\r\n}\r\n",
@@ -719,7 +719,7 @@
         "1": {
           "Ident": "StiPageFooterBand",
           "Name": "PageFooterBand2",
-          "ClientRectangle": "0,35.42,19,1.4",
+          "ClientRectangle": "0,35.56,19,1.4",
           "Interaction": {
             "Ident": "StiInteraction"
           },
@@ -1380,7 +1380,7 @@
         }
       },
       "PageWidth": 21.0,
-      "PageHeight": 27.3,
+      "PageHeight": 27.4,
       "Watermark": {
         "TextBrush": "solid:50,0,0,0"
       },

@@ -592,7 +592,8 @@ export default class OfertasVentaForm extends JetView {
 
         delete data.increMediciones;
         delete data.textoPredeterminadoId;
-
+        if(data.sistemaPagoId == '') data.sistemaPagoId = null;
+        if(data.conceptoExcluidoId == '') data.conceptoExcluidoId = null;
         if (ofertaId == 0) {
             var datalineas = $$("lineasOfertaVentaGrid").serialize();
 
