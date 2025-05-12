@@ -563,7 +563,8 @@ export default class OfertasCosteForm extends JetView {
             data.importeMantenedor = 0
             data.mantenedorId  = null;
             data.expedienteId = expedienteId;
-            data.esCoste = 1
+            data.esCoste = 1;
+            data.esTecnico = 1;
           
 
             ofertasService.postOferta(data)

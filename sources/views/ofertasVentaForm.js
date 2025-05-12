@@ -615,6 +615,7 @@ export default class OfertasVentaForm extends JetView {
             data.ventaNeta = ventaNeta
             data.importeAgente = importeAgente;
             data.esCoste = 0
+            data.esTecnico = 1;
             //
             data.agenteId = agenteId;
             data.comercialId = comercialId;
