@@ -704,7 +704,7 @@ export default class OfertasCosteForm extends JetView {
         tiposProyectoService.getTipoProyecto(tipoProyectoId)
         .then( row => {
             if(row) {
-                ofertasService.getSiguienteReferencia(row.abrev)
+                ofertasService.getSiguienteReferenciaTecnico(row.abrev)
                 .then( row => {
                     var nuevaReferencia = row;
                     this.$$('referencia').setValue(nuevaReferencia);
@@ -720,7 +720,7 @@ export default class OfertasCosteForm extends JetView {
     }
 
     getReferencia(abrev) {
-        expedientesService.getSiguienteReferencia(abrev)
+        expedientesService.getSiguienteReferenciaTecnico(abrev)
                 .then( row => {
                     var nuevaReferencia = row;
                     this.$$('referencia').setValue(nuevaReferencia);
