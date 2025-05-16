@@ -9,6 +9,7 @@ import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { lineasOfertaVenta } from "../subviews/lineasOfertaVentaGrid";
+import { generarContratoWindow } from "../subviews/generarContratoWindow";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { parametrosService } from "../services/parametros_service";
@@ -44,6 +45,7 @@ export default class OfertasVentaForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOfertaVenta.getGrid(this.app);       
+        generarContratoWindow.getWindow(this.app);
         const _view = {
             view: "tabview",
             cells: [
@@ -368,6 +370,7 @@ export default class OfertasVentaForm extends JetView {
                                                         label: "Guardar sin salir",
                                                         click: () => this.accept(false),
                                                         type: "form",
+                                                        css: "bt_2",
                                                         width: 160
                                                       }
                                                     ]
@@ -383,8 +386,23 @@ export default class OfertasVentaForm extends JetView {
                                                         width: 160
                                                       }
                                                     ]
+                                                  },
+                                                  {
+                                                    align: "center",
+                                                    cols: [
+                                                      {
+                                                        view: "button",
+                                                        label: "Generar Contrato",
+                                                        id: "btnGenerarContrato",
+                                                        click: () => this.aceptarGenerarContrato(this.app),
+                                                        type: "form",
+                                                        css:"bt_1",
+                                                        width: 160
+                                                      }
+                                                    ]
                                                   }
                                                 ]
+                                                
                                               }
                                             ]
                                           }
@@ -590,10 +608,19 @@ export default class OfertasVentaForm extends JetView {
         }
         var data = $$("frmOfertas").getValues();
 
+        delete data.fechaAceptacionOferta;
+        delete data.fechaInicio;
+        delete data.fechaFinal;
+        delete data.fechaOriginal;
+        delete data.fechaPrimeraFactura;
+        delete data.preaviso;
+        delete data.facturaParcial;
+
         delete data.increMediciones;
         delete data.textoPredeterminadoId;
         if(data.sistemaPagoId == '') data.sistemaPagoId = null;
         if(data.conceptoExcluidoId == '') data.conceptoExcluidoId = null;
+        data.beneficioLineal = 1;
         if (ofertaId == 0) {
             var datalineas = $$("lineasOfertaVentaGrid").serialize();
 
@@ -1066,5 +1093,22 @@ export default class OfertasVentaForm extends JetView {
                 messageApi.errorMessageAjax(err);
             })
         }
+
+        //GENERAR CONTRATO
+
+         aceptarGenerarContrato (app)  {
+            if(ofertaId == 0 || ofertaId == '' || !ofertaId) return;
+                const translate = app.getService("locale")._;
+                webix.confirm({
+                    title: translate("AVISO"),
+                    text: translate("Se generará un contrato a partir de esta oferta.\n ¿Está seguro, que deesea continuar?"),
+                    type: "confirm-warning",
+                    callback: (action) => {
+                        if (action === true) {
+                            generarContratoWindow.loadWindow(ofertaId);
+                        }
+                    }
+                });
+            }
     
 }
