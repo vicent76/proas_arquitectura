@@ -18,7 +18,7 @@ export const generarContratoWindow = {
             rows: [
                 {
                     view: "toolbar", padding: 3, elements: [
-                        { view: "icon", icon: "mdi mdi-office-building", width: 37, align: "left" },
+                        { view: "icon", icon: "mdi mdi-file", width: 37, align: "left" },
                         { view: "label", label: "ACEPTAR OFERTA - GENERAR CONTRATO" }
                     ]
                 },
@@ -126,6 +126,7 @@ export const generarContratoWindow = {
 
     loadWindow: (ofertaid) => {
         ofertaId = ofertaid
+        generarContratoWindow.limpiarwindow()
         $$('generarContratoWindow').show();
     },
 
@@ -164,5 +165,17 @@ export const generarContratoWindow = {
                 var error = err.response;
                 messageApi.errorMessageAjax(err);
             })
+    },
+
+    limpiarwindow: () => {
+        var hoy = new Date()
+        $$('fechaAceptacionOferta').setValue(hoy);
+         $$('fechaInicio').setValue(null);
+         $$('fechaFinal').setValue(null);
+         $$('preaviso').setValue(0);
+         $$('fechaPrimeraFactura').setValue(null);
+         $$('fechaOriginal').setValue(null);
+         $$('facturaParcial').setValue(0);
+       
     }
 }

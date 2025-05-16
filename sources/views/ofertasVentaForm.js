@@ -28,6 +28,7 @@ var _imprimirWindow;
 var cliId = null;
 var cap = null;
 var importeObra = 0;
+var desdePrincipal = null;
 var tipoProyectoId;
 var agenteId = 0;
 var comercialId = 0;
@@ -483,6 +484,9 @@ export default class OfertasVentaForm extends JetView {
         if (url[0].params.importeObra) {
             importeObra = parseFloat(url[0].params.importeObra);
         }
+        if (url[0].params.ofertaId) {
+            desdePrincipal = url[0].params.desdePrincipal;
+        }
         this.cargarEventos();
         this.load(ofertaId, expedienteId);
     }
@@ -598,7 +602,11 @@ export default class OfertasVentaForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
+        if(desdePrincipal) {
+            this.$scope.show('/top/ofertas/?ofertaId=' + ofertaId);
+            return;
+        }
+        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaVentaId=' + ofertaId +  '&desdeVenta=true');
     }
     
     accept(opcion) {
@@ -682,6 +690,10 @@ export default class OfertasVentaForm extends JetView {
             data.importeMantenedor = 0
             ofertasService.putOfertaVenta(data)
                 .then(() => {
+                    if(desdePrincipal) {
+                        this.show('/top/ofertas/?ofertaId=' + data.ofertaId);
+                        return;
+                    }
                     if(opcion) {
                         this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaVentaId=' + data.ofertaId +  '&desdeVenta=true');
                     } else {
