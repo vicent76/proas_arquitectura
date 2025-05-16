@@ -29,7 +29,7 @@ export default class MainMenu extends JetView {
                     id: "gestion", icon: "mdi mdi-book",  value: translate("Gestión"), open: true,
                     data: [
                         {id: "expedientes", icon: "mdi mdi-note-text", value: translate("Expedientes")},
-                        {id: "ofertas", icon: "mdi mdi-currency-eur", value: translate("Ofertas de ventas")},
+                        {id: "ofertas", icon: "mdi mdi-currency-eur", value: translate("Ofertas de venta")},
                         
                     ]
                 },
