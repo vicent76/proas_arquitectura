@@ -87,7 +87,8 @@ export default class Ofertas extends JetView {
             columns: [
                 { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
                 { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "data" },
-                { id: "expedienteId", header: [translate("ExpeidienteId"), { content: "textFilter" }], sort: "string", adjust: "data" },
+                { id: "expedienteId", header: [translate("ExpeidienteId"), { content: "textFilter" }], sort: "string", adjust: "data", hidden: true },
+                { id: "tituloexpediente", header: [translate("Expediente"), { content: "textFilter" }], sort: "string", minWidth: 380},
                 {
                     id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
                     adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
