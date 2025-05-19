@@ -11,6 +11,7 @@ import OfertasEpisReport  from "./ofertasEpisReport";
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var PrintButton = "<span class='onPrint mdi mdi-printer'></span>";
+var selectOfertaId = 0;
 
 export default class Ofertas extends JetView {
     config() {
@@ -83,28 +84,34 @@ export default class Ofertas extends JetView {
                         }
                 }
             },
-            columns: [  
-                { id: "ofertaId", header: ["Id", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
-                { id: "empresaId", header: ["IdEmpresa", { content: "textFilter" }], sort: "int", adjust: "data", hidden: true},
-                { id: "referencia", header: ["Ref.", { content: "textFilter" }], sort: "string", adjust: "data" },
-                { id: "tipo", header: ["Tipo.", { content: "textFilter" }], sort: "string", adjust: "data" },
+            columns: [
+                { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
+                { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "data" },
+                { id: "expedienteId", header: [translate("ExpeidienteId"), { content: "textFilter" }], sort: "string", adjust: "data", hidden: true },
+                { id: "tituloexpediente", header: [translate("Expediente"), { content: "textFilter" }], sort: "string", minWidth: 380},
                 {
-                 id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
-                 adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
+                    id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
+                    adjust: "data", sort: "string", format: webix.i18n.dateFormatStr,css: { "text-align": "center" }
                 },
-                { id: "empresa", header: ["Empresa", { content: "textFilter" }], sort: "string",adjust: "data" },             
-                { id: "cliente", header: ["Cliente", { content: "textFilter" }], sort: "string",adjust: "all"}, 
-                { id: "agente", header: ["Agente", { content: "textFilter" }], sort: "string",adjust: "data" }, 
-                { id: "total", header: ["Base", { content: "textFilter" }], sort: "int" ,format:webix.i18n.numberFormat, adjust: "data"},
-                { id: "observaciones", header: ["Observaciones", { content: "textFilter" }], sort: "string", adjust: "all" },
-                { id: "actions", header: [{ text: "Acciones", css: { "text-align": "center" } }], template: actionsTemplate , css: { "text-align": "center" }, adjust: "all"  }
+                { id: "empresaId", header: [translate("EmpresaId"), { content: "textFilter" }], sort: "string", fillspace: true, hidden: true},
+                { id: "empresa", header: [translate("Empresa"), { content: "textFilter" }], sort: "string",  adjust: "header"},
+                { id: "clienteId", header: [translate("ClienteId"), { content: "textFilter" }], sort: "string", hidden: true},
+                { id: "cliente", header: [translate("Cliente"), { content: "textFilter" }], sort: "string",  minWidth: 380, fillspace: true},
+                { id: "importeCliente", header: [translate("Total"), { content: "textFilter" }], sort: "string", width: 100, format:webix.i18n.numberFormat},
+                { id: "agente", header: [translate("Agente"), { content: "textFilter" }], sort: "string", minWidth: 280},
+                { id: "comercial", header: [translate("Comercial"), { content: "textFilter" }], sort: "string", minWidth: 280},
+                { id: "jefegrupoNombre", header: [translate("Jefe de grupo"), { content: "textFilter" }], sort: "string", minWidth: 280},
+                { id: "asesorTecnicoNombre", header: [translate("Asesor Técnico"), { content: "textFilter" }], sort: "string", minWidth: 280},
+                { id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
             ],
             rightSplit: 1,
             scroll:true,
             onClick: {
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
-                    this.$scope.edit(curRow.ofertaId)
+                    var item = $$("ofertasGrid").getItem(curRow.ofertaId);
+                    var expedienteId = item.expedienteId;
+                    this.$scope.edit(curRow.ofertaId, expedienteId)
                                            
                 },
                 "onDelete": function (event, id, node) {
@@ -140,23 +147,37 @@ export default class Ofertas extends JetView {
         }
         return _view;
     }
+    
     init(view, url) {
         this.imprimirWindow = this.ui(OfertasEpisReport);
          $$('ofertasGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
+            var item = $$("ofertasGrid").getItem(curRow.ofertaId);
+            var expedienteId = item.expedienteId;
 
-            this.$scope.edit(curRow.ofertaId);
+            this.$scope.edit(curRow.ofertaId, expedienteId);
         });
     }
+
     urlChange(view, url) {
         var usu = usuarioService.checkLoggedUser();
         var id = usu.usuarioId;
         languageService.setLanguage(this.app, 'es');
-        this.load(id);
+        if(url[1]) {
+            if (url[1].params.ofertaId) {
+                selectOfertaId = url[1].params.ofertaId;
+                this.load(id);
+                
+            } else {
+                this.load(id);
+            }
+        } else {
+            this.load(id)
+        }
     }
     
     load(id) {
-        ofertasService.getOfertas(id)
+        ofertasService.getOfertasExpediente(0, 0)
         .then((data)=> {
             if(!data) {
                 data = []
@@ -167,6 +188,11 @@ export default class Ofertas extends JetView {
             
             $$("ofertasGrid").clearAll();
             $$("ofertasGrid").parse(generalApi.prepareDataForDataTable("ofertaId", data));
+            if(selectOfertaId) {
+                var id = parseInt(selectOfertaId);
+                $$("ofertasGrid").select(id);
+                $$("ofertasGrid").showItem(id);
+            }
             
             var numReg = $$("ofertasGrid").count();
             $$("ofertasNReg").config.label = "NREG: " + numReg;
@@ -207,8 +233,9 @@ export default class Ofertas extends JetView {
        this.load();
     }
 
-    edit(ofertaId) {
-        this.show('/top/ofertasForm?ofertaId=' + ofertaId);
+    edit(ofertaId, expedienteId) {
+
+        this.show('/top/ofertasVentaForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + 0 + '&desdePrincipal=true');
     }
 
     delete(ofertaId) {

@@ -9,6 +9,7 @@ import { tiposProyectoService } from "../services/tipos_proyecto_service"
 import { languageService} from "../locales/language_service";
 import { empresasService } from "../services/empresas_service";
 import { lineasOfertaVenta } from "../subviews/lineasOfertaVentaGrid";
+import { generarContratoWindow } from "../subviews/generarContratoWindow";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { expedientesService } from "../services/expedientes_service";
 import { parametrosService } from "../services/parametros_service";
@@ -27,6 +28,7 @@ var _imprimirWindow;
 var cliId = null;
 var cap = null;
 var importeObra = 0;
+var desdePrincipal = null;
 var tipoProyectoId;
 var agenteId = 0;
 var comercialId = 0;
@@ -44,6 +46,7 @@ export default class OfertasVentaForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _lineasOferta = lineasOfertaVenta.getGrid(this.app);       
+        generarContratoWindow.getWindow(this.app);
         const _view = {
             view: "tabview",
             cells: [
@@ -368,6 +371,7 @@ export default class OfertasVentaForm extends JetView {
                                                         label: "Guardar sin salir",
                                                         click: () => this.accept(false),
                                                         type: "form",
+                                                        css: "bt_2",
                                                         width: 160
                                                       }
                                                     ]
@@ -383,8 +387,23 @@ export default class OfertasVentaForm extends JetView {
                                                         width: 160
                                                       }
                                                     ]
+                                                  },
+                                                  {
+                                                    align: "center",
+                                                    cols: [
+                                                      {
+                                                        view: "button",
+                                                        label: "Generar Contrato",
+                                                        id: "btnGenerarContrato",
+                                                        click: () => this.aceptarGenerarContrato(this.app),
+                                                        type: "form",
+                                                        css:"bt_1",
+                                                        width: 160
+                                                      }
+                                                    ]
                                                   }
                                                 ]
+                                                
                                               }
                                             ]
                                           }
@@ -464,6 +483,9 @@ export default class OfertasVentaForm extends JetView {
         }
         if (url[0].params.importeObra) {
             importeObra = parseFloat(url[0].params.importeObra);
+        }
+        if (url[0].params.ofertaId) {
+            desdePrincipal = url[0].params.desdePrincipal;
         }
         this.cargarEventos();
         this.load(ofertaId, expedienteId);
@@ -580,7 +602,11 @@ export default class OfertasVentaForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeVenta=true');
+        if(desdePrincipal) {
+            this.$scope.show('/top/ofertas/?ofertaId=' + ofertaId);
+            return;
+        }
+        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaVentaId=' + ofertaId +  '&desdeVenta=true');
     }
     
     accept(opcion) {
@@ -590,10 +616,19 @@ export default class OfertasVentaForm extends JetView {
         }
         var data = $$("frmOfertas").getValues();
 
+        delete data.fechaAceptacionOferta;
+        delete data.fechaInicio;
+        delete data.fechaFinal;
+        delete data.fechaOriginal;
+        delete data.fechaPrimeraFactura;
+        delete data.preaviso;
+        delete data.facturaParcial;
+
         delete data.increMediciones;
         delete data.textoPredeterminadoId;
         if(data.sistemaPagoId == '') data.sistemaPagoId = null;
         if(data.conceptoExcluidoId == '') data.conceptoExcluidoId = null;
+        data.beneficioLineal = 1;
         if (ofertaId == 0) {
             var datalineas = $$("lineasOfertaVentaGrid").serialize();
 
@@ -655,6 +690,10 @@ export default class OfertasVentaForm extends JetView {
             data.importeMantenedor = 0
             ofertasService.putOfertaVenta(data)
                 .then(() => {
+                    if(desdePrincipal) {
+                        this.show('/top/ofertas/?ofertaId=' + data.ofertaId);
+                        return;
+                    }
                     if(opcion) {
                         this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaVentaId=' + data.ofertaId +  '&desdeVenta=true');
                     } else {
@@ -1066,5 +1105,22 @@ export default class OfertasVentaForm extends JetView {
                 messageApi.errorMessageAjax(err);
             })
         }
+
+        //GENERAR CONTRATO
+
+         aceptarGenerarContrato (app)  {
+            if(ofertaId == 0 || ofertaId == '' || !ofertaId) return;
+                const translate = app.getService("locale")._;
+                webix.confirm({
+                    title: translate("AVISO"),
+                    text: translate("Se generará un contrato a partir de esta oferta.\n ¿Está seguro, que deesea continuar?"),
+                    type: "confirm-warning",
+                    callback: (action) => {
+                        if (action === true) {
+                            generarContratoWindow.loadWindow(ofertaId);
+                        }
+                    }
+                });
+            }
     
 }

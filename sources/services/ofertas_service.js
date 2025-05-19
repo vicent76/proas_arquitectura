@@ -343,5 +343,28 @@ export const ofertasService = {
                     fail(inXhr);
                 });
         });
-    }
+    },
+
+    postOfertaContrato: (data, ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/generar-contrato/desde/oferta/tecnica/" + ofertaId + "/" + 1;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, data);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+
 }
