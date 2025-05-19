@@ -90,6 +90,37 @@
     display: none !important;
 }
 
+.bt_1 button.webix_button{
+    background: #396D9E;
+    background: -moz-linear-gradient(top, #5D91C3 0% , #396D9E 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#5D91C3), color-stop(1, #396D9E));
+    border:1px solid #396D9E;
+    text-shadow: 0 -1px #134471;
+    box-shadow: inset 0px 1px 1px #8eb3d5;
+    -webkit-box-shadow: inset 0px 1px 1px #8eb3d5;
+    color:#FFFFFF;
+    font-size: 15px;
+}
+.bt_1 button:active{
+    background: #396D9E !important;
+}
+
+
+.bt_2 button.webix_button{
+    background: #c0aa2d;
+    background: -moz-linear-gradient(top, #c3bc5d 0% , #9c841a 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#c3bc5d), color-stop(1, #9c841a));
+    border:1px solid #c0aa2d;
+    text-shadow: 0 -1px #4d5033;
+    box-shadow: inset 0px 1px 1px #272913;
+    -webkit-box-shadow: inset 0px 1px 1px #272913;
+    color:#FFFFFF;
+    font-size: 15px;
+}
+.bt_2 button:active{
+    background: #c0aa2d !important;
+}
+
 
 
 
