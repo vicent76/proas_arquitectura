@@ -328,29 +328,39 @@ export const LineasOfertaWindow = {
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
-        if(datoscalculo) {
-            datosCalculo = datoscalculo
-        } else {
-             parametrosService.getParametros()
-                    .then((parametros) => {
-                        if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
-                        importeObra = importeobra
-                    })
-                    .catch((err) => {
-                        messageApi.errorMessageAjax(err);
-                    }); 
-        }
-        $$('lineasOfertaWindow').show();
-        if (ofertaLineaId) {
-            enCarga = true
-            LineasOfertaWindow.bloqueaEventos();
-        } else {
-            $$("cmbGrupoArticulo").blockEvent();
-            enCarga = false;
-            LineasOfertaWindow.limpiaWindow(grupoArticuloId, articuloId);
-        }
-        LineasOfertaWindow.loadTiposIva(4);
-
+        //buscamos el iva por defecto del cliente
+        clientesService.getCliente(cliId)
+                .then( (row) => {
+                    if(row) {
+                        LineasOfertaWindow.loadTiposIva(row.tipoIvaId);
+                    } else {
+                        LineasOfertaWindow.loadTiposIva(4);
+                    }
+                    if(datoscalculo) {
+                        datosCalculo = datoscalculo
+                    } else {
+                         parametrosService.getParametros()
+                                .then((parametros) => {
+                                    if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
+                                    importeObra = importeobra
+                                })
+                                .catch((err) => {
+                                    messageApi.errorMessageAjax(err);
+                                }); 
+                    }
+                    $$('lineasOfertaWindow').show();
+                    if (ofertaLineaId) {
+                        enCarga = true
+                        LineasOfertaWindow.bloqueaEventos();
+                    } else {
+                        $$("cmbGrupoArticulo").blockEvent();
+                        enCarga = false;
+                        LineasOfertaWindow.limpiaWindow(grupoArticuloId, articuloId);
+                    }
+                })
+                .catch( (err) => {
+        
+                });
     },
 
     limpiaWindow: (grupoArticuloId, articuloId) => {
@@ -673,6 +683,7 @@ export const LineasOfertaWindow = {
                 list.parse(tiposIva);
                 $$("cmbTiposIva").setValue(tipoIvaId);
                 $$("cmbTiposIva").refresh();
+                if(tipoIvaId) LineasOfertaWindow.cambioTipoIva(tipoIvaId)
                 return;
             })
     },
