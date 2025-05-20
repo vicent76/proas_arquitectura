@@ -14,6 +14,7 @@ import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { ofertasCosteGrid } from '../subviews/ofertasCosteGrid'
 import { ofertasVentaGrid } from '../subviews/ofertasVentaGrid'
+import { ofertasSubcontrataGrid } from '../subviews/ofertasSubcontrataGrid'
 
 
 
@@ -38,6 +39,7 @@ export default class ExpedientesForm extends JetView {
         const translate = this.app.getService("locale")._;
         const _ofertasCoste = ofertasCosteGrid.getGrid(this.app);
         const _ofertasVenta = ofertasVentaGrid.getGrid(this.app);
+        const _ofertasSubcontrata = ofertasSubcontrataGrid.getGrid(this.app);
         self = this;
         const _view = {
             view: "tabview",
@@ -367,6 +369,19 @@ export default class ExpedientesForm extends JetView {
                         ]
                         }
                     
+                },
+                {
+                    header:  "Subcontrata",
+                    width: 100,
+                    body: {
+                        view: "layout",
+                        id: "presupuestoSubcontrataGrid",
+                        multiview: true,
+                        rows: [
+                            _ofertasSubcontrata
+                        ]
+                        }
+                    
                 }
     ]
         }
@@ -487,7 +502,8 @@ export default class ExpedientesForm extends JetView {
                 $$("cmbTiposProyecto").unblockEvent();
 
                 ofertasCosteGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaCosteId);
-                ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId)
+                ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId);
+                ofertasSubcontrataGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId)
                 
             })
             .catch((err) => {

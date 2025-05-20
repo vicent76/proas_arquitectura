@@ -122,5 +122,22 @@
 }
 
 
+.circle-item {
+    display: inline-block;
+    background-color: #1976d2; /* Azul agradable, cambia si quieres */
+    color: white;
+    padding: 6px 14px;
+    margin: 5px;
+    border-radius: 20px; /* Redondeado tipo "píldora" */
+    font-size: 14px;
+    white-space: nowrap;
+    line-height: 1.4;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: default;
+}
+
+
 
 
