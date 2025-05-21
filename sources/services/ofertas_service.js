@@ -387,4 +387,27 @@ export const ofertasService = {
         });
     },
 
+    
+    postOfertaSubcontrata: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/generar-subcontrata/desde/coste/tecnica/" + ofertaId + "/" + 1;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+
 }

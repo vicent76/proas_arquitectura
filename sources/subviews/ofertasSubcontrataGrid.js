@@ -33,7 +33,7 @@ export const ofertasSubcontrataGrid = {
                 if (presupuestosConContrato.length === 0) return "";
         
                 return presupuestosConContrato.map(p => `
-                    <div class="circle-item" id="${p.ofertaId || '0' }" title="${p.referencia || 'Sin ref' }">
+                    <div class="circle-item" id="${p.ofertaCosteId || '0' }" title="${p.referencia || 'Sin ref' }">
                         ${p.referencia || ''}
                     </div>
                 `).join("");
@@ -44,12 +44,12 @@ export const ofertasSubcontrataGrid = {
                     const node = this.getNode();
                     node.querySelectorAll(".circle-item").forEach(el => {
                         el.onclick = (e) => {
-                            const ofertaId = el.getAttribute("id");
-                            if (ofertaId) {
+                            const ofertaCosteId = el.getAttribute("id");
+                            if (ofertaCosteId) {
                                 // Acción personalizada aquí:
-                                console.log("Click en ofertaId:", ofertaId);
-                                // O navegar:
-                                // app.show('/top/ofertasVentaForm?ofertaId=' + ofertaId);
+                                console.log("Click en ofertaId:", ofertaCosteId);
+                                ofertasSubcontrataGrid.aceptarGenerarOferta(_app, ofertaCosteId);
+                                
                             }
                         };
                     });
@@ -247,6 +247,36 @@ export const ofertasSubcontrataGrid = {
                     messageApi.errorMessageAjax(err);
                 }
             });
+
+            
+                        ofertasService.getOfertasExpediente(expedienteId, 2)
+                        .then(rows => {
+                            if(rows.length > 0) {
+                                rows = ofertasSubcontrataGrid.formateaCampos(rows);
+                                numLineas = rows.length;
+                                $$("ofertasSubcontrataGrid").clearAll();
+                                $$("ofertasSubcontrataGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
+                                if(selectOfertaId) {
+                                    var id = parseInt(selectOfertaId);
+                                    $$("ofertasSubcontrataGrid").select(id);
+                                    $$("ofertasSubcontrataGrid").showItem(id);
+                                }
+                                var numReg = $$("ofertasSubcontrataGrid").count();
+                                $$("ofertasSubcontrataGrid").config.label = "NREG: " + numReg;
+                                $$("ofertasSubcontrataGrid").refresh();
+                            }else {
+                                $$("ofertasSubcontrataGrid").clearAll();
+                            }
+                        })
+                        .catch((err) => {
+                            var error = err.response;
+                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                            if(index != -1) {
+                                messageApi.errorRestriccion()
+                            } else {
+                                messageApi.errorMessageAjax(err);
+                            }
+                        });
         } else {
             $$("ofertasSubcontrataGrid").clearAll();
             return;
@@ -289,6 +319,40 @@ export const ofertasSubcontrataGrid = {
         localStorage.setItem("activeTab", activeTab);
 
         _app.show('/top/ofertasSubcontrataForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
+    },
+
+    formateaCampos(data) {
+        data.forEach(e => {
+            e.empresa = e.empresa.substr(0,4);
+            e.fechaOferta = new Date(e.fechaOferta);
+        });
+        return data;
+    },
+
+    aceptarGenerarOferta (app, ofertaCosteId)  {
+        if(ofertaCosteId == 0 || ofertaCosteId == '' || !ofertaCosteId) return;
+        const translate = app.getService("locale")._;
+        webix.confirm({
+            title: translate("AVISO"),
+            text: translate("Se generará un contrato a partir de esta oferta.\n ¿Está seguro, que deesea continuar?"),
+            type: "confirm-warning",
+            callback: (action) => {
+                if (action === true) {
+                    ofertasSubcontrataGrid.postSubcontrata(ofertaCosteId);
+                }
+            }
+        });
+    },
+    postSubcontrata(ofertaCosteId) {
+        ofertasService.postOfertaSubcontrata(ofertaCosteId)
+        .then( row => {
+           if(row)
+            messageApi.normalMessage('Se ha creado corectamente el contrato.\n Lo tiene disponible en el apartado contratos de la gestión.');
+        })
+        .catch( err => {
+            var error = err.response;
+            messageApi.errorMessageAjax(err);
+        })
     },
 
     formateaCampos(data) {
