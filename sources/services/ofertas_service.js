@@ -40,6 +40,7 @@ export const ofertasService = {
                 });
         });
     },
+
     getOfertasAceptadasExpediente: (expedienteId, esCoste) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
@@ -60,6 +61,28 @@ export const ofertasService = {
                 });
         });
     },
+
+    getOfertasNoAceptadasExpediente: (expedienteId, esCoste, presupuestosCosteId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + `/api/ofertas/expedientes/tecnicas/no-aceptadas/${expedienteId}/${esCoste}/${presupuestosCosteId}`
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then((result) => {
+                    success(result.json());
+                })
+                .catch((inXhr) => {
+                    fail(inXhr);
+                });
+        });
+    },
+
     getOferta: (ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()

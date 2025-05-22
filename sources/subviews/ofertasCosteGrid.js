@@ -15,6 +15,7 @@ var expedienteId = null;
 var _app = null;
 var importeObra = 0;
 var selectOfertaId = null;
+var adicional = false;
 
 export const ofertasCosteGrid = {
     // Devuelve el grid con los locales afectados
@@ -33,7 +34,7 @@ export const ofertasCosteGrid = {
                             messageApi.errorMessage("Expediente no creado.");
                             return;
                         }
-                        app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
+                        app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional);
                     }
                 },
                 {
@@ -253,13 +254,16 @@ export const ofertasCosteGrid = {
         const activeTab = $$("tabViewExpediente").getValue();  // Obtener el id de la pestaña activa
         localStorage.setItem("activeTab", activeTab);
 
-        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
+        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional);
     },
 
     formateaCampos(data) {
         data.forEach(e => {
             e.empresa = e.empresa.substr(0,4);
             e.fechaOferta = new Date(e.fechaOferta);
+            if(e.esAdicional == 0) {
+                adicional = true;
+            }
         });
         return data;
     }

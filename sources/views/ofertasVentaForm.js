@@ -949,7 +949,8 @@ export default class OfertasVentaForm extends JetView {
 
     loadPresupuestosCoste(expedienteId, presupuestosCosteId) {
         if(!expedienteId) return;
-        ofertasService.getOfertasExpediente(expedienteId, 1)
+        if(!presupuestosCosteId) presupuestosCosteId = 0;
+        ofertasService.getOfertasNoAceptadasExpediente(expedienteId, 1, presupuestosCosteId)
         .then( (rows) => {
             var presupuestosCoste = generalApi.prepareDataForCombo('ofertaId', 'referencia', rows);
             var list = $$("cmbPresupuestosCoste").getPopup().getList();
