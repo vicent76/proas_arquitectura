@@ -27,12 +27,14 @@ var importeCobro = 0;
 var _imprimirWindow;
 var desdeCoste = null;
 var desdeVenta = null;
+var desdeSubcontrata = null;
 var isLoading = false; // Variable de control
 var formaPagoId = null;
 let self;
 var expediente = {};
 var selectOfertaVentaId = null;
 var selectOfertaCosteId = null;
+var selectOfertaSubcontrataId = null;
 
 export default class ExpedientesForm extends JetView {
     config() {
@@ -398,6 +400,7 @@ export default class ExpedientesForm extends JetView {
     urlChange(view, url) {
         selectOfertaVentaId = null;
         selectOfertaCosteId = null;
+        selectOfertaSubcontrataId = null;
         if (url[0].params.NEW) {
             messageApi.normalMessage('Expediente creado correctamente.');
         }
@@ -420,11 +423,20 @@ export default class ExpedientesForm extends JetView {
         } else {
             desdeVenta = null;
         }
+
+        if (url[0].params.desdeSubcontrata) {
+            desdeSubcontrata = url[0].params.desdeSubcontrata;
+        } else {
+            desdeSubcontrata = null;
+        }
         if (url[0].params.ofertaVentaId) {
             selectOfertaVentaId =  url[0].params.ofertaVentaId;
         }
         if (url[0].params.ofertaCosteId) {
             selectOfertaCosteId =  url[0].params.ofertaCosteId;
+        }
+        if (url[0].params.ofertaSubcontrataId) {
+            selectOfertaSubcontrataId =  url[0].params.ofertaSubcontrataId;
         }
         //this.cargarEventos();
         this.load(expedienteId);
@@ -437,6 +449,11 @@ export default class ExpedientesForm extends JetView {
                 $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
             }
         } else if(desdeVenta) {
+            if (savedTab) {
+                $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
+            }
+        }
+        else if(desdeSubcontrata) {
             if (savedTab) {
                 $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
             }
@@ -503,7 +520,7 @@ export default class ExpedientesForm extends JetView {
 
                 ofertasCosteGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaCosteId);
                 ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId);
-                ofertasSubcontrataGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId)
+                ofertasSubcontrataGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaSubcontrataId)
                 
             })
             .catch((err) => {

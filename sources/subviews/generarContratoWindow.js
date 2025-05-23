@@ -7,6 +7,7 @@ var _generarContratoWindowCreated = false;
 var translate;
 var usuarioId;
 var ofertaId = null
+var contratoId = null;
 export const generarContratoWindow = {
     getWindow: (app) => {
         if (_generarContratoWindowCreated) return; // Evitamos que se cree dos veces la misma venta
@@ -124,8 +125,9 @@ export const generarContratoWindow = {
         return
     },
 
-    loadWindow: (ofertaid) => {
-        ofertaId = ofertaid
+    loadWindow: (ofertaid, contratoid) => {
+        ofertaId = ofertaid;
+        contratoId = contratoid
         generarContratoWindow.limpiarwindow()
         $$('generarContratoWindow').show();
     },
@@ -156,7 +158,7 @@ export const generarContratoWindow = {
             preaviso: d.preaviso,
             facturaParcial: d.facturaParcial
         }
-        ofertasService.postOfertaContrato(datos, ofertaId)
+        ofertasService.postOfertaContrato(datos, ofertaId, contratoId)
             .then( rows => {
                 $$('generarContratoWindow').hide();
                 messageApi.normalMessage('Se ha creado corectamente el contrato.\n Lo tiene disponible en el apartado contratos de la gestión.');

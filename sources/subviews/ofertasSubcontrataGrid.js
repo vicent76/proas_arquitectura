@@ -31,12 +31,22 @@ export const ofertasSubcontrataGrid = {
             height: 70,
             template: function () {
                 if (presupuestosConContrato.length === 0) return "";
-        
-                return presupuestosConContrato.map(p => `
-                    <div class="circle-item" id="${p.ofertaCosteId || '0' }" title="${p.referencia || 'Sin ref' }">
-                        ${p.referencia || ''}
-                    </div>
-                `).join("");
+            
+                return presupuestosConContrato.map(p => {
+                    const isSubcontratada = p.ofertaSubcontrataId !== null;
+                    const style = isSubcontratada 
+                        ? 'background-color: green; pointer-events: none; opacity: 0.6;'
+                        : '';
+            
+                    return `
+                        <div class="circle-item" 
+                             id="${p.ofertaCosteId || '0'}" 
+                             title="${p.referencia || 'Sin ref'}"
+                             style="${style}">
+                            ${p.referencia + ' ' + (p.referenciaSubcontrata || '') || ''}
+                        </div>
+                    `;
+                }).join("");
             },
             on: {
                 onAfterRender: function () {
@@ -256,11 +266,16 @@ export const ofertasSubcontrataGrid = {
                                 numLineas = rows.length;
                                 $$("ofertasSubcontrataGrid").clearAll();
                                 $$("ofertasSubcontrataGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
-                                if(selectOfertaId) {
-                                    var id = parseInt(selectOfertaId);
-                                    $$("ofertasSubcontrataGrid").select(id);
-                                    $$("ofertasSubcontrataGrid").showItem(id);
+                                try {
+                                    if(selectOfertaId) {
+                                        var id = parseInt(selectOfertaId);
+                                        $$("ofertasSubcontrataGrid").select(id);
+                                        $$("ofertasSubcontrataGrid").showItem(id);
+                                    }
+                                } catch(e) {
+                                    console.log(e);
                                 }
+                              
                                 var numReg = $$("ofertasSubcontrataGrid").count();
                                 $$("ofertasSubcontrataGrid").config.label = "NREG: " + numReg;
                                 $$("ofertasSubcontrataGrid").refresh();
@@ -334,7 +349,7 @@ export const ofertasSubcontrataGrid = {
         const translate = app.getService("locale")._;
         webix.confirm({
             title: translate("AVISO"),
-            text: translate("Se generará un contrato a partir de esta oferta.\n ¿Está seguro, que deesea continuar?"),
+            text: translate("Se generará una oferta de Subcontrata a partir de esta oferta de coste.\n ¿Está seguro, que deesea continuar?"),
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
@@ -347,7 +362,8 @@ export const ofertasSubcontrataGrid = {
         ofertasService.postOfertaSubcontrata(ofertaCosteId)
         .then( row => {
            if(row)
-            messageApi.normalMessage('Se ha creado corectamente el contrato.\n Lo tiene disponible en el apartado contratos de la gestión.');
+            messageApi.normalMessage('Se ha creado corectamente la oferta.');
+            this.loadGrid(expedienteId, null, importeObra)
         })
         .catch( err => {
             var error = err.response;

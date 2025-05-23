@@ -84,6 +84,10 @@ export default class OfertasVentaForm extends JetView {
                                                 label: "ID", labelPosition: "top", width: 50, disabled: true
                                             },
                                             {
+                                                view: "text", id: "contratoId", name: "contratoId", hidden: true,
+                                                label: "ID", labelPosition: "top", width: 50, disabled: true
+                                            },
+                                            {
                                                 view: "text", id: "referencia", name: "referencia", required: true,
                                                 label: "Referencia", labelPosition: "top", width:250
                                             },
@@ -164,6 +168,7 @@ export default class OfertasVentaForm extends JetView {
                                                     "onChange": (newv, oldv) => {
                                                         if (isLoading) return; 
                                                         var id = newv;
+                                                        if(id == 0) return
                                                         this.loadLienasCosteData(id);
                                                     }
                                                 }
@@ -1111,17 +1116,18 @@ export default class OfertasVentaForm extends JetView {
 
          aceptarGenerarContrato (app)  {
             if(ofertaId == 0 || ofertaId == '' || !ofertaId) return;
-                const translate = app.getService("locale")._;
+            var contratoId = $$('contratoId').getValue();
+            const translate = app.getService("locale")._;
                 webix.confirm({
                     title: translate("AVISO"),
-                    text: translate("Se generará un contrato a partir de esta oferta.\n ¿Está seguro, que deesea continuar?"),
+                    text: translate("Ya existe un contrato vinculado a la oferta.\n ¿Quiere borrarlo y generar uno nuevo?"),
                     type: "confirm-warning",
                     callback: (action) => {
                         if (action === true) {
-                            generarContratoWindow.loadWindow(ofertaId);
+                            generarContratoWindow.loadWindow(ofertaId, contratoId);
                         }
                     }
                 });
-            }
+        }
     
 }

@@ -193,9 +193,14 @@ export const ofertasCosteGrid = {
                     $$("ofertasCosteGrid").clearAll();
                     $$("ofertasCosteGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
                     if(selectOfertaId) {
-                        var id = parseInt(selectOfertaId);
-                        $$("ofertasCosteGrid").select(id);
-                        $$("ofertasCosteGrid").showItem(id);
+                        try{
+                            var id = parseInt(selectOfertaId);
+                            $$("ofertasCosteGrid").select(id);
+                            $$("ofertasCosteGrid").showItem(id);
+                        } catch(e) {
+                            
+                        }
+                       
                     }
                     var numReg = $$("ofertasCosteGrid").count();
                     $$("ofertasCosteNReg").config.label = "NREG: " + numReg;

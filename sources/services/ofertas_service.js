@@ -388,11 +388,11 @@ export const ofertasService = {
         });
     },
 
-    postOfertaContrato: (data, ofertaId) => {
+    postOfertaContrato: (data, ofertaId, contratoId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/generar-contrato/desde/oferta/tecnica/" + ofertaId + "/" + 1;
+                    var url = conf.urlApi + "/api/ofertas/generar-contrato/desde/oferta/tecnica/" + ofertaId + "/" + 1 + "/" + contratoId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
