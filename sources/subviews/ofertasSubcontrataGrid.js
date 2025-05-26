@@ -72,17 +72,6 @@ export const ofertasSubcontrataGrid = {
         var pagerOfertasSubcontrata = {
             cols: [
                 {
-                    view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
-                    tooltip: translate("Nueva oferta de subcontrata (Ctrl+A)"),
-                    click: () => {
-                        if(expedienteId == 0 || !expedienteId) {
-                            messageApi.errorMessage("Expediente no creado.");
-                            return;
-                        }
-                        app.show('/top/ofertasSubcontrataForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
-                    }
-                },
-                {
                     view: "button", type: "icon", icon: "mdi mdi-refresh", width: 37, align: "left", hotkey: "Ctrl+R",
                     tooltip: translate("Refrescar la lista (Ctrl+R)"),
                     click: ()=>{
