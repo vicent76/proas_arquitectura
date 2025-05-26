@@ -729,7 +729,7 @@ export default class Expedientes extends JetView {
     }
 
     delete(expedienteId) {
-        expedientesService.deleteOferta(expedienteId)
+        expedientesService.deleteExpediente(expedienteId)
         .then( row => {
             this.loadSolicitud();
             this.loadEstudio();
