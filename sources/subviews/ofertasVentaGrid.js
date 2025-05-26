@@ -98,7 +98,7 @@ export const ofertasVentaGrid = {
                 });
             },
             columns: [
-                { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50, hidden: true },
+                { id: "id", header: [translate("Id"), { content: "textFilter" }], sort: "string", width: 50 },
                 { id: "referencia", header: [translate("Referencia"), { content: "textFilter" }], sort: "string", adjust: "data" },
                 {
                     id: "fechaOferta", header: [{ text: translate("Fecha"), css: { "text-align": "center" } }, { content: "dateFilter" }],
@@ -193,10 +193,14 @@ export const ofertasVentaGrid = {
                     numLineas = rows.length;
                     $$("ofertasVentaGrid").clearAll();
                     $$("ofertasVentaGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
-                    if(selectOfertaId) {
-                        var id = parseInt(selectOfertaId);
-                        $$("ofertasVentaGrid").select(id);
-                        $$("ofertasVentaGrid").showItem(id);
+                    try {
+                        if(selectOfertaId) {
+                            var id = parseInt(selectOfertaId);
+                            $$("ofertasVentaGrid").select(id);
+                            $$("ofertasVentaGrid").showItem(id);
+                        }
+                    } catch(e) {
+                        console.log(e);
                     }
                     var numReg = $$("ofertasVentaGrid").count();
                     $$("ofertasVentaNReg").config.label = "NREG: " + numReg;

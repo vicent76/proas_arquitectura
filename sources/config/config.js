@@ -1,3 +1,5 @@
+import packcage from '../../package.json'
+
 export const devConfig = {
     getConfig: () => {
         return new Promise((success, fail) => {
@@ -58,7 +60,7 @@ export const devConfig = {
         return new Promise((success, fail) => {
             if (!PRODUCTION) {
                 return success({
-                    version: "1.0.0"
+                    version: packcage.version
                 });
             }
             webix.ajax()

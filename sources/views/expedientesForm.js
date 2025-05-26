@@ -14,6 +14,7 @@ import { empresasService } from "../services/empresas_service";
 import OfertasEpisReport  from "./ofertasEpisReport";
 import { ofertasCosteGrid } from '../subviews/ofertasCosteGrid'
 import { ofertasVentaGrid } from '../subviews/ofertasVentaGrid'
+import { ofertasSubcontrataGrid } from '../subviews/ofertasSubcontrataGrid'
 
 
 
@@ -26,18 +27,21 @@ var importeCobro = 0;
 var _imprimirWindow;
 var desdeCoste = null;
 var desdeVenta = null;
+var desdeSubcontrata = null;
 var isLoading = false; // Variable de control
 var formaPagoId = null;
 let self;
 var expediente = {};
 var selectOfertaVentaId = null;
 var selectOfertaCosteId = null;
+var selectOfertaSubcontrataId = null;
 
 export default class ExpedientesForm extends JetView {
     config() {
         const translate = this.app.getService("locale")._;
         const _ofertasCoste = ofertasCosteGrid.getGrid(this.app);
         const _ofertasVenta = ofertasVentaGrid.getGrid(this.app);
+        const _ofertasSubcontrata = ofertasSubcontrataGrid.getGrid(this.app);
         self = this;
         const _view = {
             view: "tabview",
@@ -367,6 +371,19 @@ export default class ExpedientesForm extends JetView {
                         ]
                         }
                     
+                },
+                {
+                    header:  "Subcontrata",
+                    width: 100,
+                    body: {
+                        view: "layout",
+                        id: "presupuestoSubcontrataGrid",
+                        multiview: true,
+                        rows: [
+                            _ofertasSubcontrata
+                        ]
+                        }
+                    
                 }
     ]
         }
@@ -383,6 +400,7 @@ export default class ExpedientesForm extends JetView {
     urlChange(view, url) {
         selectOfertaVentaId = null;
         selectOfertaCosteId = null;
+        selectOfertaSubcontrataId = null;
         if (url[0].params.NEW) {
             messageApi.normalMessage('Expediente creado correctamente.');
         }
@@ -405,11 +423,20 @@ export default class ExpedientesForm extends JetView {
         } else {
             desdeVenta = null;
         }
+
+        if (url[0].params.desdeSubcontrata) {
+            desdeSubcontrata = url[0].params.desdeSubcontrata;
+        } else {
+            desdeSubcontrata = null;
+        }
         if (url[0].params.ofertaVentaId) {
             selectOfertaVentaId =  url[0].params.ofertaVentaId;
         }
         if (url[0].params.ofertaCosteId) {
             selectOfertaCosteId =  url[0].params.ofertaCosteId;
+        }
+        if (url[0].params.ofertaSubcontrataId) {
+            selectOfertaSubcontrataId =  url[0].params.ofertaSubcontrataId;
         }
         //this.cargarEventos();
         this.load(expedienteId);
@@ -422,6 +449,11 @@ export default class ExpedientesForm extends JetView {
                 $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
             }
         } else if(desdeVenta) {
+            if (savedTab) {
+                $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
+            }
+        }
+        else if(desdeSubcontrata) {
             if (savedTab) {
                 $$("tabViewExpediente").setValue(savedTab);  // Activa la pestaña recuperada
             }
@@ -487,7 +519,8 @@ export default class ExpedientesForm extends JetView {
                 $$("cmbTiposProyecto").unblockEvent();
 
                 ofertasCosteGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaCosteId);
-                ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId)
+                ofertasVentaGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaVentaId);
+                ofertasSubcontrataGrid.loadGrid(expediente.expedienteId, null, expediente.importeObra, selectOfertaSubcontrataId)
                 
             })
             .catch((err) => {

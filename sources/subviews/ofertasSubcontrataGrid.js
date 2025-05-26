@@ -2,7 +2,7 @@
 import { messageApi } from "../utilities/messages";
 import { generalApi } from "../utilities/general";
 import { ofertasService } from "../services/ofertas_service";
-//import { anticipoProveedorFormWindow } from "./anticipoProveedorFormWindow";
+
 
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
@@ -10,31 +10,76 @@ var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
 var ofertaId;
+var selectOfertaId = null;
 var numLineas = 0;
 var expedienteId = null;
 var _app = null;
 var importeObra = 0;
-var selectOfertaId = null;
-var adicional = false;
+var presupuestosConContrato = [];
 
-export const ofertasCosteGrid = {
+export const ofertasSubcontrataGrid = {
     // Devuelve el grid con los locales afectados
     // se le pasa la app porque es necesaria para conservar el translate.
     getGrid: (app) => {
         _app = app
         //anticipoProveedorFormWindow.getWindow(app);
+
+        // Fila con círculos de presupuestos
+        var presupuestosCircles = {
+            view: "template",
+            id: "presupuestosCircles",
+            height: 70,
+            template: function () {
+                if (presupuestosConContrato.length === 0) return "";
+            
+                return presupuestosConContrato.map(p => {
+                    const isSubcontratada = p.ofertaSubcontrataId !== null;
+                    const style = isSubcontratada 
+                        ? 'background-color: green; pointer-events: none; opacity: 0.6;'
+                        : '';
+            
+                    return `
+                        <div class="circle-item" 
+                             id="${p.ofertaCosteId || '0'}" 
+                             title="${p.referencia || 'Sin ref'}"
+                             style="${style}">
+                            ${p.referencia + ' ' + (p.referenciaSubcontrata || '') || ''}
+                        </div>
+                    `;
+                }).join("");
+            },
+            on: {
+                onAfterRender: function () {
+                    // Quita handlers anteriores si vuelves a renderizar
+                    const node = this.getNode();
+                    node.querySelectorAll(".circle-item").forEach(el => {
+                        el.onclick = (e) => {
+                            const ofertaCosteId = el.getAttribute("id");
+                            if (ofertaCosteId) {
+                                // Acción personalizada aquí:
+                                console.log("Click en ofertaId:", ofertaCosteId);
+                                ofertasSubcontrataGrid.aceptarGenerarOferta(_app, ofertaCosteId);
+                                
+                            }
+                        };
+                    });
+                }
+            }
+            
+        };
+
         const translate = app.getService("locale")._;
-        var pagerOfertasCoste = {
+        var pagerOfertasSubcontrata = {
             cols: [
                 {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
-                    tooltip: translate("Nueva oferta de coste (Ctrl+A)"),
+                    tooltip: translate("Nueva oferta de subcontrata (Ctrl+A)"),
                     click: () => {
                         if(expedienteId == 0 || !expedienteId) {
                             messageApi.errorMessage("Expediente no creado.");
                             return;
                         }
-                        app.show('/top/ofertasCosteForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional);
+                        app.show('/top/ofertasSubcontrataForm?ofertaId=0&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
                     }
                 },
                 {
@@ -57,10 +102,10 @@ export const ofertasCosteGrid = {
                     }
                 },
                 {
-                    view: "label", id: "ofertasCosteNReg", label: "NREG: "
+                    view: "label", id: "ofertasSubcontrataNReg", label: "NREG: "
                 },
                 {
-                    view: "pager", id: "mypager1", css: { "text-align": "right" },
+                    view: "pager", id: "mypagerSubcontrata", css: { "text-align": "right" },
                     template: "{common.first()} {common.prev()} {common.pages()} {common.next()} {common.last()}",
                     size: 25,
                     group: 5
@@ -68,21 +113,21 @@ export const ofertasCosteGrid = {
             ]
         };
 
-        var toolbarAfertasCoste = {
+        var toolbarAfertasSubcontrata = {
             view: "toolbar", padding: 3, elements: [
                 { view: "icon", icon: "mdi mdi-folder-network-outline", width: 37, align: "left" },
-                { view: "label", label: translate("Presupuestos de coste") }
+                { view: "label", label: translate("Presupuestos de subcontrata") }
             ]
         };
         
         var actionsTemplate = editButton;
         // Control de permiso de borrado
         actionsTemplate += deleteButton;
-        var datatableOfertasCoste = {
+        var datatableOfertasSubcontrata = {
             view: "datatable",
-            id: "ofertasCosteGrid",
+            id: "ofertasSubcontrataGrid",
             scroll: "x,y",
-            pager: "mypager1",
+            pager: "mypagerSubcontrata",
             select: "row",
             autoheight: false,
             type:{
@@ -91,11 +136,11 @@ export const ofertasCosteGrid = {
                     return "<input disabled class='webix_table_checkbox' type='checkbox' "+checked+">";
                 }
              },
-            ready:function(){ 
+             ready:function(){ 
                 this.attachEvent("onItemDblClick", function(id, e, node){
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasCosteGrid.edit(ofertaId)
+                    ofertasSubcontrataGrid.edit(ofertaId)
                 });
             },
             columns: [
@@ -121,12 +166,12 @@ export const ofertasCosteGrid = {
             onClick: {
                 "onDelete": function (event, id, node) {
                     var id = id.row;
-                    ofertasCosteGrid.delete(id, app);
+                    ofertasSubcontrataGrid.delete(id, app);
                 },
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
-                    ofertasCosteGrid.edit(ofertaId)
+                    ofertasSubcontrataGrid.edit(ofertaId)
                 }
             },
             editable: true,
@@ -155,26 +200,29 @@ export const ofertasCosteGrid = {
                     }
                 },
                 "onAfterFilter": function () {
-                    var numReg = $$("ofertasCosteGrid").count();
-                    $$("ofertasCosteNReg").config.label = "NREG: " + numReg;
-                    $$("ofertasCosteNReg").refresh();
+                    var numReg = $$("ofertasSubcontrataGrid").count();
+                    $$("ofertasSubcontrataNReg").config.label = "NREG: " + numReg;
+                    $$("ofertasSubcontrataNReg").refresh();
                 }
             }
         }
         const _view = {
             rows: [
-                toolbarAfertasCoste,
-                pagerOfertasCoste,
-                datatableOfertasCoste
+                presupuestosCircles,
+                toolbarAfertasSubcontrata,
+                pagerOfertasSubcontrata,
+                datatableOfertasSubcontrata
             ]
         }
         
         return _view;
     },
-
     loadGrid: (expedienteid, ofertaId, importeobra, selectofertaid) => {
         selectOfertaId = selectofertaid
-       
+        if(expedienteid == 0) {
+            messageApi.errorMessage("Expediente no creado.");
+            return;
+        }
         if(expedienteid == 0) {
             expedienteId = null;
             importeObra = 0
@@ -185,28 +233,19 @@ export const ofertasCosteGrid = {
         numLineas = 0;
         if(expedienteid) {
             expedienteId = expedienteid;
-            ofertasService.getOfertasExpediente(expedienteId, 1)
+            ofertasService.getOfertasAceptadasExpediente(expedienteId, 1)
             .then(rows => {
                 if(rows.length > 0) {
-                    rows = ofertasCosteGrid.formateaCampos(rows);
-                    numLineas = rows.length;
-                    $$("ofertasCosteGrid").clearAll();
-                    $$("ofertasCosteGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
-                    if(selectOfertaId) {
-                        try{
-                            var id = parseInt(selectOfertaId);
-                            $$("ofertasCosteGrid").select(id);
-                            $$("ofertasCosteGrid").showItem(id);
-                        } catch(e) {
-                            
-                        }
-                       
+                    presupuestosConContrato = rows;
+                    if ($$("presupuestosCircles")) {
+                        $$("presupuestosCircles").refresh();
                     }
-                    var numReg = $$("ofertasCosteGrid").count();
-                    $$("ofertasCosteNReg").config.label = "NREG: " + numReg;
-                    $$("ofertasCosteNReg").refresh();
+                    
                 }else {
-                    $$("ofertasCosteGrid").clearAll();
+                    presupuestosConContrato = [];
+                    if ($$("presupuestosCircles")) {
+                        $$("presupuestosCircles").refresh();
+                    }
                 }
             })
             .catch((err) => {
@@ -218,8 +257,43 @@ export const ofertasCosteGrid = {
                     messageApi.errorMessageAjax(err);
                 }
             });
+
+            
+                        ofertasService.getOfertasExpediente(expedienteId, 2)
+                        .then(rows => {
+                            if(rows.length > 0) {
+                                rows = ofertasSubcontrataGrid.formateaCampos(rows);
+                                numLineas = rows.length;
+                                $$("ofertasSubcontrataGrid").clearAll();
+                                $$("ofertasSubcontrataGrid").parse(generalApi.prepareDataForDataTable("ofertaId", rows));
+                                try {
+                                    if(selectOfertaId) {
+                                        var id = parseInt(selectOfertaId);
+                                        $$("ofertasSubcontrataGrid").select(id);
+                                        $$("ofertasSubcontrataGrid").showItem(id);
+                                    }
+                                } catch(e) {
+                                    console.log(e);
+                                }
+                              
+                                var numReg = $$("ofertasSubcontrataGrid").count();
+                                $$("ofertasSubcontrataGrid").config.label = "NREG: " + numReg;
+                                $$("ofertasSubcontrataGrid").refresh();
+                            }else {
+                                $$("ofertasSubcontrataGrid").clearAll();
+                            }
+                        })
+                        .catch((err) => {
+                            var error = err.response;
+                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                            if(index != -1) {
+                                messageApi.errorRestriccion()
+                            } else {
+                                messageApi.errorMessageAjax(err);
+                            }
+                        });
         } else {
-            $$("ofertasCosteGrid").clearAll();
+            $$("ofertasSubcontrataGrid").clearAll();
             return;
         }
         
@@ -235,7 +309,7 @@ export const ofertasCosteGrid = {
                 if (action === true) {
                     ofertasService.deleteOferta(id)
                         .then(result => {
-                            ofertasCosteGrid.loadGrid(expedienteId, null, importeObra);
+                            ofertasSubcontrataGrid.loadGrid(expedienteId, null, importeObra);
                         })
                         .catch(err => {
                             var error = err.response;
@@ -259,16 +333,48 @@ export const ofertasCosteGrid = {
         const activeTab = $$("tabViewExpediente").getValue();  // Obtener el id de la pestaña activa
         localStorage.setItem("activeTab", activeTab);
 
-        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional);
+        _app.show('/top/ofertasSubcontrataForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
     },
 
     formateaCampos(data) {
         data.forEach(e => {
             e.empresa = e.empresa.substr(0,4);
             e.fechaOferta = new Date(e.fechaOferta);
-            if(e.esAdicional == 0) {
-                adicional = true;
+        });
+        return data;
+    },
+
+    aceptarGenerarOferta (app, ofertaCosteId)  {
+        if(ofertaCosteId == 0 || ofertaCosteId == '' || !ofertaCosteId) return;
+        const translate = app.getService("locale")._;
+        webix.confirm({
+            title: translate("AVISO"),
+            text: translate("Se generará una oferta de Subcontrata a partir de esta oferta de coste.\n ¿Está seguro, que deesea continuar?"),
+            type: "confirm-warning",
+            callback: (action) => {
+                if (action === true) {
+                    ofertasSubcontrataGrid.postSubcontrata(ofertaCosteId);
+                }
             }
+        });
+    },
+    postSubcontrata(ofertaCosteId) {
+        ofertasService.postOfertaSubcontrata(ofertaCosteId)
+        .then( row => {
+           if(row)
+            messageApi.normalMessage('Se ha creado corectamente la oferta.');
+            this.loadGrid(expedienteId, null, importeObra)
+        })
+        .catch( err => {
+            var error = err.response;
+            messageApi.errorMessageAjax(err);
+        })
+    },
+
+    formateaCampos(data) {
+        data.forEach(e => {
+            e.empresa = e.empresa.substr(0,4);
+            e.fechaOferta = new Date(e.fechaOferta);
         });
         return data;
     }

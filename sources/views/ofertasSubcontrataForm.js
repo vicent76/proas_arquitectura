@@ -41,9 +41,8 @@ var importeObra = 0;
 var tipoProyectoId
 var _app;
 var formaPagoId = null;
-var adicional = null;
 
-export default class OfertasCosteForm extends JetView {
+export default class OfertasSubcontrataForm extends JetView {
     config() {
         _app = this.app;
         const translate = this.app.getService("locale")._;
@@ -53,13 +52,13 @@ export default class OfertasCosteForm extends JetView {
         const _view = {
             //solapa ofertas
             view: "layout",
-            id: "ofertasCosteForm",
+            id: "ofertasSubcontrataForm",
             multiview: true,
             rows: [
                 {
                     view: "toolbar", padding: 3, elements: [
                         { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
-                        { view: "label", label: "Oferta de coste" }
+                        { view: "label", label: "Oferta de subcontrata" }
                     ]
                 },
                 {
@@ -79,10 +78,6 @@ export default class OfertasCosteForm extends JetView {
                             cols: [
                                 {
                                     view: "text", id: "ofertaId", name: "ofertaId", hidden: true,
-                                    label: "ID", labelPosition: "top", width: 50, disabled: true
-                                },
-                                {
-                                    view: "text", id: "esAdicional", name: "esAdicional", hidden: true,
                                     label: "ID", labelPosition: "top", width: 50, disabled: true
                                 },
                                 {
@@ -435,9 +430,6 @@ export default class OfertasCosteForm extends JetView {
         if (url[0].params.importeObra) {
             importeObra = parseFloat(url[0].params.importeObra);
         }
-        if (url[0].params.adicional) {
-            adicional = url[0].params.adicional;
-        }
         this.cargarEventos();
         this.load(ofertaId, expedienteId);
     }
@@ -465,13 +457,8 @@ export default class OfertasCosteForm extends JetView {
                     //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                     this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
 
-                    var f = new Date(expediente.fecha).getFullYear();
-                    //referencia segun principal o adicional
-                    var ref = expediente.referencia + '_PC_' + f
-                    if(adicional == 'true') {
-                        ref = expediente.referencia + '_PCA_' + f
-                    }
-                    this.getReferencia(ref);
+                    var f = new Date(expediente.fecha).getFullYear()
+                    this.getReferencia(expediente.referencia + '_PC_' + f);
     
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
@@ -548,7 +535,7 @@ export default class OfertasCosteForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
+        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeSubcontrata=true');
     }
     accept(opcion) {
         if (!$$("frmOfertas").validate()) {
@@ -578,16 +565,11 @@ export default class OfertasCosteForm extends JetView {
             data.expedienteId = expedienteId;
             data.esCoste = 1;
             data.esTecnico = 1;
-            data.esAdicional = 0;
-
-            if(adicional == 'true') {
-                data.esAdicional = 1;
-            }
           
 
             ofertasService.postOferta(data)
                 .then((result) => {
-                    _app.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + "&NEW");
+                    _app.show('/top/ofertasSubcontrataForm?ofertaId=' + result.ofertaId + "&NEW");
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -618,9 +600,9 @@ export default class OfertasCosteForm extends JetView {
             ofertasService.putOferta(data, data.ofertaId)
                 .then(() => {
                     if(opcion) {
-                        this.show('/top/expedientesForm?expedienteId='+ expedienteId + '&ofertaCosteId=' + data.ofertaId +  '&desdeCoste=true');
+                        this.show('/top/expedientesForm?expedienteId='+ expedienteId + '&ofertaSubcontrataId=' + data.ofertaId +  '&desdeSubcontrata=true');
                     } else {
-                        _app.show('/top/ofertasCosteForm?ofertaId=' + data.ofertaId + "&MOD");
+                        _app.show('/top/ofertasSubcontrataForm?ofertaId=' + data.ofertaId + "&MOD");
                     }
                 })
                 .catch((err) => {

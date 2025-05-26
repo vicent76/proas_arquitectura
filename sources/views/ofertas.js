@@ -188,11 +188,18 @@ export default class Ofertas extends JetView {
             
             $$("ofertasGrid").clearAll();
             $$("ofertasGrid").parse(generalApi.prepareDataForDataTable("ofertaId", data));
+           
             if(selectOfertaId) {
-                var id = parseInt(selectOfertaId);
-                $$("ofertasGrid").select(id);
-                $$("ofertasGrid").showItem(id);
+                try{
+                    var id = parseInt(selectOfertaId);
+                    $$("ofertasGrid").select(id);
+                    $$("ofertasGrid").showItem(id);
+                } catch(e) {
+                    
+                }
+               
             }
+            
             
             var numReg = $$("ofertasGrid").count();
             $$("ofertasNReg").config.label = "NREG: " + numReg;
