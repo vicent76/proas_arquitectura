@@ -656,6 +656,7 @@ export default class OfertasVentaForm extends JetView {
             data.importeAgente = importeAgente;
             data.esCoste = 0
             data.esTecnico = 1;
+            data.contratoId = null;
             //
             data.agenteId = agenteId;
             data.comercialId = comercialId;
@@ -691,6 +692,7 @@ export default class OfertasVentaForm extends JetView {
             delete data.provincia;
             delete data.tipoViaId;
             delete data.comercialCliente;
+            delete data.contratoId // no premitimos modificar este campo desde aquí
             //
             data.importeMantenedor = 0
             ofertasService.putOfertaVenta(data)
@@ -1034,10 +1036,34 @@ export default class OfertasVentaForm extends JetView {
             } else {
                 $$('porcentajeAgente').setValue(row);
             }
+            this.cargaPorcenRef()
         })
         .catch( (err) => {
             messageApi.errorMessageAjax(err);
         })
+    } 
+
+    cargaPorcenRef() {
+        let matchFinal = ''
+        let r = $$('cmbPresupuestosCoste').getText();
+        const match = r.match(/_PCA_/);
+        if (match) {
+            const matchNumero = r.match(/-(\d+)$/);
+            if (matchNumero) {
+                matchFinal = "A" + matchNumero[0]; // matchNumero[0] es "-00001"
+                console.log(matchFinal); // Ejemplo: "A-00001"
+            }
+        }
+        let comision =  $$('porcentajeAgente').getValue();
+        if(!comision) comision = 0;
+        var ref = $$('referencia').getValue();
+        const anyo = new Date().getFullYear().toString().slice(-2);
+        if(ref && ref != '') {
+            ref = ref.toString();
+            var com = comision.toString();
+            ref = ref +  "-" + com + "/" + anyo + matchFinal;
+            $$('referencia').setValue(ref);
+        }
     }
 
 
@@ -1116,15 +1142,18 @@ export default class OfertasVentaForm extends JetView {
 
          aceptarGenerarContrato (app)  {
             if(ofertaId == 0 || ofertaId == '' || !ofertaId) return;
-            var contratoId = $$('contratoId').getValue();
+            var c = $$('contratoId').getValue();
+            if(c == "") c = 0;
             const translate = app.getService("locale")._;
+            var m = "Se generará un contrato a partor de esta oferta.\n ¿Seguro que quiere continuar?."
+            if(c > 0) m = "Ya existe un contrato vinculado a la oferta.\n ¿Quiere borrarlo y generar uno nuevo?"
                 webix.confirm({
                     title: translate("AVISO"),
-                    text: translate("Ya existe un contrato vinculado a la oferta.\n ¿Quiere borrarlo y generar uno nuevo?"),
+                    text: translate(m),
                     type: "confirm-warning",
                     callback: (action) => {
                         if (action === true) {
-                            generarContratoWindow.loadWindow(ofertaId, contratoId);
+                            generarContratoWindow.loadWindow(ofertaId, c);
                         }
                     }
                 });

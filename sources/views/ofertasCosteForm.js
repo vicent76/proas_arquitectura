@@ -465,8 +465,13 @@ export default class OfertasCosteForm extends JetView {
                     //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
                     this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
 
-                    var f = new Date(expediente.fecha).getFullYear()
-                    this.getReferencia(expediente.referencia + '_PC_' + f);
+                    var f = new Date(expediente.fecha).getFullYear();
+                    //referencia segun principal o adicional
+                    var ref = expediente.referencia + '_PC_' + f
+                    if(adicional == 'true') {
+                        ref = expediente.referencia + '_PCA_' + f
+                    }
+                    this.getReferencia(ref);
     
                     //this.loadMantenedores();
                     lineasOferta.loadGrid(null, null, importeObra);
