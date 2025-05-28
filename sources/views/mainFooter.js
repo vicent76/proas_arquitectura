@@ -24,9 +24,10 @@ export default class MainFooter extends JetView {
 	}
 	init() {
          // Obtener la versión
+         let ano = new Date().getFullYear()
          versionService.getVersionFooter()
          .then(vrs => {
-             $$("vers").config.label = "Proasistencia "+vrs.version+" - Aplicación general © Ariadna Software S.L. 2019-2020";
+             $$("vers").config.label = "Proasistencia "+vrs.version+" - Aplicación general © Ariadna Software S.L. " + ano;
              $$("vers").refresh();
          })
          .catch(err => {
