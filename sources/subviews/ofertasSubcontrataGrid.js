@@ -163,7 +163,12 @@ export const ofertasSubcontrataGrid = {
                     var curRow = this.data.pull[id.row];
                     var ofertaId = curRow.ofertaId;
                     ofertasSubcontrataGrid.edit(ofertaId)
-                }
+                },
+                "onPropuesta": function (event, id, node) {
+                    var curRow = this.data.pull[id.row];
+                    var ofertaId = curRow.ofertaId;
+                    ofertasSubcontrataGrid.getPropuestas(ofertaId)
+                },
             },
             editable: true,
             editaction: "dblclick",
@@ -325,6 +330,13 @@ export const ofertasSubcontrataGrid = {
         localStorage.setItem("activeTab", activeTab);
 
         _app.show('/top/ofertasSubcontrataForm?ofertaId=' + ofertaId +'&expedienteId=' + expedienteId + '&importeObra=' + importeObra);
+    },
+
+    getPropuestas(ofertaId) {
+        const activeTab = $$("tabViewExpediente").getValue();  // Obtener el id de la pestaña activa
+        localStorage.setItem("activeTab", activeTab);
+
+        _app.show('/top/propuestas?subcontrataId=' + ofertaId);
     },
 
     formateaCampos(data) {

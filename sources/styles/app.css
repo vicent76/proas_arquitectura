@@ -138,6 +138,8 @@
     cursor: default;
 }
 
-
+.text-align-right {
+    text-align: right;
+  }
 
 
