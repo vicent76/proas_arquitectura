@@ -6,6 +6,8 @@ import { ofertasService } from "../services/ofertas_service";
 
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
+var propuestaButton = " <span ><i class='onPropuesta fa-solid fa-coins'></i></span>";
+
 var currentIdDatatableView;
 var currentRowDatatableView
 var isNewRow = false;
@@ -111,7 +113,7 @@ export const ofertasSubcontrataGrid = {
         
         var actionsTemplate = editButton;
         // Control de permiso de borrado
-        actionsTemplate += deleteButton;
+        actionsTemplate += deleteButton + propuestaButton ;
         var datatableOfertasSubcontrata = {
             view: "datatable",
             id: "ofertasSubcontrataGrid",
