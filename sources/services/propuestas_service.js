@@ -41,48 +41,6 @@ export const propuestasService = {
         });
     },
 
-    getPropuestasAceptadasExpediente: (expedienteId, esCoste) => {
-        return new webix.promise((success, fail) => {
-            devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + `/api/propuestas/expedientes/tecnicas/aceptadas/${expedienteId}/${esCoste}`
-                    return webix.ajax()
-                        .timeout(10000)
-                        .headers({
-                            "Content-Type": "application/json"
-                        })
-                        .get(url);
-                })
-                .then((result) => {
-                    success(result.json());
-                })
-                .catch((inXhr) => {
-                    fail(inXhr);
-                });
-        });
-    },
-
-    getPropuestasNoAceptadasExpediente: (expedienteId, esCoste, presupuestosCosteId) => {
-        return new webix.promise((success, fail) => {
-            devConfig.getConfig()
-                .then(conf => {
-                    var url = conf.urlApi + `/api/propuestas/expedientes/tecnicas/no-aceptadas/${expedienteId}/${esCoste}/${presupuestosCosteId}`
-                    return webix.ajax()
-                        .timeout(10000)
-                        .headers({
-                            "Content-Type": "application/json"
-                        })
-                        .get(url);
-                })
-                .then((result) => {
-                    success(result.json());
-                })
-                .catch((inXhr) => {
-                    fail(inXhr);
-                });
-        });
-    },
-
     getPropuesta: (propuestaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
@@ -109,7 +67,7 @@ export const propuestasService = {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/propuestas/lineas/" + propuestaId + "/" + false + "/" + false;
+                    var url = conf.urlApi + "/api/propuestas/lineas/" + propuestaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

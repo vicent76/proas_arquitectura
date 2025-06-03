@@ -32,7 +32,7 @@ export default class Propuestas extends JetView {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
                     tooltip: translate("Nuevo registro en formulario (Ctrl+A)"),
                     click: () => {
-                        this.show('/top/propuestasForm?propuestaId=0');
+                        this.show('/top/propuestaForm?propuestaId=0&&subcontrataId=' + subcontrataId);
                     }
                 },
                 {
@@ -158,10 +158,7 @@ export default class Propuestas extends JetView {
             onClick: {
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
-                    var item = $$("propuestasGrid").getItem(curRow.propuestaId);
-                    var expedienteId = item.expedienteId;
-                    this.$scope.edit(curRow.propuestaId, expedienteId)
-                                           
+                    var item = $$("propuestasGrid").getItem(curRow.propuestaId);                       
                 },
                 "onDelete": function (event, id, node) {
                     var dtable = this;
@@ -201,9 +198,8 @@ export default class Propuestas extends JetView {
          $$('propuestasGrid').attachEvent("onItemDblClick", function(id, e, node){
             var curRow = this.data.pull[id.row]
             var item = $$("propuestasGrid").getItem(curRow.propuestaId);
-            var expedienteId = item.expedienteId;
-
-            this.$scope.edit(curRow.propuestaId, expedienteId);
+        
+            this.$scope.edit(curRow.propuestaId);
         });
     }
 
@@ -281,9 +277,9 @@ export default class Propuestas extends JetView {
        this.load();
     }
 
-    edit(propuestaId, expedienteId) {
+    edit(propuestaId) {
 
-        this.show('/top/propuestasVentaForm?propuestaId=' + propuestaId +'&expedienteId=' + expedienteId + '&importeObra=' + 0 + '&desdePrincipal=true');
+        this.show('/top/propuestaForm?propuestaId=' + propuestaId +'&subcontrataId=' + subcontrataId);
     }
 
     delete(propuestaId) {
