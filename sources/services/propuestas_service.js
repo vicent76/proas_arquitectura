@@ -217,11 +217,11 @@ export const propuestasService = {
         });
     },
 
-    putPropuesta: (propuesta, propuestaId) => {
+    putPropuesta: (propuesta) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/propuestas/" + propuestaId;
+                    var url = conf.urlApi + "/api/propuestas/";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

@@ -55,7 +55,7 @@ export const lineasPropuesta = {
             },
             columns: [
                 { id: "propuestaLineaId", header: [translate("Id")], sort: "string", width: 50, hidden: true },
-                { id: "subcontrataId", header: [translate("Id")], sort: "string", width: 50, hidden: true },
+                { id: "ofertaCostelineaId", header: [translate("Id")], sort: "string", width: 50, hidden: true },
                 { id: "propuestaId", header: [translate("Id")], sort: "string", width: 50, hidden: true },
                 { id: "linea", header: [translate("Linea")], sort: "string", width: 60, hidden: true  },
                 { 
@@ -131,12 +131,12 @@ export const lineasPropuesta = {
                     var numReg = $$("lineasPropuestaGrid").count();
                    
                     for(var i = 0; i < rows2.length; i++) {
-                        total = total + rows2[i].totalLinea;
-                        $$('importeCli').setValue(total);
+                        total = total + parseFloat(rows2[i].propuestaTotalLinea);
+                        $$('totalPropuesta').setValue(total);
                     }
                 }else {
                     $$("lineasPropuestaGrid").clearAll();
-                    $$('importeCli').setValue(total);
+                    $$('totalPropuesta').setValue(total);
                 }
             })
             .catch((err) => {
@@ -150,12 +150,12 @@ export const lineasPropuesta = {
                  var numReg = $$("lineasPropuestaGrid").count();
                
                  for(var i = 0; i < rows.length; i++) {
-                     total = total + rows[i].totalLinea;
-                     $$('importeCli').setValue(total);
+                     total = total + parseFloat(rows[i].propuestaTotalLinea);
+                     $$('totalPropuesta').setValue(total);
                  }
              }else {
                  $$("lineasPropuestaGrid").clearAll();
-                 $$('importeCli').setValue(total);
+                 $$('totalPropuesta').setValue(total);
              }
         }
     },

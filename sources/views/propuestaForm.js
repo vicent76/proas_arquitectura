@@ -32,7 +32,7 @@ var selectOfertaCosteId = null;
 var selectOfertaSubcontrataId = null;
 
 
-export default class PropuestasForm extends JetView {
+export default class PropuestaForm extends JetView {
     config() {
         self = this;
         const _lineasPropuesta = lineasPropuesta.getGrid(self.app); 
@@ -46,7 +46,7 @@ export default class PropuestasForm extends JetView {
                     body: {
                         //solapa Propuestas
                         view: "layout",
-                        id: "propuestasForm",
+                        id: "propuestaForm",
                         multiview: true,
                         rows: [
                             {
@@ -270,7 +270,7 @@ export default class PropuestasForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/propuestas');
+        this.$scope.show('/top/propuestas?subcontrataId=' + subcontrataId);
     }
     accept(opcion) {
         if (!$$("frmPropuestas").validate()) {
@@ -278,11 +278,18 @@ export default class PropuestasForm extends JetView {
             return;
         }
         var data = $$("frmPropuestas").getValues();
+        var datalineas = $$("lineasPropuestaGrid").serialize();
         if (propuestaId == 0) {
             data.propuestaId = 0;
+
+            if(datalineas.length > 0) {
+                data.lineas = this.limpiaDatalineas(datalineas);
+            }
+          
             propuestasService.postPropuesta(data)
                 .then((result) => {
-                    this.show('/top/propuestasForm?propuestaId=' + result.propuestaId + "&NEW");
+                    this.show('/top/propuestaForm?propuestaId=' + result.propuestaId + "&NEW");
+                    return;
                 })
                 .catch((err) => {
                     var error = err.response;
@@ -294,13 +301,16 @@ export default class PropuestasForm extends JetView {
                             }
                 });
         } else {
-            
-            propuestasService.putPropuesta(data, data.propuestaId)
+            if(datalineas.length > 0) {
+                data.lineas = this.limpiaDatalineas(datalineas);
+            }
+            delete data.titulo;
+            propuestasService.putPropuesta(data)
                 .then(() => {
                     if(opcion) {
-                        this.show('/top/propuestas?propuestaId=' + data.propuestaId);
+                        this.show('/top/propuestas?subcontrataId=' + subcontrataId);
                     } else {
-                        this.show('/top/propuestasForm?propuestaId=' + data.propuestaId + "&MOD");
+                        this.show('/top/propuestaForm?propuestaId=' + data.propuestaId + "&subcontrataId=" + subcontrataId);
                     }
                    
                 })
@@ -315,6 +325,19 @@ export default class PropuestasForm extends JetView {
                 });
         }
     }
+
+    limpiaDatalineas(lineas) {
+        for(let l of lineas) { 
+                delete l.id;
+                delete l.$height
+                delete l.unidades;
+                delete l.nombreGrupoArticulo;
+                delete l.nombreArticulo;
+                delete l.codigoReparacion;
+        }
+        return lineas;
+    }
+
 
     loadEstados(estadoPropuestaId) {
         estadosService.getEstados()
@@ -394,7 +417,7 @@ export default class PropuestasForm extends JetView {
 
         loadLienasSubcontrataData() {
             if(!subcontrataId) return
-            ofertasService.getLineasOferta(subcontrataId)
+            ofertasService.getLineasOfertaSubcontrata(subcontrataId)
             .then( (rows) => {
                 if(rows.length == 0) {
                     messageApi.errorMessage("El presupuesto de subcontrata seleccionado no tiene partidas.");
