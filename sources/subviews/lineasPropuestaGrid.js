@@ -44,10 +44,9 @@ export const lineasPropuesta = {
             view: "datatable",
             scroll: "x,y",
             id: "lineasPropuestaGrid",
-           
+            footer: true,
             select: "row",
             autoheight:true,
-            footer: false,
             css: {"word-wrap": "break-word"},
             fixedRowHeight: true,
             ready:function(){
@@ -71,12 +70,30 @@ export const lineasPropuesta = {
                 { id: "importe", header:  ["", translate("€/Ud.")], sort: "string", width: 80,format:webix.i18n.numberFormat, css: { "text-align": "right" }, adjust: "all"},
                 { id: "cantidad", header: ["", translate("Cant.")], sort: "string", width: 50, css: { "text-align": "right" } , adjust: "all" },
                 { id: "dto", header: ["", translate("Descuento")], sort: "string", width: 100,format:webix.i18n.numberFormat, css: { "text-align": "right" }, adjust: "all" },
-                { id: "costeLinea", header: ["", translate("Total")], sort: "string", width: 80,format:webix.i18n.numberFormat, css: { "text-align": "right" }, adjust: "all" },
+                { 
+                    id: "costeLinea", 
+                    header: ["", translate("Total")], 
+                    sort: "string", 
+                    width: 80,
+                    format:webix.i18n.numberFormat, 
+                    css: { "text-align": "right" }, 
+                    adjust: "all",
+                    footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                 },
 
 
                 { id: "propuestaImporte", header: ["PROPUESTA", translate("€/Ud.")], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat,  css: { "text-align": "right"}, adjust: "all"   },
-                { id: "propuestaTotalLinea", header: ["", translate("Total")], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat,  css: { "text-align": "right"},  adjust: "all"   },
-                
+                {
+                    id: "propuestaTotalLinea",
+                    header: ["", translate("Total")],
+                    sort: "string",
+                    width: 80,
+                    editor: "text",
+                    format: webix.i18n.numberFormat,
+                    css: { "text-align": "right" },
+                    adjust: "all",
+                    footer: { content: "summColumn", css: { "text-align": "right", "font-weight": "bold" } }
+                  }
             ],
             onClick: {
                 "onDelete": function (event, id, node) {
@@ -99,11 +116,16 @@ export const lineasPropuesta = {
                     
                 },
                 "onAfterEditStop": function (state, editor, ignoreUpdate) {
-                   
+                    if (editor.column === "propuestaTotalLinea") {
+                        lineasPropuesta.actualizarTotales();
+                      }
                 },
                 "onAfterFilter": function () {
                     
-                }
+                },
+                "onAfterLoad": function () {
+                    lineasPropuesta.actualizarTotales();
+                  }
             }
         }
         var _view = {
@@ -196,7 +218,29 @@ export const lineasPropuesta = {
             }
             $$('aCuentaProfesional').setValue(aCuentaProfesional);
         }, 300);
-    }
+    },
+
+    actualizarTotales: () => {
+        let totalCoste = 0;
+        let totalPropuesta = 0;
+      
+        const table = $$("lineasPropuestaGrid");
+      
+        table.data.each(function (item) {
+          const coste = parseFloat(item.costeLinea);
+          const propuesta = parseFloat(item.propuestaTotalLinea);
+      
+          if (!isNaN(coste)) totalCoste += coste;
+          if (!isNaN(propuesta)) totalPropuesta += propuesta;
+        });
+      
+        const diferencia = totalCoste - totalPropuesta;
+      
+        $$("precioObjetivo").setValue(webix.i18n.numberFormat(totalCoste));
+        $$("totalPropuesta").setValue(webix.i18n.numberFormat(totalPropuesta));
+        $$("diferencia").setValue(webix.i18n.numberFormat(diferencia));
+      }
+      
 }
 
 webix.editors.$popup = {

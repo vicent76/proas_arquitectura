@@ -101,9 +101,10 @@ export default class Propuestas extends JetView {
                     { text: translate("Precio objetivo"), css: "text-align-right" },
                     { content: "textFilter" }
                   ],
-                sort: "string", width: 100,
-                format: webix.i18n.numberFormat,
-                css: "text-align-right", headerCss: "text-align-right" },
+                  sort: "string", width: 100,
+                  format: webix.i18n.numberFormat,
+                  css: "text-align-right", headerCss: "text-align-right"
+                },
               
               { id: "diferencia", header: [
                     { text: translate("Diferencia"), css: "text-align-right" },

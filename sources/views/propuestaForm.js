@@ -85,7 +85,7 @@ export default class PropuestaForm extends JetView {
                                             },
                                             {
                                                 view: "text", type: "numeric",  id: 'precioObjetivo', name: 'precioObjetivo',
-                                                label: "Precio objetivo", labelPosition: "top", value: 0, width: 150,
+                                                label: "Precio objetivo", labelPosition: "top", value: 0, width: 150, disabled: true,
                                                 format: {
                                                     edit : function(v){ return webix.Number.format(v, webix.i18n); },
                                                     parse : function(v){ return webix.Number.parse(v, webix.i18n); }
@@ -93,7 +93,7 @@ export default class PropuestaForm extends JetView {
                                             },
                                             {
                                                 view: "text", type: "numeric",  id: 'diferencia', name: 'diferencia',
-                                                label: "Diferencia", labelPosition: "top", value: 0 , width: 150,
+                                                label: "Diferencia", labelPosition: "top", value: 0 , width: 150, disabled: true,
                                                 format: {
                                                     edit : function(v){ return webix.Number.format(v, webix.i18n); },
                                                     parse : function(v){ return webix.Number.parse(v, webix.i18n); }
@@ -108,7 +108,7 @@ export default class PropuestaForm extends JetView {
                                                   }
                                             },
                                             {
-                                                view: "text", type: "numeric",  id: 'biNeto', name: 'biNeto',
+                                                view: "text", type: "numeric",  id: 'biNeto', name: 'biNeto', disabled: true,
                                                 label: "% BI Neto", labelPosition: "top", value: 0 , width: 150,
                                                 format: {
                                                     edit : function(v){ return webix.Number.format(v, webix.i18n); },
@@ -150,7 +150,7 @@ export default class PropuestaForm extends JetView {
                                             },
                                             {
                                                 view: "text", type: "numeric",  id: 'totalPropuesta', name: 'totalPropuesta',
-                                                label: "Total propuesta", labelPosition: "top", value: 0 ,
+                                                label: "Total propuesta", labelPosition: "top", value: 0 , disabled: true,
                                                 format: {
                                                     edit : function(v){ return webix.Number.format(v, webix.i18n); },
                                                     parse : function(v){ return webix.Number.parse(v, webix.i18n); }
