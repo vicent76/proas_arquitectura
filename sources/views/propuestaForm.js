@@ -18,6 +18,7 @@ var propuestaId = 0;
 var usuarioId;
 var usuario;
 var subcontrataId = 0;
+var expedienteId = 0;
 var limiteCredito = 0;
 var importeCobro = 0;
 var desdeCoste = null;
@@ -220,11 +221,15 @@ export default class PropuestaForm extends JetView {
         usuario = usuarioService.checkLoggedUser();
         usuarioId = usuario.usuarioId;
         languageService.setLanguage(this.app, 'es');
+
         if (url[0].params.propuestaId) {
             propuestaId = url[0].params.propuestaId;
         }
         if (url[0].params.subcontrataId) {
             subcontrataId = url[0].params.subcontrataId;
+        }
+        if (url[0].params.expedienteId) {
+            expedienteId = url[0].params.expedienteId;
         }
         
         //this.cargarEventos();
@@ -270,7 +275,7 @@ export default class PropuestaForm extends JetView {
     }
 
     cancel() {
-        this.$scope.show('/top/propuestas?subcontrataId=' + subcontrataId);
+        this.$scope.show('/top/propuestas?subcontrataId=' + subcontrataId + '&expedienteId=' + expedienteId + '&propuestaId=' + propuestaId);
     }
     accept(opcion) {
         if (!$$("frmPropuestas").validate()) {
@@ -286,9 +291,10 @@ export default class PropuestaForm extends JetView {
                 data.lineas = this.limpiaDatalineas(datalineas);
             }
           
-            propuestasService.postPropuesta(data)
+            propuestasService.postPropuesta(data, subcontrataId)
                 .then((result) => {
-                    this.show('/top/propuestaForm?propuestaId=' + result.propuestaId + "&NEW");
+                    this.show('/top/propuestaForm?propuestaId=' + result.propuestaId + '&expedienteId=' + expedienteId);
+                    messageApi.normalMessage("Propuesta creada Correctamente")
                     return;
                 })
                 .catch((err) => {
@@ -308,9 +314,9 @@ export default class PropuestaForm extends JetView {
             propuestasService.putPropuesta(data)
                 .then(() => {
                     if(opcion) {
-                        this.show('/top/propuestas?subcontrataId=' + subcontrataId);
+                        this.show('/top/propuestas?subcontrataId=' + subcontrataId + '&expedienteId=' + expedienteId + '&propuestaId=' + propuestaId);
                     } else {
-                        this.show('/top/propuestaForm?propuestaId=' + data.propuestaId + "&subcontrataId=" + subcontrataId);
+                        this.show('/top/propuestaForm?propuestaId=' + data.propuestaId + "&subcontrataId=" + subcontrataId + '&expedienteId=' + expedienteId);
                     }
                    
                 })

@@ -413,11 +413,13 @@ export default class ExpedientesForm extends JetView {
         if (url[0].params.expedienteId) {
             expedienteId = url[0].params.expedienteId;
         }
+        //PARAMETROS PARA CARGAR LAS PESTAÑAS ACTIVAS
         if (url[0].params.desdeCoste) {
             desdeCoste = url[0].params.desdeCoste;
         } else {
             desdeCoste = null;
         }
+
         if (url[0].params.desdeVenta) {
             desdeVenta = url[0].params.desdeVenta;
         } else {
@@ -429,6 +431,8 @@ export default class ExpedientesForm extends JetView {
         } else {
             desdeSubcontrata = null;
         }
+
+
         if (url[0].params.ofertaVentaId) {
             selectOfertaVentaId =  url[0].params.ofertaVentaId;
         }

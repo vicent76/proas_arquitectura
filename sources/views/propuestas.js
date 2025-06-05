@@ -11,8 +11,9 @@ import { languageService} from "../locales/language_service";
 var editButton = "<span class='onEdit webix_icon wxi-pencil'></span>";
 var deleteButton = "<span class='onDelete webix_icon wxi-trash'></span>";
 var PrintButton = "<span class='onPrint mdi mdi-printer'></span>";
-var selectPropuestaId = 0;
+var selectPropuestaId = null;
 var subcontrataId = null;
+var expedienteId = null;
 
 export default class Propuestas extends JetView {
     config() {
@@ -32,7 +33,7 @@ export default class Propuestas extends JetView {
                     view: "button", type: "icon", icon: "wxi-plus", width: 37, align: "left", hotkey: "Ctrl+A",
                     tooltip: translate("Nuevo registro en formulario (Ctrl+A)"),
                     click: () => {
-                        this.show('/top/propuestaForm?propuestaId=0&&subcontrataId=' + subcontrataId);
+                        this.show('/top/propuestaForm?propuestaId=0&subcontrataId=' + subcontrataId + '&expedienteId=' + expedienteId);
                     }
                 },
                 {
@@ -77,6 +78,7 @@ export default class Propuestas extends JetView {
             scroll: "x,y",
             pager: "mypager1",
             select: "row",
+            autoheight:true,
             scheme:{
                 $change:function(item){
                         var odd = $$("propuestasGrid").getIndexById(item.id)%2
@@ -184,11 +186,47 @@ export default class Propuestas extends JetView {
                   }
             }
         }
+
+        var datatableButton = 
+        {
+            rows: [
+                {
+                    cols: [
+                                           
+                        {
+                            
+                        },
+                        {   width: 200,
+                            padding: 10,
+                            rows: [
+                               
+                                {
+            
+                                    align: "center",
+                                    cols: [
+                                        {},
+                                        { view: "button", label: "Aceptar", click: () => this.accept(), css: "webix_primary", type: "form" }
+                                    ]
+                                },
+                               
+                            ]
+                        },
+                        
+                        
+                        ]
+                },
+                {
+                    minHeight: 100
+                }
+            ]
+          
+        }
         var _view = {
             rows: [
                 toolbarPropuestas,
                 pagerPropuestas,
-                datatablePropuestas
+                datatablePropuestas,
+                datatableButton
             ]
         }
         return _view;
@@ -209,6 +247,12 @@ export default class Propuestas extends JetView {
         languageService.setLanguage(this.app, 'es');
         if (url[0].params.subcontrataId) {
             subcontrataId = url[0].params.subcontrataId;
+        }
+        if (url[0].params.expedienteId) {
+            expedienteId = url[0].params.expedienteId;
+        }
+        if (url[0].params.propuestaId && url[0].params.propuestaId != "0" ) {
+            selectPropuestaId =  url[0].params.propuestaId;
         }
         this.load()
     }
@@ -278,18 +322,30 @@ export default class Propuestas extends JetView {
     }
 
     edit(propuestaId) {
-
-        this.show('/top/propuestaForm?propuestaId=' + propuestaId +'&subcontrataId=' + subcontrataId);
+        this.show('/top/propuestaForm?propuestaId=' + propuestaId +'&subcontrataId=' + subcontrataId + '&expedienteId=' + expedienteId);
     }
 
     delete(propuestaId) {
-        propuestasService.deletePropuesta(propuestaId)
-        .then( row => {
-            this.load();
-        })
-        .catch( err => {
-            messageApi.errorMessageAjax(err);
-        })
+         webix.confirm({
+            title: "AVISO",
+            text: "¿Está seguro que desea eliminar este registro?.",
+            type: "confirm-warning",
+            callback: (action) => {
+                if (action === true) {
+                    propuestasService.deletePropuesta(propuestaId)
+                    .then( row => {
+                        this.load();
+                    })
+                    .catch( err => {
+                        messageApi.errorMessageAjax(err);
+                    })
+                }
+            }
+        });
+    }
+
+    accept() {
+        this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeSubcontrata=true');
     }
 }
 

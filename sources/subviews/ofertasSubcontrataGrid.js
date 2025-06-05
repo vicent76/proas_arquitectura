@@ -336,7 +336,7 @@ export const ofertasSubcontrataGrid = {
         const activeTab = $$("tabViewExpediente").getValue();  // Obtener el id de la pestaña activa
         localStorage.setItem("activeTab", activeTab);
 
-        _app.show('/top/propuestas?subcontrataId=' + ofertaId);
+        _app.show('/top/propuestas?subcontrataId=' + ofertaId +'&expedienteId=' + expedienteId);
     },
 
     formateaCampos(data) {

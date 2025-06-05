@@ -173,11 +173,11 @@ export const propuestasService = {
 
     },
 
-    postPropuesta: (propuesta) => {
+    postPropuesta: (propuesta, subcontrataId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/propuestas/";
+                    var url = conf.urlApi + "/api/propuestas/" + subcontrataId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
