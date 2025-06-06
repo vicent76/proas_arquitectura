@@ -119,6 +119,19 @@ export const lineasPropuesta = {
                     if (editor.column === "propuestaTotalLinea") {
                         lineasPropuesta.actualizarTotales();
                       }
+
+                      if(editor.column === "propuestaImporte") {
+                           const filaId = editor.row;
+                            let nuevoValor = parseFloat(state.value);
+                            let datosFila = this.getItem(filaId);
+                            let cantidad = parseFloat(datosFila.cantidad);
+
+                            let total = nuevoValor * cantidad;
+
+                            datosFila.propuestaTotalLinea = total;
+                      }
+
+                     
                 },
                 "onAfterFilter": function () {
                     
@@ -140,13 +153,13 @@ export const lineasPropuesta = {
         return _view;
     },
     loadGrid: (propuestaid, subcontrataid, rows) => {
+        var total = 0;
         propuestaId = propuestaid;
         subcontrataId = subcontrataid
         numLineas = 0;
         if(propuestaId > 0) {
             propuestasService.getLineasPropuesta(propuestaId)
             .then(rows2 => {
-                var total = 0;
                 if(rows2.length > 0) {
                     $$("lineasPropuestaGrid").clearAll();
                     $$("lineasPropuestaGrid").parse(generalApi.prepareDataForDataTable("propuestaLineaId", rows2));
@@ -235,10 +248,19 @@ export const lineasPropuesta = {
         });
       
         const diferencia = totalCoste - totalPropuesta;
+
+        //% BI
+        let pvpNeto = parseFloat($$('pvpNeto').getValue());
+        let porcenBI = 0;
+
+        if(totalPropuesta) {
+              porcenBI = ((pvpNeto / totalPropuesta) -1) * 100
+        }
       
         $$("precioObjetivo").setValue(webix.i18n.numberFormat(totalCoste));
         $$("totalPropuesta").setValue(webix.i18n.numberFormat(totalPropuesta));
         $$("diferencia").setValue(webix.i18n.numberFormat(diferencia));
+        $$("biNeto").setValue(webix.i18n.numberFormat(porcenBI))
       }
       
 }

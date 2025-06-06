@@ -101,7 +101,7 @@ export default class PropuestaForm extends JetView {
                                             },
                                             {
                                                 view: "text", type: "numeric",  id: 'pvpNeto', name: 'pvpNeto',
-                                                label: "PVP Neto", labelPosition: "top", value: 0 , width: 150,
+                                                label: "PVP Neto", labelPosition: "top", value: 0 , width: 150, disabled: true,
                                                 format: {
                                                     edit : function(v){ return webix.Number.format(v, webix.i18n); },
                                                     parse : function(v){ return webix.Number.parse(v, webix.i18n); }
@@ -340,6 +340,7 @@ export default class PropuestaForm extends JetView {
                 delete l.nombreGrupoArticulo;
                 delete l.nombreArticulo;
                 delete l.codigoReparacion;
+                delete l.importeCliente;
         }
         return lineas;
     }
@@ -430,6 +431,7 @@ export default class PropuestaForm extends JetView {
                     lineasPropuesta.loadGrid(propuestaId, subcontrataId, rows)
                     return;
                 }
+                $$('pvpNeto').setValue(rows[0].importeCliente)
                 lineasPropuesta.loadGrid(propuestaId, subcontrataId, rows);
             })
             .catch( (err) => {
