@@ -86,14 +86,42 @@ export const lineasOfertaVenta= {
                 { id: "precio", header: [translate("Precio"), { content: "textFilter" }], sort: "string", width: 80,  css: { "text-align": "right"}  },
                 { id: "coste", header: [translate("Coste"), { content: "textFilter" }], sort: "string", width: 80, hidden:true,  css: { "text-align": "right"}  },
                 //{ id: "dto", header: [translate("Descuento"), { content: "textFilter" }], sort: "string", width: 100,format:webix.i18n.numberFormat },
-                { id: "importeBeneficioLinea", header: [translate("BI"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat,  css: { "text-align": "right"}},
+                { 
+                    id: "importeBeneficioLinea", 
+                    header: [translate("BI"), { content: "textFilter" }], 
+                    sort: "string", width: 80,
+                    format:webix.i18n.numberFormat,  
+                    css: { "text-align": "right"}
+                },
                 { id: "ventaNetaLinea", header: [translate("venta neta"), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat, hidden: true,  css: { "text-align": "right"}},
                
                 { id: "importeAgenteLinea", header: [translate("Imp. Agente."), { content: "textFilter" }], sort: "string", width: 110,format:webix.i18n.numberFormat,  css: { "text-align": "right"} },
                 
-                { id: "totalLinea", header: [translate("Total."), { content: "textFilter" }], sort: "string", width: 80,format:webix.i18n.numberFormat,  css: { "text-align": "right"} },
+                { 
+                  id: "totalLinea", 
+                  header: [translate("Total."), { content: "textFilter" }], 
+                  sort: "string", 
+                  width: 80,
+                  format:webix.i18n.numberFormat,
+                  css: { "text-align": "right"} 
+                },
                 
-                { id: "porcentajeBeneficioLinea", header: [translate("% BI"), { content: "textFilter" }], sort: "string", width: 80, editor: "text",  format: webix.i18n.numberFormat,  css: { "text-align": "right"}   },
+                { 
+                    id: "porcentajeBeneficioLinea", 
+                    header: [translate("% BI"), { content: "textFilter" }], 
+                    sort: "string", 
+                    width: 80, 
+                    editor: "text", 
+                    format: function(value) {
+                        return webix.Number.format(value, {
+                        groupDelimiter: ".",
+                        groupSize: 3,
+                        decimalDelimiter: ",",
+                        decimalSize: 4
+                        });
+                    },  
+                    css: { "text-align": "right"}   
+                },
                 
     
                 //{ id: "actions", header: [{ text: translate("Acciones"), css: { "text-align": "center" } }], template: actionsTemplate, css: { "text-align": "center" } },
@@ -155,17 +183,26 @@ export const lineasOfertaVenta= {
                         row.coste = precio;
                         row.ventaNetaLinea = ventaNeta;
 
+                        //
+                         //let parsedValue = lineasOfertaVenta.convertirAEstandar(row.porcentajeBeneficioLinea); // Convertir a formato inglés
+                         //row.porcentajeBeneficioLinea = parsedValue;
+
                         this.updateItem(editor.row, row);  // Actualizar fila
                     }
                 },
                 "OnAfterLoad": function ( ) {
                   setTimeout( () => {
-                    var porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
+                    var porcentajeBeneficioLinea  = 0
                     var datatable = $$("lineasOfertaVentaGrid");
                     var totaAlCliente = 0;
                     datatable.eachRow(function (rowId) {
                         var row = datatable.getItem(rowId);
                        
+                        if(row.porcentajeBeneficioLinea) {
+                            porcentajeBeneficioLinea = row.porcentajeBeneficioLinea  / 100 || 0;
+                        } else {
+                            porcentajeBeneficioLinea  = $$('porcentajeBeneficio').getValue()  / 100 || 0;
+                        }
                         var precio = parseFloat(row.costeLinea) || 0;
                         var cantidad = parseFloat(row.cantidad) || 0;
                       
@@ -281,5 +318,14 @@ export const lineasOfertaVenta= {
                 }
             }
         });
+    },
+
+     // Convertir de español (1.500,75) a inglés (1500.75) antes de guardar
+    convertirAEstandar(value) {
+        if (typeof value === "string") {
+            // Reemplazar los separadores de miles y decimales al formato inglés
+            return parseFloat(value.replace(",", "."));
+        }
+        return value;
     }
 }

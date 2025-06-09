@@ -43,6 +43,7 @@ export default class UnidadesObra extends JetView {
                             articuloId: 0,
                             nombre: "",
                             grupoArticuloId: 0, // Temporal, se asignará al guardar
+                            coste: 0.00,
                             descripcion: "",
                             esTecnico: 1,
                             departamentoId: 5
@@ -102,6 +103,14 @@ export default class UnidadesObra extends JetView {
                    
                 },
                 { id: "nombre", header: [translate("Unidad de obra"), { content: "textFilter" }], sort: "string", editor: "text", minWidth: 250 },
+                 { 
+                    id: "coste", 
+                    header: [translate("Coste"), { content: "numberFilter" }],
+                    width: 100, 
+                    editor: "text", // Permite edición
+                    format: webix.i18n.priceFormat,   // Formato numérico con moneda
+                    css: { "text-align": "right" },
+                },
                 { 
                     id: "descripcion", 
                     header: ["Descripción", { content: "textFilter" }], 

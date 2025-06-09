@@ -28,6 +28,7 @@ var aplicarFormula = false;
 var indiceCorrector = 0;
 var importeObra = 0;
 var cantidad = 0;
+var contratoId = null;
 
 
 export const LineasOfertaWindow = {
@@ -323,8 +324,9 @@ export const LineasOfertaWindow = {
 
         return
     },
-    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo, importeobra) => {
+    loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo, importeobra, contratoid) => {
         $$('LineasOfertafrm').clear();
+        contratoId = contratoid;
         ofertaId = ofertaid;
         ofertaLineaId = ofertaLineaid
         cliId = cliid;
@@ -493,6 +495,10 @@ export const LineasOfertaWindow = {
         $$("cmbGrupoArticulo").unblockEvent();
     },
     accept: () => {
+         if(contratoId) {
+            messageApi.errorMessage("Hay un contrato soaciado, no se puede modificar.");
+            return;
+        }
         if (!$$("LineasOfertafrm").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;

@@ -42,6 +42,7 @@ var tipoProyectoId
 var _app;
 var formaPagoId = null;
 var adicional = null;
+var contratoId = null;
 
 export default class OfertasCosteForm extends JetView {
     config() {
@@ -377,6 +378,10 @@ export default class OfertasCosteForm extends JetView {
                                             scroll: "y",
                                             on: {
                                                 onItemClick: function (id) {
+                                                     if(contratoId) {
+                                                        messageApi.errorMessage("Hay un contrato soaciado, no se puede modificar.");
+                                                        return;
+                                                     }
                                                     var cliId = $$('cmbClientes').getValue();
                                                     var data = {
                                                         indiceCorrector: indiceCorrector,
@@ -474,7 +479,7 @@ export default class OfertasCosteForm extends JetView {
                     this.getReferencia(ref);
     
                     //this.loadMantenedores();
-                    lineasOferta.loadGrid(null, null, importeObra);
+                    lineasOferta.loadGrid(null, null, importeObra, contratoId);
                     $$('valorado').setValue(1);
                     //basesOferta.loadGrid(null); 
                     setTimeout(this.accept, 2000)
@@ -490,6 +495,7 @@ export default class OfertasCosteForm extends JetView {
                 .then((oferta) => {
                     isLoading = true; // Se activa el flag antes de cargar datos
                     //$$("cmbTiposProyecto").blockEvent();
+                    if(oferta.contratoId) contratoId = oferta.contratoId;
                     delete oferta.empresa;
                     delete oferta.cliente;
                     delete oferta.tipo;
@@ -504,7 +510,7 @@ export default class OfertasCosteForm extends JetView {
                     this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
                     //this.loadMantenedores(oferta.mantenedorId);
                     this.loadTiposProyecto(oferta.tipoProyectoId);  
-                    lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow, importeObra);
+                    lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow, importeObra, contratoId);
                     $$('valorado').setValue(oferta.valorado);
                     $$('desglosado').setValue(oferta.desglosado);
                     $$('mostrarIva').setValue(oferta.mostrarIva);
@@ -551,6 +557,10 @@ export default class OfertasCosteForm extends JetView {
         this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
     }
     accept(opcion) {
+        if(contratoId) {
+            messageApi.errorMessage("Hay un contrato asociado, no se puede modificar.");
+            return;
+        }
         if (!$$("frmOfertas").validate()) {
             messageApi.errorMessage("Debe rellenar los campos correctamente");
             return;

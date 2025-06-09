@@ -89,7 +89,7 @@ export default class OfertasVentaForm extends JetView {
                                             },
                                             {
                                                 view: "text", id: "referencia", name: "referencia", required: true,
-                                                label: "Referencia", labelPosition: "top", width:250
+                                                label: "Referencia", labelPosition: "top", width:250, disabled: true
                                             },
                                             {
                                                 view: "combo", id: "cmbEmpresas", name: "empresaId", required: true, options: {},
@@ -180,7 +180,7 @@ export default class OfertasVentaForm extends JetView {
                                             },
                                             {
                                                 view: "text", id: 'porcentajeBeneficio', name:'porcentajeBeneficio', width: 180,
-                                                label:  'Incr. beneficio ind. (%)', labelPosition: "top", value: 0 ,format: "1,00",
+                                                label:  'Incr. beneficio ind. (%)', labelPosition: "top", value: 0 ,format: "1,0000",
                                                 on:{
                                                     "onTimedKeyPress": () => {
                                                         this.calculaBI()
@@ -1130,7 +1130,7 @@ export default class OfertasVentaForm extends JetView {
             }
             textosPredeterminadosService.getTexto(id)
             .then( (row) => {
-                var compose = "PRESUPUESTO REF. " + $$('cmbPresupuestosCoste').getText() + " " + row.texto
+                var compose = "PRESUPUESTO REF. " + $$('referencia').getValue() + " " + row.texto
                 $$("tituloTexto").setValue(compose);
             })
             .catch( (err) => {

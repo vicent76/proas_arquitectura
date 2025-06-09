@@ -17,6 +17,7 @@ var ofertaId;
 var numLineas;
 var imprimirWindow;
 var importeObra = 0;
+var contratoId = null;
 
 
 export const lineasOferta = {
@@ -49,9 +50,14 @@ export const lineasOferta = {
                             messageApi.errorMessage(translate("Debe dar de alta el oferta antes las lineas"));
                             return;
                         }
+                        if(contratoId) {
+                             // Hay contrato asociado, no se permite crear más partidas
+                            messageApi.errorMessage(translate("Hay un contratro asociado, no se pueden crear más partidas"));
+                            return;
+                        }
                         try {
                             var cliId = $$('cmbClientes').getValue();
-                            LineasOfertaWindow.loadWindow(ofertaId, null, cliId, null, null, null, importeObra);
+                            LineasOfertaWindow.loadWindow(ofertaId, null, cliId, null, null, null, importeObra, contratoId);
                         }catch (e) {
                             console.log(e)
                         }
@@ -83,7 +89,7 @@ export const lineasOferta = {
             ready:function(){ $$('lineasOfertaGrid').attachEvent("onItemDblClick", function(id, e, node){
                 var curRow = this.data.pull[id.row]
                 var cliId = $$('cmbClientes').getValue();
-                LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId, null, null, null, importeObra);
+                LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId, cliId, null, null, null, importeObra, contratoId);
             });
         },
             columns: [
@@ -114,7 +120,7 @@ export const lineasOferta = {
                 "onEdit": function (event, id, node) {
                     var curRow = this.data.pull[id.row];
                     var cliId = $$('cmbClientes').getValue();
-                    LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId );
+                    LineasOfertaWindow.loadWindow(curRow.ofertaId, curRow.ofertaLineaId,  cliId, null, null, null, null, contratoId);
                    
                 }
             },
@@ -149,7 +155,8 @@ export const lineasOferta = {
         
         return _view;
     },
-    loadGrid: (ofertaid, _imprimirWindow, importeobra) => {
+    loadGrid: (ofertaid, _imprimirWindow, importeobra, contratoid) => {
+        contratoId = contratoid;
         importeObra = importeobra
         ofertaId = ofertaid;
          imprimirWindow = _imprimirWindow

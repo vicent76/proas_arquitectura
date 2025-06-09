@@ -1,10 +1,10 @@
 {
   "ReportVersion": "2021.3.6.0",
-  "ReportGuid": "5b1c94ce633f4e838d9332d219b05d13",
+  "ReportGuid": "ea34993ba1f845ee8d0464e856a061fa",
   "ReportName": "OfertaGeneral",
   "ReportAlias": "OfertaGeneral",
   "ReportCreated": "/Date(1492633073000+0200)/",
-  "ReportChanged": "/Date(1747131069355+0200)/",
+  "ReportChanged": "/Date(1749456984295+0200)/",
   "EngineVersion": "EngineV2",
   "CalculationMode": "Interpretation",
   "Script": "using System;\r\nusing System.Drawing;\r\nusing System.Windows.Forms;\r\nusing System.Data;\r\nusing Stimulsoft.Controls;\r\nusing Stimulsoft.Base.Drawing;\r\nusing Stimulsoft.Report;\r\nusing Stimulsoft.Report.Dialogs;\r\nusing Stimulsoft.Report.Components;\r\n\r\nnamespace Reports\r\n{\r\n    public class OfertaGeneral : Stimulsoft.Report.StiReport\r\n    {\r\n        public OfertaGeneral()        {\r\n            this.InitializeComponent();\r\n        }\r\n\r\n        #region StiReport Designer generated code - do not modify\r\n\t\t#endregion StiReport Designer generated code - do not modify\r\n    }\r\n}\r\n",
@@ -603,7 +603,7 @@
           "Ident": "StiPageFooterBand",
           "Name": "PiePresentacion",
           "PrintOn": "OnlyFirstPage",
-          "ClientRectangle": "0,26,18,1.2",
+          "ClientRectangle": "0,25,18,2.2",
           "Interaction": {
             "Ident": "StiInteraction"
           },
@@ -612,8 +612,8 @@
           "Components": {
             "0": {
               "Ident": "StiText",
-              "Name": "Text28",
-              "ClientRectangle": "0.2,0.06,17.5,0.3",
+              "Name": "Text8",
+              "ClientRectangle": "0.2,0.66,17.5,0.5",
               "Interaction": {
                 "Ident": "StiInteraction"
               },
@@ -630,8 +630,8 @@
             },
             "1": {
               "Ident": "StiText",
-              "Name": "Text8",
-              "ClientRectangle": "15.4,0.5,2.3,0.3",
+              "Name": "Text28",
+              "ClientRectangle": "7.6,1.2,2.3,0.3",
               "Interaction": {
                 "Ident": "StiInteraction"
               },
@@ -639,6 +639,24 @@
                 "Value": "Pag.{PageNumberThrough} de {TotalPageCountThrough}"
               },
               "HorAlignment": "Right",
+              "VertAlignment": "Bottom",
+              "Font": "Calibri Light;9;;",
+              "Border": ";;;;;;;solid:Black",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression"
+            },
+            "2": {
+              "Ident": "StiText",
+              "Name": "Text35",
+              "ClientRectangle": "0.2,0.2,17.5,0.5",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{ToProperCase(ofertas.nombreEmpresa)} - CIF: {ofertas.nifEmpresa}"
+              },
+              "HorAlignment": "Center",
               "VertAlignment": "Bottom",
               "Font": "Calibri Light;9;;",
               "Border": ";;;;;;;solid:Black",
@@ -760,7 +778,7 @@
         "1": {
           "Ident": "StiPageFooterBand",
           "Name": "PageFooterBand2",
-          "ClientRectangle": "0,35.76,19,1.2",
+          "ClientRectangle": "0,34.76,19,2.2",
           "Interaction": {
             "Ident": "StiInteraction"
           },
@@ -770,7 +788,7 @@
             "0": {
               "Ident": "StiText",
               "Name": "Text14",
-              "ClientRectangle": "0.2,0.3,18.5,0.3",
+              "ClientRectangle": "0.2,0.7,18.5,0.5",
               "Interaction": {
                 "Ident": "StiInteraction"
               },
@@ -788,7 +806,7 @@
             "1": {
               "Ident": "StiText",
               "Name": "Text18",
-              "ClientRectangle": "16.4,0.64,2.3,0.3",
+              "ClientRectangle": "7.8,1.24,2.3,0.3",
               "Interaction": {
                 "Ident": "StiInteraction"
               },
@@ -796,6 +814,24 @@
                 "Value": "Pag.{PageNumberThrough} de {TotalPageCountThrough}"
               },
               "HorAlignment": "Right",
+              "VertAlignment": "Bottom",
+              "Font": "Calibri Light;9;;",
+              "Border": ";;;;;;;solid:Black",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression"
+            },
+            "2": {
+              "Ident": "StiText",
+              "Name": "Text34",
+              "ClientRectangle": "0.2,0.24,18.5,0.5",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{ToProperCase(ofertas.nombreEmpresa)} - CIF: {ofertas.nifEmpresa}"
+              },
+              "HorAlignment": "Center",
               "VertAlignment": "Bottom",
               "Font": "Calibri Light;9;;",
               "Border": ";;;;;;;solid:Black",
