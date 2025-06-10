@@ -127,6 +127,28 @@ export const ofertasService = {
 
     },
 
+        getLineasVinculadas: (ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/lineas/vinculadas/al/coste/linea/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
     getLineasOfertaSubcontrata: (ofertaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
@@ -350,6 +372,29 @@ export const ofertasService = {
             devConfig.getConfig()
                 .then(conf => {
                     var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .put(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
+
+
+     putLineaOfertaAsociadas: (ofertaLinea, ofertaLineaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/actuliza/ofertas/asociadas/coste/" + ofertaLineaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({

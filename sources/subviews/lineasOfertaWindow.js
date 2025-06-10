@@ -324,6 +324,7 @@ export const LineasOfertaWindow = {
 
         return
     },
+    
     loadWindow: (ofertaid, ofertaLineaid, cliid, grupoArticuloId, articuloId, datoscalculo, importeobra, contratoid) => {
         $$('LineasOfertafrm').clear();
         contratoId = contratoid;
@@ -342,13 +343,13 @@ export const LineasOfertaWindow = {
                         datosCalculo = datoscalculo
                     } else {
                          parametrosService.getParametros()
-                                .then((parametros) => {
-                                    if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
+                        .then((parametros) => {
+                            if(parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
                                     importeObra = importeobra
-                                })
-                                .catch((err) => {
-                                    messageApi.errorMessageAjax(err);
-                                }); 
+                            })
+                            .catch((err) => {
+                                messageApi.errorMessageAjax(err);
+                            }); 
                     }
                     $$('lineasOfertaWindow').show();
                     if (ofertaLineaId) {
@@ -506,27 +507,26 @@ export const LineasOfertaWindow = {
         LineasOfertaWindow.enviaDatos();
     },
 
-    enviaDatos: () => {
+    enviaDatos: async () => {
+                let result = null;
                 var data = $$("LineasOfertafrm").getValues();
                 data = LineasOfertaWindow.formateaDatos(data);
                 // controlamos si es un alta o una modificación.
+                //CASE PUT
                 if (data.ofertaLineaId) {
-                    // Es una modificación
-                    ofertasService.putLineaOferta(data, data.ofertaLineaId)
-                        .then(row => {
-                            // Hay que cerrar la ventana y refrescar el grid
-                            $$('lineasOfertaWindow').hide();
-                            LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
-                        })
-                        .catch((err) => {
-                            var error = err.response;
-                                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                                    if(index != -1) {
-                                        messageApi.errorRestriccion()
-                                    } else {
-                                        messageApi.errorMessageAjax(err);
-                                    }
-                        });
+                    try {
+                        //miramos primero si hay registro asociados
+                        result = await LineasOfertaWindow.getLineasVinculadas(data.ofertaLineaId);
+                        console.log(result)
+
+                    } catch(e) {
+                        messageApi.errorMessageAjax(e)
+                    }
+                    if(result) {
+                         LineasOfertaWindow.actulizaLineaAsociadas(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
+                    } else {
+                        LineasOfertaWindow.actulizaLinea(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
+                    }
                     
                 } else {
                     // es un alta
@@ -544,6 +544,55 @@ export const LineasOfertaWindow = {
                 } 
        
     },
+        getLineasVinculadas: async (ofertaLineaId) => {
+            try {
+                const rows = await ofertasService.getLineasVinculadas(ofertaLineaId);
+                return rows;
+            } catch (err) {
+                messageApi-errorMessageAjax(err);
+                throw err; // opcional: si quieres propagar el error
+            }
+        },
+
+        actulizaLinea: (data) => {
+            ofertasService.putLineaOferta(data, data.ofertaLineaId)
+            .then(row => {
+                // Hay que cerrar la ventana y refrescar el grid
+                $$('lineasOfertaWindow').hide();
+                LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
+             })
+             .catch((err) => {
+                var error = err.response;
+                var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                if(index != -1) {
+                    messageApi.errorRestriccion()
+                } else {
+                    messageApi.errorMessageAjax(err);
+                }
+            });
+                    
+        },
+
+        
+         actulizaLineaAsociadas: (data) => {
+            ofertasService.putLineaOfertaAsociadas(data, data.ofertaLineaId)
+            .then(row => {
+                // Hay que cerrar la ventana y refrescar el grid
+                $$('lineasOfertaWindow').hide();
+                LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
+             })
+             .catch((err) => {
+                var error = err.response;
+                var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                if(index != -1) {
+                    messageApi.errorRestriccion()
+                } else {
+                    messageApi.errorMessageAjax(err);
+                }
+            });
+                    
+        },
+
 
     formateaDatos(data) {
         delete data.unidades;
@@ -552,7 +601,7 @@ export const LineasOfertaWindow = {
         data.totalLinea = $$('coste').getValue();
         data.porcentajeBeneficio = 0;
         data.porcentajeAgente = 0;
-        data.importeProveedor = $$('importeCliente').getValue()
+        //data.importeProveedor = $$('importeCliente').getValue()
         if(!ofertaLineaId) data.ofertaLineaId = 0;
         return data;
     },
@@ -565,38 +614,7 @@ export const LineasOfertaWindow = {
         return data;
     },
 
-    updateFacprove: (data, proId) => {
-        facturacionService.putLineaFacprove(data,proId)
-            .then(rows => {
-                return;
-            })
-            .catch(err => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-            });
-    },
 
-    updateFactura: (data) => {
-        data.clienteId = $$('cliId').getValue();//añadimos la id del cliente del servico
-        facturacionService.putLineaFactura(data)
-            .then(rows => {
-                return;
-            })
-            .catch(err => {
-                var error = err.response;
-                            var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
-                            if(index != -1) {
-                                messageApi.errorRestriccion()
-                            } else {
-                                messageApi.errorMessageAjax(err);
-                            }
-            });
-    },
 
     cancel: () => {
         $$('lineasOfertaWindow').hide();

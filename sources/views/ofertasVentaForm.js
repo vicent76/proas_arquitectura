@@ -739,26 +739,16 @@ export default class OfertasVentaForm extends JetView {
                 importe: l.importe,
                 totalLinea: l.totalLinea,
                 coste: l.coste,
-                porcentajeBeneficio: l.porcentajeBeneficioLinea,
+                porcentajeBeneficio:  l.porcentajeBeneficioLinea,
                 importeBeneficioLinea: l.importeBeneficioLinea,
-                porcentajeAgente: l.porcentajeAgente,
+                porcentajeAgente: $$('porcentajeAgente').getValue(),
                 importeAgenteLinea: l.importeAgenteLinea,
                 ventaNetaLinea: l.ventaNetaLinea,
                 capituloLinea: l.capituloLinea,
-                proveedorId: l.proveedorId,
-                importeProveedor: l.importeProveedor,
-                totalLineaProveedor: l.totalLineaProveedor,
-                costeLineaProveedor: l.importeProveedor,
-                tipoIvaProveedorId: l.tipoIvaProveedorId,
-                porcentajeProveedor: l.porcentajeProveedor,
-                precio: l.precio,
-                perdto: l.perdto,
-                perdtoProveedor: l.perdtoProveedor,
-                dto: l.dto,
-                precioProveedor: l.precioProveedor,
-                dtoProveedor: l.dtoProveedor,
-                totalLineaProveedorIva: l.totalLineaProveedorIva,
-                esTarifa: l.esTarifa
+              
+              
+                esTarifa: l.esTarifa,
+                ofertaCosteLineaId: l.ofertaCosteLineaId
             }
             coste = coste + l.coste;
             importeBeneficio = importeBeneficio + l.importeBeneficioLinea
@@ -1008,6 +998,10 @@ export default class OfertasVentaForm extends JetView {
                 lineasOfertaVenta.loadGrid(ofertaId, _imprimirWindow, rows)
                 return;
             }
+            //asignamos la clave referencial de las lineas de coste a las nuevas lineas
+            rows.forEach(function(l) {
+                l.ofertaCosteLineaId = l.ofertaLineaId;
+            })
             this.asignaColaboradores(rows[0])
             this.obtenerPorcentajeDelAgente(rows[0].agenteId, rows[0].empresaId, rows[0].tipoOfertaId);
             this.obtenerPorcentajeBeneficio();
