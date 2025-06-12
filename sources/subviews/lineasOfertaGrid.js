@@ -190,16 +190,26 @@ export const lineasOferta = {
             return
         }
     },
-    delete: (id, ofertaLinea, app) => {
+    delete: async (id, ofertaLinea, app) => {
         const translate = app.getService("locale")._;
         var self = this;
+        let result = null;
+        let mens = "";
+        //miramos primero si hay registro asociados
+        result = await LineasOfertaWindow.getLineasVinculadas(id);
+        if(result) {
+             mens = "Hay ofertas vinculadas que resultaran afectadas, ¿Está seguro que desea eliminar la linea?."
+        } else {
+            mens = "¿Está seguro que desea eliminar la linea?."
+        }
         webix.confirm({
             title: translate("AVISO"),
-            text: translate("Está seguro que desea eliminar la linea "),
+            text: translate(mens),
             type: "confirm-warning",
             callback: (action) => {
                 if (action === true) {
-                    ofertasService.deleteLineaOferta(id, ofertaLinea)
+                    if(!result) {
+                        ofertasService.deleteLineaOferta(id, ofertaLinea)
                         .then(result => {
                            lineasOferta.loadGrid(ofertaId);
                            //proveedoresOferta.loadGrid(ofertaId, null);
@@ -207,25 +217,28 @@ export const lineasOferta = {
                         .catch(err => {
                             messageApi.errorMessageAjax(err);
                         });
+                    } else {
+                         ofertasService.deleteLineaAsociadas(id, ofertaLinea)
+                        .then(result => {
+                           lineasOferta.loadGrid(ofertaId);
+                           //proveedoresOferta.loadGrid(ofertaId, null);
+                        })
+                        .catch(err => {
+                            messageApi.errorMessageAjax(err);
+                        });
+                    }
                 }
             }
         });
     },
-    disparaEvento: () => {
 
-    },
-
-    estableceContado: (rows) => {
-        setTimeout( function () {
-            var aCuentaProfesional =  0;
-            if(rows) {
-                for(var i = 0; i < rows.length; i++) {
-                    aCuentaProfesional = aCuentaProfesional + rows[i].aCuentaProveedor;
-                }
-                $$('aCuentaProfesional').setValue(aCuentaProfesional);
-                return;
+       getLineasVinculadas: async (ofertaLineaId) => {
+            try {
+                const rows = await ofertasService.getLineasVinculadas(ofertaLineaId);
+                return rows;
+            } catch (err) {
+                messageApi-errorMessageAjax(err);
+                throw err; // opcional: si quieres propagar el error
             }
-            $$('aCuentaProfesional').setValue(aCuentaProfesional);
-        }, 300);
-    }
+        },
 }

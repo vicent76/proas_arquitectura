@@ -270,9 +270,6 @@ export default class PropuestaForm extends JetView {
             }); 
     }
 
-    cargarEventos() {
-        
-    }
 
     cancel() {
         this.$scope.show('/top/propuestas?subcontrataId=' + subcontrataId + '&expedienteId=' + expedienteId + '&propuestaId=' + propuestaId);

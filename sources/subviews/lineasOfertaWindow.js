@@ -517,30 +517,50 @@ export const LineasOfertaWindow = {
                     try {
                         //miramos primero si hay registro asociados
                         result = await LineasOfertaWindow.getLineasVinculadas(data.ofertaLineaId);
-                        console.log(result)
+                         if(result) {
+                            LineasOfertaWindow.actulizaLineaAsociadas(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
+                        } else {
+                            LineasOfertaWindow.actulizaLinea(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
+                        }
 
                     } catch(e) {
                         messageApi.errorMessageAjax(e)
                     }
-                    if(result) {
-                         LineasOfertaWindow.actulizaLineaAsociadas(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
-                    } else {
-                        LineasOfertaWindow.actulizaLinea(data); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
-                    }
+                   
                     
                 } else {
                     // es un alta
                     data.ofertaLineaId = 0;
-                    ofertasService.postLineaOferta(data)
-                    .then(row => {
+                    //Miramos si hay presupuestos asociados
+                    result = await LineasOfertaWindow.getOfertasVinculadas();
+                      if(result) {
+                        //procesamos el resultado
                         
-                        // Hay que cerrar la ventana y refrescar el grid
-                        $$('lineasOfertaWindow').hide();
-                        LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
-                    })
-                    .catch((err) => {
-                        messageApi.errorMessageAjax(err);
-                    });
+                        let arr = [];
+                        for(let r of result) {
+                            let obj = {
+                                ofertaId: r.ofertaId,
+                                ofertaCosteId: r.ofertaCosteId,
+                                esCoste: r.esCoste,
+                                porcentajeBeneficio: r.porcentajeBeneficio,
+                                porcentajeAgente: r.porcentajeAgente
+
+                            };
+                            arr.push(obj);
+                        }
+                            LineasOfertaWindow.postLineaAsociadas(data, arr); //NO REGISTROS ASOCIADOS SOLO ACTULIZAMOS LA LINEA
+                        } else {
+                            ofertasService.postLineaOferta(data)
+                            .then(row => {
+                                
+                                // Hay que cerrar la ventana y refrescar el grid
+                                $$('lineasOfertaWindow').hide();
+                                LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
+                            })
+                            .catch((err) => {
+                                messageApi.errorMessageAjax(err);
+                            });
+                        }
                 } 
        
     },
@@ -553,6 +573,18 @@ export const LineasOfertaWindow = {
                 throw err; // opcional: si quieres propagar el error
             }
         },
+        
+        getOfertasVinculadas: async () => {
+            try {
+                const rows = await ofertasService.getOfertasVinculadas(ofertaId);
+                return rows;
+            } catch (err) {
+                messageApi-errorMessageAjax(err);
+                throw err; // opcional: si quieres propagar el error
+            }
+        },
+
+
 
         actulizaLinea: (data) => {
             ofertasService.putLineaOferta(data, data.ofertaLineaId)
@@ -576,6 +608,25 @@ export const LineasOfertaWindow = {
         
          actulizaLineaAsociadas: (data) => {
             ofertasService.putLineaOfertaAsociadas(data, data.ofertaLineaId)
+            .then(row => {
+                // Hay que cerrar la ventana y refrescar el grid
+                $$('lineasOfertaWindow').hide();
+                LineasOfertaWindow.refreshGridCloseWindow(ofertaId);
+             })
+             .catch((err) => {
+                var error = err.response;
+                var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                if(index != -1) {
+                    messageApi.errorRestriccion()
+                } else {
+                    messageApi.errorMessageAjax(err);
+                }
+            });
+                    
+        },
+
+        postLineaAsociadas: (data, arr) => {
+            ofertasService.postLineaOfertaAsociadas(data, arr)
             .then(row => {
                 // Hay que cerrar la ventana y refrescar el grid
                 $$('lineasOfertaWindow').hide();

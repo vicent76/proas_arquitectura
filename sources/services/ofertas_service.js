@@ -127,11 +127,33 @@ export const ofertasService = {
 
     },
 
-        getLineasVinculadas: (ofertaLineaId) => {
+    getLineasVinculadas: (ofertaLineaId) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
                     var url = conf.urlApi + "/api/ofertas/lineas/vinculadas/al/coste/linea/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .get(url);
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        })
+
+    },
+
+    getOfertasVinculadas: (ofertaId) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/vinculadas/al/coste/" + ofertaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -366,6 +388,28 @@ export const ofertasService = {
 
         });
     },
+
+     postLineaOfertaAsociadas: (ofertaLinea, ofertasAsociadas ) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                     var url = conf.urlApi + "/api/ofertas/actuliza/ofertas/asociadas/coste";
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .post(url, {ofertaLinea: ofertaLinea, ofertasAsociadas: ofertasAsociadas});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+
+        });
+    },
     
     putLineaOferta: (ofertaLinea, ofertaLineaId) => {
         return new webix.promise((success, fail) => {
@@ -390,11 +434,11 @@ export const ofertasService = {
     },
 
 
-     putLineaOfertaAsociadas: (ofertaLinea, ofertaLineaId) => {
+     putLineaOfertaAsociadas: (ofertaLinea) => {
         return new webix.promise((success, fail) => {
             devConfig.getConfig()
                 .then(conf => {
-                    var url = conf.urlApi + "/api/ofertas/actuliza/ofertas/asociadas/coste/" + ofertaLineaId;
+                    var url = conf.urlApi + "/api/ofertas/lineas/actuliza/ofertas/asociadas/coste/";
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
@@ -439,6 +483,27 @@ export const ofertasService = {
             devConfig.getConfig()
                 .then(conf => {
                     var url = conf.urlApi + "/api/ofertas/lineas/" + ofertaLineaId;
+                    return webix.ajax()
+                        .timeout(10000)
+                        .headers({
+                            "Content-Type": "application/json"
+                        })
+                        .del(url, {ofertaLinea: ofertaLinea});
+                })
+                .then(function (result) {
+                    success(result.json());
+                })
+                .catch(function (inXhr) {
+                    fail(inXhr);
+                });
+        });
+    },
+
+        deleteLineaAsociadas: (ofertaLineaId, ofertaLinea) => {
+        return new webix.promise((success, fail) => {
+            devConfig.getConfig()
+                .then(conf => {
+                    var url = conf.urlApi + "/api/ofertas/elimina/ofertas-lineas/asociadas/coste/" + ofertaLineaId;
                     return webix.ajax()
                         .timeout(10000)
                         .headers({
