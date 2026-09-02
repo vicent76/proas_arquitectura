@@ -1,0 +1,1222 @@
+import { JetView } from "webix-jet";
+import { usuarioService } from "../services/usuario_service";
+import { clientesService } from "../services/clientes_service";
+import { colaboradoresService } from "../services/colaboradores_service";
+import { messageApi } from "../utilities/messages";
+import { generalApi } from "../utilities/general";
+import { agentesService } from "../services/agentes_service";
+import { ofertasService } from "../services/ofertas_service";
+import { tiposProyectoService } from "../services/tipos_proyecto_service"
+import { languageService } from "../locales/language_service";
+import { empresasService } from "../services/empresas_service";
+import { formasPagoService } from "../services/formas_pago_service";
+import { lineasOferta } from "../subviews/lineasOfertaGrid";
+import { generarContratoWindow } from "../subviews/generarContratoWindow";
+import OfertasEpisReport from "./ofertasEpisReport";
+import { expedientesService } from "../services/expedientes_service";
+import { capituloService } from "../services/capitulo_service";
+import { parametrosService } from "../services/parametros_service";
+import { unidadesObraService } from "../services/unidades_obra_service";
+import { LineasOfertaWindow } from "../subviews/lineasOfertaWindow";
+import { textosPredeterminadosService } from "../services/textosPredeterminados_service"
+
+var isLoading = false; // Variable de control
+
+
+var ofertaId = 0;
+var expedienteId = 0;
+var usuarioId;
+var usuario;
+var limiteCredito = 0;
+var importeCobro = 0;
+var _imprimirWindow;
+var cap = null;
+var indiceCorrector = 0;
+var limiteImpObra = 0;
+var porcen1 = 0;
+var porcen2 = 0;
+var porcen3 = 0;
+var porcen4 = 0;
+var importeObra = 0;
+var tipoProyectoId
+var _app;
+var formaPagoId = null;
+var adicional = null;
+var contratoId = null;
+var tituloTextoCache = null;
+var sinSalir = null
+
+export default class OfertasCosteForm extends JetView {
+    config() {
+        _app = this.app;
+        const translate = this.app.getService("locale")._;
+        const _lineasOferta = lineasOferta.getGrid(this.app);
+        //const _basesOferta = basesOferta.getGrid(this.app);
+
+        const _view = {
+            //solapa ofertas
+            view: "layout",
+            id: "ofertasCosteForm",
+            multiview: true,
+            rows: [
+                {
+                    view: "toolbar", padding: 3, elements: [
+                        { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                        { view: "label", label: "Oferta de coste" }
+                    ]
+                },
+                {
+                    view: "form",
+                    scroll: "y",
+                    id: "frmOfertas",
+                    maxWidth: 2500,
+                    autoheight: true,
+                    elements: [
+                        {
+                            view: "toolbar", padding: 3, css: { "background-color": "#F4F5F9" }, elements: [
+                                { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                                { view: "label", label: "Datos" }
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    view: "text", id: "ofertaId", name: "ofertaId", hidden: true,
+                                    label: "ID", labelPosition: "top", width: 50, disabled: true
+                                },
+                                {
+                                    view: "text", id: "esAdicional", name: "esAdicional", hidden: true,
+                                    label: "ID", labelPosition: "top", width: 50, disabled: true
+                                },
+                                {
+                                    view: "text", id: "referencia", name: "referencia", required: true,
+                                    label: "Referencia", labelPosition: "top", width: 250
+                                },
+                                {
+                                    view: "combo", id: "cmbEmpresas", name: "empresaId", required: true, options: {},
+                                    label: "Empresa", labelPosition: "top", width: 250
+                                },
+                                {
+                                    view: "datepicker", id: "fechaOferta", name: "fechaOferta", width: 150,
+                                    label: "Fecha de Solicitud", labelPosition: "top", required: true
+                                },
+                                {
+                                    view: "combo", id: "cmbExpedientes", name: "expedienteId", disabled: true,
+                                    label: "Expediente", labelPosition: "top", options: {}
+                                },
+                                {
+                                    view: "label",
+                                    label: "Valorado",
+                                    width: 60,
+                                    on: {
+                                        onAfterRender: function () {
+                                            const node = this.getNode();
+
+                                            node.style.marginLeft = "10px";
+
+                                            const box = node.querySelector(".webix_el_box");
+                                            if (box) {
+                                                box.style.setProperty("font-size", "13px", "important");
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    view: "checkbox", id: "valorado", name: "valorado", width: 50
+                                },
+                                {
+                                    view: "label", label: "Desglosado", width: 80,
+                                    on: {
+                                        onAfterRender: function () {
+                                            const node = this.getNode();
+
+                                            const box = node.querySelector(".webix_el_box");
+                                            if (box) {
+                                                box.style.setProperty("font-size", "13px", "important");
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    view: "checkbox", id: "desglosado", name: "desglosado", width: 50
+                                },
+                                {
+                                    view: "label", label: "IVA", width: 30,
+                                     on: {
+                                        onAfterRender: function () {
+                                            const node = this.getNode();
+
+                                            const box = node.querySelector(".webix_el_box");
+                                            if (box) {
+                                                box.style.setProperty("font-size", "13px", "important");
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    view: "checkbox", id: "mostrarIva", name: "mostrarIva", width: 50
+                                },
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    view: "combo", id: "cmbClientes", name: "clienteId", required: true, minWidth: 300,
+                                    label: "Cliente", labelPosition: "top",
+                                    options: {},
+                                    on: {
+                                        "onChange": (newv, oldv) => {
+                                            if (isLoading) return;
+                                            var id = newv;
+                                            this.loadAgenteCliente(id);
+                                        },
+                                        onTimedKeyPress: function () {
+                                            var input = $$('cmbClientes').getText(); // Obtiene el valor actual del campo de texto
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaClientesActivos(input);
+                                            }
+                                            if (input === "*") {
+                                                this.buscaClientesActivos(input);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "text", id: 'importeCli', name: 'importeCliente', disabled: true, width: 180,
+                                    label: "Coste", labelPosition: "top", value: 0, format: "1,00"
+
+                                },
+
+
+                            ]
+                        },
+                        {
+                            view: "toolbar", padding: 3, css: { "background-color": "#F4F5F9" }, elements: [
+                                { view: "icon", icon: "mdi mdi-currency-eur", width: 37, align: "left" },
+                                { view: "label", label: "Colaboradores" }
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    view: "combo", id: "cmbAgentes", name: "agenteId", required: true,
+                                    label: "Agente", labelPosition: "top", minWidth: 130,
+                                    options: {},
+                                    on: {
+                                        "onChange": (newv, oldv) => {
+                                            if (isLoading) return;
+                                            var id = newv;
+                                            if (!oldv || oldv === '') return;
+                                            this.loadClientesAgente(null, id, null);
+                                            /* if(cliId) {
+                                                this.loadClientesAgente(cliId, id, null);
+                                                //this.loadProId(cliId, id);
+                                            }else {
+                                                this.loadClientesAgente(null, id, null);
+                                                //this.loadProId(null, id);
+                                           
+                                            } */
+                                        },
+                                        onTimedKeyPress: function () {
+                                            var input = $$('cmbAgentes').getText(); // Obtiene el valor actual del campo de texto
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaAgentesActivos(input);
+                                            }
+                                            if (input === "*") {
+                                                this.buscaAgentesActivos(input);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "combo", id: "cmbComerciales", name: "comercialId",
+                                    label: "Comercial", labelPosition: "top", minWidth: 130,
+                                    options: {},
+                                    on: {
+                                        onTimedKeyPress: function () {
+                                            var input = $$('cmbComerciales').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbComerciales").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
+                                            }
+                                            if (input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbComerciales", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                                {
+                                    view: "combo", id: "cmbJefeGrupo", name: "jefeGrupoId",
+                                    label: "Jefe de grupo", labelPosition: "top", minWidth: 130,
+                                    options: {},
+                                    on: {
+                                        onTimedKeyPress: function () {
+                                            var input = $$('cmbJefeGrupo').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbJefeGrupo").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                            if (input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+
+                                /*    {
+                                       view: "combo", id: "cmbJefeObras", name: "jefeObrasId", 
+                                       label: "Jefe de obras", labelPosition: "top", minWidth: 130,
+                                       options:{},
+                                       on: {
+                                           onTimedKeyPress: function() {
+                                               var input = $$('cmbJefeObras').getText(); // Obtiene el valor actual del campo de texto
+                                               let name = $$("cmbJefeObras").config.name;
+                                               if (input.length >= 3) {
+                                                   // Llama a la función para buscar coincidencias en la base de datos
+                                                   this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                               }
+                                               if(input === "*") {
+                                                   this.buscaColaboradoresActivos(input, name, "cmbJefeGrupo", null);
+                                               }
+                                           }.bind(this)
+                                       }
+                                   }, */
+                                /* {
+                                    view: "combo", id: "cmbOficinaTecnica", name: "oficinaTecnicaId", 
+                                    label: "Oficina técnica", labelPosition: "top", minWidth: 130,
+                                    options:{},
+                                    on: {
+                                        onTimedKeyPress: function() {
+                                            var input = $$('cmbOficinaTecnica').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbOficinaTecnica").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
+                                            }
+                                            if(input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbOficinaTecnica", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                }, */
+                                {
+                                    view: "combo", id: "cmbAsesorTecnico", name: "asesorTecnicoId",
+                                    label: "Asesor técnico", labelPosition: "top", minWidth: 130,
+                                    options: {},
+                                    on: {
+                                        onTimedKeyPress: function () {
+                                            var input = $$('cmbAsesorTecnico').getText(); // Obtiene el valor actual del campo de texto
+                                            let name = $$("cmbAsesorTecnico").config.name;
+                                            if (input.length >= 3) {
+                                                // Llama a la función para buscar coincidencias en la base de datos
+                                                this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
+                                            }
+                                            if (input === "*") {
+                                                this.buscaColaboradoresActivos(input, name, "cmbAsesorTecnico", null);
+                                            }
+                                        }.bind(this)
+                                    }
+                                },
+                            ]
+                        },
+                        {
+                            cols: [
+
+                                // Columna: Conceptos excluidos
+                                {
+                                    rows: [
+                                        {
+                                            cols: [
+                                                {
+                                                    view: "richselect",
+                                                    id: "cmbTitulos",
+                                                    name: "tituloId",
+                                                    label: "Título",
+                                                    width: 400,       // Controla el ancho total del campo
+                                                    gravity: 1,
+                                                    options: {},
+                                                    on: {
+                                                        onChange: function (newId) {
+                                                            this.$scope.cambioTextosPredeterminadosTitulos(newId);
+                                                        }
+                                                    }
+                                                },
+                                                {} // Espacio vacío para completar la fila
+                                            ]
+                                        },
+                                        {
+                                            view: "textarea",
+                                            id: "tituloTexto",
+                                            name: "tituloTexto",
+                                            height: 155,
+                                            labelWidth: 150
+                                        }
+                                    ]
+                                }
+
+                            ]
+                        },
+                        {
+                            cols: [
+
+                                {
+                                    view: "textarea", id: "observaciones", name: "observaciones",
+                                    label: "Observaciones", labelPosition: "top", height: 140
+
+                                },
+                                {
+                                    width: 300,
+                                    rows: [
+                                        { gravity: 1 },
+                                        {
+                                            paddingX: 50,
+                                            align: "center",
+                                            cols: [
+                                                { view: "button", label: "Cancelar", css: "webix_danger", click: this.cancel },
+                                                { view: "button", label: "Guardar", click: () => this.accept(true), css: "webix_primary", type: "form" }
+                                            ]
+                                        },
+                                        {
+                                            paddingX: 50,
+                                            align: "center",
+                                            cols: [
+                                                {
+                                                    view: "button",
+                                                    label: "Imprimir oferta",
+                                                    id: "btnImprimir",
+                                                    type: "form",
+                                                }
+                                            ]
+                                        },
+
+                                        {
+                                            paddingX: 50,
+                                            align: "center",
+                                            cols: [
+                                                { view: "button", label: "Guardar sin salir", css: "bt_2", click: () => this.accept(false), type: "form" }
+                                            ]
+                                        },
+                                        { gravity: 1 }
+                                    ]
+                                }
+
+
+                            ]
+                        },
+                        {
+                            cols: [
+                                {
+                                    rows: [
+                                        { view: "label", label: "Tipos de Proyecto", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listTiposProyecto",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    this.$scope.loadCapitulos(id);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    rows: [
+                                        { view: "label", label: "Capítulos", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listCapitulos",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    cap = id;
+                                                    this.$scope.loadUnidadesObra(id);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    rows: [
+                                        { view: "label", label: "Partidas", align: "left" },
+                                        {
+                                            view: "list",
+                                            id: "listUnidadesObra",
+                                            template: "#value#", // Muestra el campo 'nombre' de los datos
+                                            select: true, // Permite seleccionar elementos
+                                            autoheight: false,
+                                            height: 200,
+                                            scroll: "y",
+                                            on: {
+                                                onItemClick: function (id) {
+                                                    if (contratoId) {
+                                                        messageApi.errorMessage("Hay un contrato asociado, no se puede modificar.");
+                                                        return;
+                                                    }
+                                                    var cliId = $$('cmbClientes').getValue();
+                                                    var data = {
+                                                        indiceCorrector: indiceCorrector,
+                                                        porcen1: 0,
+                                                        porcen2: 0,
+                                                        porcen3: 0,
+                                                        porcen4: 0,
+                                                        importeObra: importeObra,
+                                                        limiteImpObra: limiteImpObra
+                                                    }
+
+                                                    LineasOfertaWindow.loadWindow(ofertaId, null, cliId, cap, id, data, importeObra, contratoId);
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        _lineasOferta,
+                        { minWidth: 100 },
+                        /*  _basesOferta */
+                    ]
+                },
+
+
+
+            ],
+            scroll: true
+        }
+        return _view;
+    }
+    init(view, url) {
+        this.imprimirWindow = this.ui(OfertasEpisReport);
+        $$('btnImprimir').attachEvent("onItemClick", function (id, e, node) {
+            var empresaId = $$('cmbEmpresas').getValue();
+            empresasService.getEmpresa(empresaId)
+                .then((data) => {
+                    if (!data.infOfertas) {
+                        messageApi.errorMessage('Esta empresa no tiene plantilla de oferta asociada');
+                        return
+                    } else {
+                        var rep = data.infOfertas;
+                        rep = rep + "_nopresentacion";
+                        //var rep = 'oferta_general'
+                        var file = "/stireport/reports/" + rep + ".mrt";
+                        var valorado = $$('valorado').getValue();
+                        this.$scope.imprimirWindow.showWindow(ofertaId, null, file, valorado);
+
+                    }
+                })
+                .catch((err) => {
+                    var error = err.response;
+                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                    if (index != -1) {
+                        messageApi.errorRestriccion()
+                    } else {
+                        messageApi.errorMessageAjax(err);
+                    }
+                })
+
+        });
+        this.cargarEventos();
+    }
+
+
+    urlChange(view, url) {
+        sinSalir = null;
+        if (url[0].params.NEW) {
+            messageApi.normalMessage('Oferta creada correctamente, puede crear ahora las  lineas asociadas.')
+        }
+
+        if (url[0].params.MOD) {
+            messageApi.normalMessage('Oferta guardada correctamente.')
+        }
+        usuario = usuarioService.checkLoggedUser();
+        usuarioId = usuario.usuarioId;
+        languageService.setLanguage(this.app, 'es');
+        if (url[0].params.ofertaId) {
+            ofertaId = url[0].params.ofertaId;
+        }
+        if (url[0].params.expedienteId) {
+            expedienteId = url[0].params.expedienteId;
+        }
+        if (url[0].params.importeObra) {
+            importeObra = parseFloat(url[0].params.importeObra);
+        }
+        if (url[0].params.adicional) {
+            adicional = url[0].params.adicional;
+        }
+
+        if (url[0].params.SinSalir) {
+            sinSalir = url[0].params.SinSalir;
+        }
+
+        this.cargarEventos();
+        this.load(ofertaId, expedienteId);
+    }
+    load(ofertaId, expedienteId) {
+        //PRIMERO RECUPERAMOS EL INDICE CORRECTOR
+        tituloTextoCache = null
+        parametrosService.getParametros()
+            .then((parametros) => {
+                if (parametros && parametros[0].indiceCorrector) indiceCorrector = parametros[0].indiceCorrector;
+                if (parametros && parametros[0].limiteImpObra) limiteImpObra = parametros[0].limiteImpObra;
+                if (ofertaId == 0 && expedienteId > 0) {
+                    expedientesService.getExpediente(expedienteId)
+                        .then((expediente) => {
+                            tipoProyectoId = expediente.tipoProyectoId
+                            this.loadEmpresas(expediente.empresaId);
+                            this.loadAgentes(expediente.agenteId);
+                            this.loadClientesAgente(expediente.clienteId, expediente.agenteId);
+                            this.loadTiposProyecto(expediente.tipoProyectoId);
+                            this.loadExpediente(expediente);
+                            this.loadTitulos(expediente.empresaId, null);
+                            $$("fechaOferta").setValue(new Date(expediente.fecha));//fecha por defecto
+                            formaPagoId = expediente.formaPagoId;
+
+
+                            this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", expediente.comercialId);
+                            this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", expediente.jefeGrupoId)
+                            //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", expediente.jefeObrasId);
+                            //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", expediente.oficinaTecnicaId);
+                            this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", expediente.asesorTecnicoId);
+
+
+                            var f = new Date(expediente.fecha).getFullYear();
+
+                            //buscamos si hay no adicional
+                            ofertasService.getOfertasExpediente(expedienteId, 1, 0)
+                                .then(row => {
+                                    let ab = '';
+                                    if (row.length > 0) {
+                                        adicional = true;
+                                        ab = row[0].referencia.split("_")[0];
+                                        ab = ab + '_PCA_' + f
+                                    } else {
+                                        adicional = false
+                                    }
+
+                                    //referencia segun principal o adicional
+
+                                    var ref = '_PC_' + f
+                                    if (adicional == true) {
+                                        this.getReferencia(ab, null);
+                                    } else {
+                                        this.getReferencia(ref, expediente.referencia);
+                                    }
+
+
+                                    //this.loadMantenedores();
+                                    lineasOferta.loadGrid(null, null, importeObra, contratoId, null);
+                                    $$('valorado').setValue(1);
+                                    //basesOferta.loadGrid(null); 
+                                    setTimeout(this.accept, 2000)
+
+                                })
+                                .catch(err => {
+                                    messageApi.errorMessageAjax(err);
+                                });
+
+
+                        })
+                        .catch((err) => {
+                            messageApi.errorMessageAjax(err);
+                        });
+                    return;
+                }
+                ofertasService.getOferta(ofertaId)
+                    .then((oferta) => {
+                        tituloTextoCache = oferta.tituloTexto;
+                        if (sinSalir) tituloTextoCache = null;
+                        contratoId = null;
+                        isLoading = true; // Se activa el flag antes de cargar datos
+                        //$$("cmbTiposProyecto").blockEvent();
+                        if (oferta.contratoId) contratoId = oferta.contratoId;
+                        delete oferta.empresa;
+                        delete oferta.cliente;
+                        delete oferta.tipo;
+                        delete oferta.mantenedor;
+                        delete oferta.agente;
+                        delete oferta.formaPago
+                        formaPagoId = oferta.formaPagoId
+                        oferta.fechaOferta = new Date(oferta.fechaOferta);
+                        $$("frmOfertas").setValues(oferta);
+                        this.loadAgentes(oferta.agenteId);
+                        this.loadEmpresas(oferta.empresaId);
+                        this.loadClientesAgente(oferta.clienteId, oferta.agenteId);
+                        this.loadTitulos(oferta.empresaId, oferta.tituloId);
+                        //this.loadMantenedores(oferta.mantenedorId);
+                        this.loadTiposProyecto(oferta.tipoProyectoId);
+                        lineasOferta.loadGrid(oferta.ofertaId, _imprimirWindow, importeObra, contratoId, null);
+                        $$('valorado').setValue(oferta.valorado);
+                        $$('desglosado').setValue(oferta.desglosado);
+                        $$('mostrarIva').setValue(oferta.mostrarIva);
+
+                        ////
+
+                        this.buscaColaboradoresActivos("", "comercialId", "cmbComerciales", oferta.comercialId);
+                        this.buscaColaboradoresActivos("", "jefeGrupoId", "cmbJefeGrupo", oferta.jefeGrupoId)
+                        //this.buscaColaboradoresActivos("", "jefeObrasId", "cmbJefeObras", oferta.jefeObrasId);
+                        //this.buscaColaboradoresActivos("", "oficinaTecnicaId", "cmbOficinaTecnica", oferta.oficinaTecnicaId);
+                        this.buscaColaboradoresActivos("", "asesorTecnicoId", "cmbAsesorTecnico", oferta.asesorTecnicoId);
+
+                        expedientesService.getExpediente(expedienteId)
+                            .then((expediente) => {
+
+                                this.loadExpediente(expediente);
+                                isLoading = false;
+
+                            })
+                            .catch((err) => {
+                                messageApi.errorMessageAjax(err);
+                            });
+
+                    })
+                    .catch((err) => {
+                        messageApi.errorMessageAjax(err);
+                    });
+            })
+            .catch((err) => {
+                messageApi.errorMessageAjax(err);
+            });
+
+    }
+
+    cargarEventos() {
+
+        /*  $$("cmbTiposProyecto").attachEvent("onChange", (newv, oldv) => {
+            if(newv == "" || !newv) return;
+            //this.cambioTipoProyecto(newv)
+         }); */
+    }
+
+    cancel() {
+        this.$scope.show('/top/expedientesForm?expedienteId=' + expedienteId + '&desdeCoste=true');
+    }
+    accept(opcion) {
+        if (contratoId) {
+            messageApi.errorMessage("Hay un contrato asociado, no se puede modificar.");
+            return;
+        }
+        if (!$$("frmOfertas").validate()) {
+            messageApi.errorMessage("Debe rellenar los campos correctamente");
+            return;
+        }
+        var data = $$("frmOfertas").getValues();
+        data.formaPagoId = formaPagoId;
+        if (data.jefeGrupoId == '') data.jefeGrupoId = null;
+        if (data.asesorTecnicoId == '') data.asesorTecnicoId = null;
+        if (data.tituloId == '') data.tituloId = null;
+
+
+
+        if (ofertaId == 0) {
+            data.tipoProyectoId = tipoProyectoId;
+            data.ofertaId = 0;
+            data.tipoOfertaId = 5
+            data.coste = 0
+            data.porcentajeBeneficio = 0
+            data.importeBeneficio = 0
+            data.ventaNeta = 0
+            data.porcentajeAgente = 0
+            data.importeAgente = 0
+            data.importeCliente = 0
+            data.totalConIva = 0
+            data.importeMantenedor = 0
+            data.mantenedorId = null;
+            data.expedienteId = expedienteId;
+            data.esCoste = 1;
+            data.esTecnico = 1;
+            data.esAdicional = 0;
+
+            if (adicional == 'true') {
+                data.esAdicional = 1;
+            }
+
+
+            ofertasService.postOferta(data)
+                .then((result) => {
+                    _app.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + "&NEW");
+                    _app.show('/top/ofertasCosteForm?ofertaId=' + result.ofertaId + '&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional + '&SinSalir=true&NEW=true');
+                })
+                .catch((err) => {
+                    var error = err.response;
+                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                    if (index != -1) {
+                        messageApi.errorRestriccion()
+                    } else {
+                        messageApi.errorMessageAjax(err);
+                    }
+                });
+        } else {
+            delete data.direccion;
+            delete data.codpostal;
+            delete data.poblacion;
+            delete data.provincia;
+            delete data.tipoViaId;
+            delete data.comercialCliente;
+            delete data.totalConIva;
+            //
+            data.porcentajeBeneficio = 0
+            data.importeBeneficio = 0
+            data.porcentajeAgente = 0
+            data.importeAgente = 0
+            data.importeMantenedor = 0
+            data.total = data.importeCliente;
+            data.coste = data.importeCliente;
+
+            ofertasService.putOferta(data, data.ofertaId)
+                .then(() => {
+                    if (opcion) {
+                        this.show('/top/expedientesForm?expedienteId=' + expedienteId + '&ofertaCosteId=' + data.ofertaId + '&desdeCoste=true');
+                    } else {
+                        _app.show('/top/ofertasCosteForm?ofertaId=' + ofertaId + '&expedienteId=' + expedienteId + '&importeObra=' + importeObra + '&adicional=' + adicional + '&SinSalir=true');
+                    }
+                })
+                .catch((err) => {
+                    var error = err.response;
+                    var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                    if (index != -1) {
+                        messageApi.errorRestriccion()
+                    } else {
+                        messageApi.errorMessageAjax(err);
+                    }
+                });
+        }
+    }
+
+    loadEmpresas(empresaId) {
+        empresasService.getEmpresas()
+            .then(rows => {
+                var empresas = generalApi.prepareDataForCombo('empresaId', 'nombre', rows);
+                var list = $$("cmbEmpresas").getPopup().getList();
+                list.clearAll();
+                list.parse(empresas);
+                if (empresaId) {
+                    $$("cmbEmpresas").setValue(empresaId);
+                    $$("cmbEmpresas").refresh();
+                } else {
+                    $$("cmbEmpresas").setValue(10);
+                    $$("cmbEmpresas").refresh();
+                }
+                return;
+            });
+    }
+
+    loadAgentes(agenteId) {
+        agentesService.getAgentes()
+            .then(rows => {
+
+
+                var agentes = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
+                var list = $$("agentesList").getList();
+                list.clearAll();
+                list.parse(agentes);
+                if (agenteId) {
+                    //$$('texto').setValue(agenteId)
+                    $$("cmbAgentes").setValue(agenteId);
+                    $$("cmbAgentes").refresh();
+                }
+                return;
+            });
+    }
+    loadClientesAgente(clienteId, agenteId) {
+        if (agenteId) {
+            clientesService.getClientesAgenteActivos(agenteId)
+                .then(rows => {
+                    var clientes = generalApi.prepareDataForCombo('clienteId', 'nombre', rows);
+                    var list = $$("cmbClientes").getList();
+                    list.clearAll();
+                    list.parse(clientes);
+                    if (clienteId) {
+                        //cliId = clienteId; 
+                        $$("cmbClientes").setValue(clienteId);
+                        $$("cmbClientes").refresh();
+                    } else {
+                        //cliId = null;
+                        $$("cmbClientes").setValue(null);
+                        $$("cmbClientes").refresh();
+                    }
+                    return;
+                });
+        }
+    }
+
+    loadClientes() {
+        clientesService.getClientesActivos()
+            .then(rows => {
+                var clientes = generalApi.prepareDataForCombo('clienteId', 'nombre', rows);
+                clientes.sort(function (a, b) {
+                    if (a.value > b.value) {
+                        return 1;
+                    }
+                    if (a.value < b.value) {
+                        return -1;
+                    }
+                    // a must be equal to b
+                    return 0;
+                });
+                var list = $$("clientesList").getList();
+                list.clearAll();
+                list.parse(clientes);
+                $$("cmbClientes").setValue(null);
+                $$("cmbClientes").refresh();
+
+                return;
+            });
+    }
+
+
+
+    cambioTipoProyecto(tipoProyectoId) {
+        tiposProyectoService.getTipoProyecto(tipoProyectoId)
+            .then(row => {
+                if (row) {
+                    ofertasService.getSiguienteReferenciaTecnico(row.abrev)
+                        .then(row => {
+                            var nuevaReferencia = row;
+                            this.$$('referencia').setValue(nuevaReferencia);
+                        })
+                        .catch(err => {
+                            messageApi.errorMessageAjax(err);
+                        });
+                }
+            })
+            .catch(err => {
+                messageApi.errorMessageAjax(err);
+            })
+    }
+
+    getReferencia(abrev, ref) {
+        if (ref) {
+            let ab = ref.split("-")[0]
+            expedientesService.getSiguienteReferencia(ab)
+                .then(row => {
+                    var ab2 = row + abrev;
+                    expedientesService.getSiguienteReferenciaTecnico(ab2)
+                        .then(row => {
+                            var nuevaReferencia = row;
+                            this.$$('referencia').setValue(nuevaReferencia);
+                            isLoading = false;
+                        })
+                        .catch(err => {
+                            messageApi.errorMessageAjax(err);
+                        });
+                })
+                .catch(err => {
+                    messageApi.errorMessageAjax(err);
+                });
+        } else {
+            expedientesService.getSiguienteReferenciaTecnico(abrev)
+                .then(row => {
+                    var nuevaReferencia = row;
+                    this.$$('referencia').setValue(nuevaReferencia);
+                    isLoading = false;
+                })
+                .catch(err => {
+                    messageApi.errorMessageAjax(err);
+                });
+        }
+
+    }
+
+
+
+
+    /*     loadTiposProyecto(tipoProyectoId) {
+            tiposProyectoService.getTiposProyecto(usuarioId)
+            .then(rows => {
+                var tiposProyecto = generalApi.prepareDataForCombo('tipoProyectoId', 'nombre', rows);
+                var list = $$("cmbTiposProyecto").getPopup().getList();
+                list.clearAll();
+                list.parse(tiposProyecto);
+                if(tiposProyectoId) { 
+                    $$("cmbTiposProyecto").setValue(tiposProyectoId);
+                    $$("cmbTiposProyecto").refresh();
+                }
+            });
+        }
+     */
+
+    loadTiposProyecto(tipoProyectoId) {
+        tiposProyectoService.getTiposProyecto(usuarioId)
+            .then(rows => {
+                var tiposProyecto = generalApi.prepareDataForCombo('tipoProyectoId', 'nombre', rows);
+                var list = $$("listTiposProyecto"); // Obtener la lista en lugar del combo
+
+                list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+                list.parse(tiposProyecto); // Cargar los datos en la lista
+
+                if (tipoProyectoId) {
+                    list.select(tipoProyectoId); // Selecciona el ítem si hay un ID
+                    this.loadCapitulos(tipoProyectoId);
+                }
+            });
+    }
+
+
+    loadCapitulos(tipoProyectoId) {
+        capituloService.getCapitulosPorGrupo(tipoProyectoId)
+            .then(rows => {
+                var capitulos = generalApi.prepareDataForCombo('grupoArticuloId', 'nombre', rows);
+                var list = $$("listCapitulos"); // Obtener la lista en lugar del combo
+
+                list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+                list.parse(capitulos); // Cargar los datos en la lista
+            });
+    }
+
+    loadCapituloData(grupoArticuloId) {
+        capituloService.getCapitulo(grupoArticuloId)
+            .then(row => {
+                if (row) {
+                    let capitulo = row;
+                    porcen1 = capitulo.porcen1 / 100;
+                    porcen2 = capitulo.porcen2 / 100;
+                    porcen3 = capitulo.porcen3 / 100;
+                    porcen4 = capitulo.porcen4 / 100;
+                }
+            });
+    }
+
+    loadUnidadesObra(grupoArticuloId) {
+        unidadesObraService.getUnidadesObraGrupo(grupoArticuloId)
+            .then(rows => {
+                var capitulos = generalApi.prepareDataForCombo('articuloId', 'nombre', rows);
+                var list = $$("listUnidadesObra"); // Obtener la lista en lugar del combo
+
+                list.clearAll(); // Limpiar la lista antes de cargar los nuevos datos
+                list.parse(capitulos); // Cargar los datos en la lista
+                //ahora buscamos los datos de capitulo
+                this.loadCapituloData(grupoArticuloId)
+                    .then(rows => {
+
+                    });
+
+            });
+    }
+
+
+    loadAgenteCliente(clienteId) {
+        if (clienteId) {
+            //cliId = clienteId;
+            agentesService.getAgenteCliente(clienteId)
+                .then(rows => {
+                    this.loadAgentes(rows[0].comercialId);
+                    //this.loadClienteData(clienteId)
+                });
+        }
+    }
+
+
+    loadUsuarios(usuarioId) {
+        usuarioService.getUsuarios()
+            .then(rows => {
+                var usuarios = generalApi.prepareDataForCombo('usuarioId', 'nombre', rows);
+                var list = $$("cmbUsuarios").getPopup().getList();
+                list.clearAll();
+                list.parse(usuarios);
+                if (usuarioId) {
+                    $$("cmbUsuarios").setValue(usuarioId);
+                    $$("cmbUsuarios").refresh();
+                } else {
+                    $$("cmbUsuarios").setValue(null);
+                    $$("cmbUsuarios").refresh();
+                }
+                return;
+            })
+    }
+
+    loadNumero() {
+        ofertasService.getNumServicio()
+            .then(row => {
+                $$('numServicio').setValue(row);
+            })
+            .catch(err => {
+                var error = err.response;
+                var index = error.indexOf("Cannot delete or update a parent row: a foreign key constraint fails");
+                if (index != -1) {
+                    messageApi.errorRestriccion()
+                } else {
+                    messageApi.errorMessageAjax(err);
+                }
+            })
+    }
+
+    loadExpediente(expediente) {
+        let rows = [];
+        rows.push(expediente);
+        var expedientes = generalApi.prepareDataForCombo('expedienteId', 'titulo', rows);
+        var list = $$("cmbExpedientes").getPopup().getList();
+        list.clearAll();
+        list.parse(expedientes);
+        $$("cmbExpedientes").setValue(expediente.expedienteId);
+        $$("cmbExpedientes").refresh();
+        return;
+    }
+
+    compruebaCobrosCliente(clienteId) {
+        clientesService.getCliente(clienteId)
+            .then((row) => {
+                if (row) {
+                    clientesService.getCobrosCliente(clienteId)
+                        .then(rows => {
+                            limiteCredito = row.limiteCredito;
+                            rows.forEach(c => {
+                                if (!c.seguro) {
+                                    importeCobro += parseFloat(c.impvenci);
+                                }
+                            });
+                            if (importeCobro > limiteCredito) {
+                                messageApi.normalMessage('ATENCION!!!, este cliente ha superado su limete de credito');
+                            }
+                        })
+                        .catch(err => {
+                            messageApi.errorMessageAjax(err);
+                        });
+                }
+
+            })
+            .catch((err) => {
+
+            });
+    }
+
+    /////
+
+
+    buscaColaboradoresActivos(query, name, cmbId, colaboradorId) {
+        let tipoComercial = 0;
+
+        switch (name) {
+            case "comercialId":
+                tipoComercial = 2
+                break;
+            case "jefeGrupoId":
+                tipoComercial = 3
+                break;
+            case "jefeObrasId":
+                tipoComercial = 5
+                break;
+            case "oficinaTecnicaId":
+                tipoComercial = 6
+                break;
+            case "asesorTecnicoId":
+                tipoComercial = 7
+                break;
+            default:
+                console.log("No hacemos nada.");
+        }
+
+        console.log(name);
+        colaboradoresService.getColaboradoresActivosQuery(query, tipoComercial)
+            .then(rows => {
+                var comerciales = generalApi.prepareDataForCombo("comercialId", 'nombre', rows);
+                var list = $$(cmbId).getList();
+                var popup = $$(cmbId).getPopup();
+                list.clearAll();
+                list.parse(comerciales);
+                //$$("cmbAgentes").setValue();
+                //$$("cmbAgentes").refresh();
+                if (colaboradorId) {
+                    //$$('texto').setValue(agenteId)
+                    $$(cmbId).setValue(colaboradorId);
+                    $$(cmbId).refresh();
+                } else {
+                    $$(cmbId).setValue(null);
+                    $$(cmbId).refresh();
+                }
+
+
+            })
+            .catch(error => {
+                console.error("Error al buscar agentes activos:", error);
+            });
+    }
+
+    loadAgentes(agenteId) {
+        agentesService.getAgentes()
+            .then(rows => {
+                var agentes = generalApi.prepareDataForCombo('comercialId', 'nombre', rows);
+                var list = $$("cmbAgentes").getList();
+                list.clearAll();
+                list.parse(agentes);
+                if (agenteId) {
+                    //$$('texto').setValue(agenteId)
+                    $$("cmbAgentes").setValue(agenteId);
+                    $$("cmbAgentes").refresh();
+                }
+                return;
+            });
+    }
+
+    buscaClientesActivos(query) {
+        // Modifica la función para pasar la consulta al servicio
+        clientesService.getClientesActivosQuery(query)
+            .then(rows => {
+                var clientes = generalApi.prepareDataForCombo('clienteId', 'nombre', rows);
+                var list = $$("cmbClientes").getPopup().getList();;
+                var popup = $$("cmbClientes").getPopup();
+                list.clearAll();
+                list.parse(clientes);
+                //$$("cmbAgentes").setValue();
+                //$$("cmbAgentes").refresh();
+                popup.show();
+            })
+            .catch(error => {
+                console.error("Error al buscar clientes activos:", error);
+            });
+    }
+
+    loadTitulos(empresaId, tituloId) {
+        textosPredeterminadosService.getTitulos(3, empresaId, 5)
+            .then((rows) => {
+                var textos = generalApi.prepareDataForCombo('textoPredeterminadoId', 'abrev', rows);
+                var list = $$("cmbTitulos").getPopup().getList();
+                list.clearAll();
+                list.parse(textos);
+                if (tituloId) {
+                    $$("cmbTitulos").setValue(tituloId);
+                    $$("cmbTitulos").refresh();
+                    return
+                }
+                $$("cmbTitulos").setValue(null);
+                $$("cmbTitulos").refresh();
+            })
+            .catch((err) => {
+                messageApi.errorMessageAjax(err);
+            })
+    }
+
+
+    cambioTextosPredeterminadosTitulos(id) {
+        if (!id) {
+            return;
+        }
+        if (tituloTextoCache === null || tituloTextoCache === '') {
+            textosPredeterminadosService.getTexto(id)
+                .then((row) => {
+                    var compose = "PRESUPUESTO REF. " + $$('referencia').getValue() + " " + row.texto
+                    $$("tituloTexto").setValue(compose);
+                    tituloTextoCache = null;
+                })
+                .catch((err) => {
+                    messageApi.errorMessageAjax(err);
+                })
+        } else {
+            tituloTextoCache = null;
+        }
+
+    }
+
+}
+

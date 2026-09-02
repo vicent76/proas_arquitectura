@@ -1,0 +1,37 @@
+{
+  "name": "proas_arquitectura",
+  "version": "2.4.24",
+  "description": "Webix Jet App",
+  "main": "sources/myapp.js",
+  "author": "Vicent Ribera Condomina",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint sources/",
+    "build": "webpack --env production=true",
+    "module": "webpack --env.production true --env.module true",
+    "standalone": "webpack --env.production true --env.module true --env.standalone true",
+    "start": "webpack serve --open"
+  },
+  "keywords": [
+    "webix",
+    "jet"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "regenerator-runtime": "^0.14.1",
+    "webix-jet": "^2.1.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.5",
+    "babel-loader": "^9.2.1",
+    "css-loader": "^7.1.4",
+    "eslint": "^8.57.1",
+    "less": "^4.6.4",
+    "less-loader": "^12.3.3",
+    "mini-css-extract-plugin": "^2.10.2",
+    "webpack": "^5.107.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.4"
+  }
+}
